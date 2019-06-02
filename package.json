@@ -1,0 +1,24 @@
+{
+  "name": "sockettest",
+  "version": "1.0.0",
+  "description": "socket test",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "socket",
+    "test"
+  ],
+  "author": "Saksham Shah",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "matter-js": "^0.14.2",
+    "socket.io": "^2.2.0"
+  },
+  "engines": {
+    "node": "10.16.0"
+  }
+}
