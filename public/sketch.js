@@ -51,7 +51,7 @@ function setup() {
   //console.log(io.connect());
 
   socket.on('welcome', function(data) {
-    console.log(data);
+    //console.log(data);
     createCanvas(data.width, data.height);
     platforms = data.platforms;
   })

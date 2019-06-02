@@ -178,7 +178,7 @@ Events.on(engine, 'collisionStart', function(event) {
         }
     });
 
-ground = new Platform(width / 2, height, width, 20, engine);
+ground = new Platform(width / 2, height, width - 30, 20, engine);
 
 // var player = new Player(100, 200, 0, engine);
 // players.set(player.label, player)
