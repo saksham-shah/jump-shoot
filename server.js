@@ -19,16 +19,40 @@ var BasicGun = require('./basic-gun.js');
 var Platform = require('./platform.js');
 var Bullet = require('./bullet.js');
 
+var Lobby = require('./lobby.js');
+// var LobbyData = require('./lobbydata.js');
+
 //var Action = require('./action.js');
 
 var width = 800;
-var height = 550;
+var height = 540;
+
+var users = new Map();
+var lobbies = [];
+var myLobby = new Lobby("lobby", "abc");
+lobbies.push(myLobby);
+
+// var lobbyData = new LobbyData(users, lobbies);
 
 io.sockets.on('connection', newConnection);
+
+// console.log(io);
 
 function newConnection(socket) {
   console.log("new connection: " + socket.id);
 
+  var data = myLobby.addPlayer(socket.id);
+  socket.emit('joined lobby', data);
+  socket.join(data.lobbyid);
+
+  var userData = {
+    lobbyid: data.lobbyid
+  }
+  users.set(socket.id, userData);
+
+  socket.broadcast.to(myLobby.lobbyid).emit('player joined', socket.id);
+
+//
   var player = new Player(100, 200, socket.id, colours[colourCount], engine);
   colourCount++;
   if (colourCount >= colours.length) {
@@ -41,13 +65,24 @@ function newConnection(socket) {
     height: height,
     platforms: [ground.toObject()]
   }
-  socket.emit('welcome', data);
+  // socket.emit('welcome', data);
+
+  socket.on('start game', function(data) {
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    var data = lobby.newGame();
+    var room = lobby.lobbyid;
+    if (data) {
+      io.in(room).emit('game start', data);
+    }
+  })
 
   socket.on('update', function(data) {
-    var player = players.get(socket.id);
-    if (player) {
-      player.mouseUpdate(data);
-    }
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    lobby.updateMousePos(socket.id, data);
+    // var player = players.get(socket.id);
+    // if (player) {
+    //   player.mouseUpdate(data);
+    // }
   })
 
   // socket.on('mousePress', function(data) {
@@ -67,24 +102,45 @@ function newConnection(socket) {
   // });
 
   socket.on('press', function(control) {
-    var player = players.get(socket.id);
-    player.controls[control] = true;
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    lobby.keyPressed(socket.id, control);
+    // var player = players.get(socket.id);
+    // player.controls[control] = true;
   })
 
   socket.on('release', function(control) {
-    var player = players.get(socket.id);
-    player.controls[control] = false;
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    lobby.keyReleased(socket.id, control);
+    // var player = players.get(socket.id);
+    // player.controls[control] = false;
   })
 
   socket.on('disconnect', function() {
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    lobby.removePlayer(socket.id);
+
+    socket.broadcast.to(lobby.lobbyid).emit('player left', socket.id);
+
     console.log("disconnect: " + socket.id);
-    var player = players.get(socket.id)
-    player.removeFromWorld(engine);
-    players.delete(socket.id);
+    // var player = players.get(socket.id)
+    // player.removeFromWorld(engine);
+    // players.delete(socket.id);
   })
+
+  function getLobbyFromSocket(socketid) {
+    // console.log(users);
+    var userData = users.get(socketid);
+    var lobbyid = userData.lobbyid;
+    for (var i = 0; i < lobbies.length; i++) {
+      if (lobbies[i].lobbyid === lobbyid) {
+        return lobbies[i];
+      }
+    }
+    return null;
+  }
 }
 
-setInterval(draw, 1000 / 60);
+setInterval(updateGame, 1000 / 60);
 
 //import {Matter} from './matter.min.js';
 
@@ -185,7 +241,35 @@ ground = new Platform(width / 2, height, width - 30, 20, engine);
 // player = new Player(100, 200, 1, engine);
 // players.set(player.label, player)
 
+function updateGame() {
+  for (var i = 0; i < lobbies.length; i++) {
+    var room = lobbies[i].lobbyid;
+    // var data = {
+    //   players: lobbies[i].players,
+    //   name: lobbies[i].name
+    // }
+    var data = lobbies[i].update();
+    if (data) {
+      if (data.inGame) {
+        io.in(room).emit('update', data.gameData);
+      } else {
+        io.in(room).emit('game over', data.gameData);
+      }
+    }
+  }
+}
+
 function draw() {
+
+  for (var i = 0; i < lobbies.length; i++) {
+    var room = lobbies[i].lobbyid;
+    var data = {
+      players: lobbies[i].players,
+      name: lobbies[i].name
+    }
+    io.in(room).emit('lobby update', data);
+  }
+
   while(actionQueue.length > 0) {
     controls = actionQueue[0].execute(controls);
     actionQueue.splice(0, 1);

@@ -11,6 +11,8 @@
 // var circles = [];
 var actionQueue = [];
 
+var inGame = false;
+
 var platforms = [];
 var dynamic = [];
 
@@ -44,25 +46,82 @@ var controls = {
 // ]
 
 var socket;
+var gameSize = {
+  x: 0,
+  y: 0,
+  w: 800,
+  h: 540,
+  z: 1
+}
 
 function setup() {
+
+  createCanvas(800, 540);
 
   socket = io.connect();//'http://192.168.1.211:3000');
   //console.log(io.connect());
 
   socket.on('welcome', function(data) {
     //console.log(data);
-    createCanvas(data.width, data.height);
+    //createCanvas(data.width, data.height);
+    // gameSize.w = data.width;
+    // gameSize.h = data.height;
+    // gameSize.x = 0;
+    // gameSize.y = 0;
+    gameSize.z = width / data.width
+    //gameSize.z = 0.75;
     platforms = data.platforms;
+
+    // console.log(gameSize);
   })
 
-  socket.on('click', function(data) {
-    //circles.push(new Circle(data.x, data.y, 20));
-  });
+  socket.on('joined lobby', function(data) {
+    console.log("Welcome to the lobby '" + data.name + "'");
+    console.log("You are " + data.myid);
+    console.log("Click to start a new game");
+    if (data.gameinfo) {
+      inGame = true;
+      console.log("Game ongoing: please wait for it to end");
+      gameSize.z = width / data.gameinfo.width
+      platforms = data.gameinfo.platforms;
+      // inGame = true;
+    }
+  })
+
+  socket.on('lobby update', function(data) {
+    console.log("Lobby name: " + data.name);
+    console.log(data.players);
+  })
+
+  socket.on('game start', function(data) {
+    gameSize.z = width / data.width
+    platforms = data.platforms;
+    inGame = true;
+    console.log("New game starting")
+  })
 
   socket.on('update', function(data) {
     dynamic = data;
     //console.log(data);
+  })
+
+  socket.on('game over', function(data) {
+    inGame = false;
+    console.log("Game over");
+    if (data.winner) {
+      console.log("Winner: " + data.winner);
+    } else {
+      console.log("Winner: NONE - it's a draw");
+    }
+    console.log("Click to start a new game");
+  })
+
+  socket.on('player joined', function(socketid) {
+    console.log(socketid + " joined the lobby");
+  })
+
+  socket.on('player left', function(socketid) {
+    console.log(socketid + " left the lobby");
   })
 
   //createCanvas(400, 400);
@@ -123,8 +182,19 @@ function setup() {
   // players.set(player.label, player)
 }
 
+function endPracticeGame() {
+  socket.emit('end practice');
+}
+
 function mousePressed() {
   // circles.push(new Circle(mouseX, mouseY, 20));
+
+  if (!inGame) {
+    var data = {
+
+    }
+    socket.emit('start game', data);
+  }
 
   var keys = Object.keys(controls);
   for (var i = 0; i < keys.length; i++) {
@@ -180,9 +250,25 @@ function keyReleased() {
   // socket.emit('endPress', control);
 }
 
-function draw() {
-  background(51);
+function mouseToGamePos() {
+  var x = (mouseX - gameSize.x) / gameSize.z;
+  var y = (mouseY - gameSize.y) / gameSize.z;
+  return {
+    x: x,
+    y: y
+  }
+}
 
+function draw() {
+  // if (inGame) {
+    background(51);
+  // } else {
+  //   background(100);
+  // }
+
+  push();
+  translate(gameSize.x, gameSize.y);
+  scale(gameSize.z);
   for (var i = 0; i < platforms.length; i++) {
     drawObject(platforms[i])
   }
@@ -193,10 +279,13 @@ function draw() {
     }
   }
 
-  var data = {
-    x: mouseX,
-    y: mouseY
-  };
+  pop();
+
+  // var data = {
+  //   x: mouseX,
+  //   y: mouseY
+  // };
+  var data = mouseToGamePos();
 
   socket.emit('update', data);
 }

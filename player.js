@@ -166,6 +166,31 @@ class Player {
     this.cooldown = 20;
   }
 
+  isOutOfBounds(b) {
+    var pos = this.body.position;
+    if (b.top) {
+      if (pos.y < b.top) {
+        return true;
+      }
+    }
+    if (b.bottom) {
+      if (pos.y > b.bottom) {
+        return true;
+      }
+    }
+    if (b.left) {
+      if (pos.x < b.left) {
+        return true;
+      }
+    }
+    if (b.right) {
+      if (pos.x > b.right) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   updateControls() {
     var body = this.body;
     if (this.controls.left) {
