@@ -67,6 +67,16 @@ function newConnection(socket) {
   }
   // socket.emit('welcome', data);
 
+  socket.on('force end', function(data) {
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    lobby.game = null;
+    var data = lobby.newGame();
+    var room = lobby.lobbyid;
+    if (data) {
+      io.in(room).emit('game start', data);
+    }
+  })
+
   socket.on('start game', function(data) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     var data = lobby.newGame();

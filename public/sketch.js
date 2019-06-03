@@ -182,8 +182,8 @@ function setup() {
   // players.set(player.label, player)
 }
 
-function endPracticeGame() {
-  socket.emit('end practice');
+function forceEndGame() {
+  socket.emit('force end');
 }
 
 function mousePressed() {
