@@ -78,23 +78,22 @@ class Lobby {
     }
   }
 
-  update() {
+  update(users) {
     if (this.game) {
       if (this.game.inGame) {
         return {
           inGame: true,
-          gameData: this.game.update()
+          gameData: this.game.update(users)
         }
       } else {
         var winData = {
           winner: this.game.winner
         }
-        // console.log(winData);
+        var winner = this.game.winner;
         this.game = null;
-        // console.log(winData);
         return {
           inGame: false,
-          gameData: winData
+          winner: winner
         }
       }
     }

@@ -5,6 +5,7 @@ class Player {
   constructor(x, y, id, colour, engine) {
     // this.physShape = new Circle(x, y, 15, engine);
     this.id = id;
+
     this.colour = colour;
 
     this.r = 15;
@@ -88,7 +89,7 @@ class Player {
       bullet = this.shoot();
     }
 
-    if (this.controls.equip && this.weapon == null && this.cooldown <= 0) {
+    if (this.weapon == null && this.cooldown <= 0) {
       var w = this.checkForWeapons(weapons);
       if (w) {
         this.equipWeapon(w, engine);
@@ -239,18 +240,20 @@ class Player {
     }
   }
 
-  toObject() {
+  toObject(users) {
     var pos = this.body.position;
     var weaponToObj = null;
     if (this.weapon) {
       weaponToObj = this.weapon.toObject();
     }
+    var name = users.get(this.id).name;
     return {
       type: 'player',
       x: pos.x,
       y: pos.y,
       r: this.r,
       angle: this.angle,
+      name: name,
       colour: this.colour,
       weapon: weaponToObj
     }

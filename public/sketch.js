@@ -1,20 +1,24 @@
-// module aliases
-// var Engine = Matter.Engine,
-//     Render = Matter.Render,
-//     World = Matter.World,
-//     Bodies = Matter.Bodies,
-//     Body = Matter.Body,
-//     Events = Matter.Events;
-//
-// var engine;
-//
-// var circles = [];
 var actionQueue = [];
 
+var scr;
+var gs;
+
 var inGame = false;
+var inLobby = false;
+
+var playerName = "";
 
 var platforms = [];
 var dynamic = [];
+
+var SERVER = "_server";
+
+var chat, chatTextBox;
+
+var textTarget = null;
+var textInput;
+var shiftPressed = false;
+//
 
 var controls = {
   up: 87, // W
@@ -26,24 +30,6 @@ var controls = {
   throw: "right", // RMB
   bouncy: 69 // E
 }
-// var ground;
-// //var player;
-//
-// var players = new Map();
-//
-// var controls = [
-//   {
-//     up: false,
-//     down: false,
-//     left: false,
-//     right: false
-//   }, {
-//     up: false,
-//     down: false,
-//     left: false,
-//     right: false
-//   }
-// ]
 
 var socket;
 var gameSize = {
@@ -58,32 +44,45 @@ function setup() {
 
   createCanvas(800, 540);
 
+  ss = new StartScreen();
+  gs = new GameScreen();
+
+  chat = new Chat(5);
+
+  chatTextBox = new TextBox(30, "Enter to send", function(txt) {
+    if (txt.length > 0) {
+      socket.emit('chat message', txt);
+    }
+  });
+
   socket = io.connect();//'http://192.168.1.211:3000');
   //console.log(io.connect());
 
-  socket.on('welcome', function(data) {
-    //console.log(data);
-    //createCanvas(data.width, data.height);
-    // gameSize.w = data.width;
-    // gameSize.h = data.height;
-    // gameSize.x = 0;
-    // gameSize.y = 0;
-    gameSize.z = width / data.width
-    //gameSize.z = 0.75;
-    platforms = data.platforms;
-
-    // console.log(gameSize);
+  socket.on('welcome', function() {
+    inLobby = false;
+    inGame = false;
+    // this.playerName = "";
+    // var data = {
+    //   lobbyid: "abc"
+    // }
+    // socket.emit('join lobby', data);
   })
 
   socket.on('joined lobby', function(data) {
+    inLobby = true;
     console.log("Welcome to the lobby '" + data.name + "'");
-    console.log("You are " + data.myid);
+    chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
+    // console.log("You are " + data.myid);
+    // chat.newMessage(SERVER, "You are " + data.myid);
     console.log("Click to start a new game");
+    chat.newMessage(SERVER, "Click to start a new game");
     if (data.gameinfo) {
       inGame = true;
       console.log("Game ongoing: please wait for it to end");
+      chat.newMessage(SERVER, "Game ongoing: please wait for it to end");
       gameSize.z = width / data.gameinfo.width
       platforms = data.gameinfo.platforms;
+      gs.newGame(data.gameinfo.platforms);
       // inGame = true;
     }
   })
@@ -97,89 +96,52 @@ function setup() {
     gameSize.z = width / data.width
     platforms = data.platforms;
     inGame = true;
+    gs.newGame(data.platforms);
     console.log("New game starting")
+    chat.newMessage(SERVER, "New game starting");
   })
 
   socket.on('update', function(data) {
     dynamic = data;
+    gs.update(dynamic);
     //console.log(data);
   })
 
   socket.on('game over', function(data) {
     inGame = false;
     console.log("Game over");
+    chat.newMessage(SERVER, "Game over");
     if (data.winner) {
       console.log("Winner: " + data.winner);
+      chat.newMessage(SERVER, "Winner: " + data.winner);
     } else {
       console.log("Winner: NONE - it's a draw");
+      chat.newMessage(SERVER, "Winner: NONE - it's a draw");
     }
     console.log("Click to start a new game");
+    chat.newMessage(SERVER, "Click to start a new game");
   })
 
-  socket.on('player joined', function(socketid) {
-    console.log(socketid + " joined the lobby");
+  socket.on('player joined', function(name) {
+    console.log(name + " joined the lobby");
+    chat.newMessage(SERVER, name + " joined the lobby");
   })
 
-  socket.on('player left', function(socketid) {
-    console.log(socketid + " left the lobby");
+  socket.on('player left', function(name) {
+    console.log(name + " left the lobby");
+    chat.newMessage(SERVER, name + " left the lobby");
+  })
+
+  socket.on('chat message', function(data) {
+    chat.newMessage(data.sender, data.message);
   })
 
   //createCanvas(400, 400);
   rectMode(CENTER);
+}
 
-  // create an engine
-  // engine = Engine.create();
-  // Events.on(engine, 'collisionStart', function(event) {
-  //       var pairs = event.pairs;
-  //       for (var i = 0; i < pairs.length; i++) {
-  //           var pair = pairs[i];
-  //           var playerA = players.get(pair.bodyA.label);
-  //           var playerB = players.get(pair.bodyB.label);
-  //           if (playerA && !playerB) {
-  //             playerA.canJump = true;
-  //           }
-  //           if (playerB && !playerA) {
-  //             playerB.canJump = true;
-  //           }
-  //       }
-  //   });
-  //
-  //   Events.on(engine, 'collisionActive', function(event) {
-  //         var pairs = event.pairs;
-  //         for (var i = 0; i < pairs.length; i++) {
-  //             var pair = pairs[i];
-  //             var playerA = players.get(pair.bodyA.label);
-  //             var playerB = players.get(pair.bodyB.label);
-  //             if (playerA && !playerB) {
-  //               playerA.canJump = true;
-  //             }
-  //             if (playerB && !playerA) {
-  //               playerB.canJump = true;
-  //             }
-  //         }
-  //     });
-  //
-  //   Events.on(engine, 'collisionEnd', function(event) {
-  //         var pairs = event.pairs;
-  //         for (var i = 0; i < pairs.length; i++) {
-  //             var pair = pairs[i];
-  //             var playerA = players.get(pair.bodyA.label);
-  //             var playerB = players.get(pair.bodyB.label);
-  //             if (playerA && !playerB) {
-  //               playerA.canJump = false;
-  //             }
-  //             if (playerB && !playerA) {
-  //               playerB.canJump = false;
-  //             }
-  //         }
-  //     });
-  //
-  // ground = new Platform(width / 2, height, width, 20);
-  //
-  // var player = new Player(100, 200, 0);
-  // players.set(player.label, player)
-  // player = new Player(100, 200, 1);
-  // players.set(player.label, player)
+function initTextInput() {
+  textInput = document.getElementById('textInput');
 }
 
 function forceEndGame() {
@@ -189,17 +151,19 @@ function forceEndGame() {
 function mousePressed() {
   // circles.push(new Circle(mouseX, mouseY, 20));
 
-  if (!inGame) {
-    var data = {
+  if (inLobby) {
+    if (!inGame) {
+      var data = {
 
+      }
+      socket.emit('start game', data);
     }
-    socket.emit('start game', data);
-  }
 
-  var keys = Object.keys(controls);
-  for (var i = 0; i < keys.length; i++) {
-    if (controls[keys[i]] == mouseButton) {
-      socket.emit('press', keys[i]);
+    var keys = Object.keys(controls);
+    for (var i = 0; i < keys.length; i++) {
+      if (controls[keys[i]] == mouseButton) {
+        socket.emit('press', keys[i]);
+      }
     }
   }
 
@@ -214,11 +178,13 @@ function mousePressed() {
 }
 
 function mouseReleased() {
-  var keys = Object.keys(controls);
-  for (var i = 0; i < keys.length; i++) {
-    if (controls[keys[i]] == mouseButton) {
-      socket.emit('release', keys[i]);
-      // console.log(keys[i]);
+  if (inLobby) {
+    var keys = Object.keys(controls);
+    for (var i = 0; i < keys.length; i++) {
+      if (controls[keys[i]] == mouseButton) {
+        socket.emit('release', keys[i]);
+        // console.log(keys[i]);
+      }
     }
   }
 
@@ -227,24 +193,60 @@ function mouseReleased() {
 }
 
 function keyPressed() {
-  var control;
-  var keys = Object.keys(controls);
-  for (var i = 0; i < keys.length; i++) {
-    if (keyCode == controls[keys[i]]) {
-      // control = keys[i]
-      socket.emit('press', keys[i]);
+  if (keyCode == 16) { // shift keys
+   shiftPressed = true;
+ } else if (keyCode == 13) { // enter key
+   if (textTarget) {
+     textTarget.pressEnter();
+     textTarget = null;
+   } else {
+     chatTextBox.target();
+     // chat.timeSinceMsg = 0;
+   }
+ } else if (keyCode == 8 && textTarget) {
+   textTarget.removeChar();
+ }
+  if (!textTarget) {
+    if (inLobby) {
+      var control;
+      var keys = Object.keys(controls);
+      for (var i = 0; i < keys.length; i++) {
+        if (keyCode == controls[keys[i]]) {
+          // control = keys[i]
+          socket.emit('press', keys[i]);
+        }
+      }
     }
+  } else {
+    if ((keyCode >= 65 && keyCode <= 90) || keyCode == 32 || keyCode == 191) { // checking if it's a valid character
+      var charToAdd;
+      if (keyCode == 191) { // forward slash, needed for chat commands
+        charToAdd = '/';
+      } else {
+        var code = keyCode;
+        if (!shiftPressed && keyCode >= 65 && keyCode <= 90) {
+          code += 32;
+        }
+        charToAdd = String.fromCharCode(code);
+      }
+      textTarget.addChar(charToAdd)
+    };
   }
   // socket.emit('startPress', control);
 }
 
 function keyReleased() {
-  var control;
-  var keys = Object.keys(controls);
-  for (var i = 0; i < keys.length; i++) {
-    if (keyCode == controls[keys[i]]) {
-      // control = keys[i]
-      socket.emit('release', keys[i]);
+  if (keyCode == 16) { // shift keys
+   shiftPressed = false;
+  }
+  if (inLobby) {
+    var control;
+    var keys = Object.keys(controls);
+    for (var i = 0; i < keys.length; i++) {
+      if (keyCode == controls[keys[i]]) {
+        // control = keys[i]
+        socket.emit('release', keys[i]);
+      }
     }
   }
   // socket.emit('endPress', control);
@@ -260,78 +262,26 @@ function mouseToGamePos() {
 }
 
 function draw() {
-  // if (inGame) {
-    background(51);
-  // } else {
-  //   background(100);
-  // }
+  background(51);
 
-  push();
-  translate(gameSize.x, gameSize.y);
-  scale(gameSize.z);
-  for (var i = 0; i < platforms.length; i++) {
-    drawObject(platforms[i])
+  if (inLobby) {
+    gs.show(gameSize.x, gameSize.y, gameSize.z);
+  } else {
+    ss.update();
+    ss.show();
   }
 
-  for (var i = 0; i < dynamic.length; i++) {
-    if (dynamic[i].hide !== true) {
-      drawObject(dynamic[i])
-    }
+  if (inGame) {
+    var data = mouseToGamePos();
+    socket.emit('update', data);
   }
 
-  pop();
-
-  // var data = {
-  //   x: mouseX,
-  //   y: mouseY
-  // };
   var data = mouseToGamePos();
 
-  socket.emit('update', data);
-}
+  chat.show(20, height - 50);
 
-function drawObject(obj) {
-  push()
-  translate(obj.x, obj.y);
-  switch (obj.type) {
-    case 'platform':
-      fill(200);
-      stroke(255);
-      strokeWeight(1);
-      rect(0, 0, obj.w, obj.h);
-      break;
-    case 'player':
-      rotate(obj.angle);
-      fill(obj.colour);
-      stroke(0);
-      strokeWeight(1);
-      ellipse(0, 0, obj.r * 2);
-      line(0, 0, obj.r, 0);
-      if (obj.weapon) {
-        var weaponObj = obj.weapon;
-        weaponObj.angle = 0;
-        weaponObj.x = obj.r;
-        weaponObj.y = 0;
-        weaponObj.hide = false;
-        drawObject(weaponObj);
-      }
-      break;
-    case 'weapon':
-      rotate(obj.angle);
-      fill(obj.colour);
-      stroke(0);
-      strokeWeight(1);
-      rect(0, 0, obj.w, obj.h)
-      break;
-    case 'bullet':
-      rotate(obj.angle)
-      fill(255, 255, 0);
-      noStroke();
-      rect(-obj.r * 1.5, 0, obj.r * 15, obj.r)
-      // fill(255);
-      // rect(0, 0, obj.r, obj.r);
-      break;
+  if (textTarget == chatTextBox) {
+    chatTextBox.show(20, height - 24, 200, 26);
   }
 
-  pop();
 }

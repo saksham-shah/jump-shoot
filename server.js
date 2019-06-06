@@ -6,7 +6,7 @@ var server = app.listen(portNo);
 
 app.use(express.static('public'));
 
-console.log("Node server.js running on port" + portNo);
+console.log("Node server.js running on port " + portNo);
 
 var socket = require('socket.io');
 
@@ -20,6 +20,7 @@ var Platform = require('./platform.js');
 var Bullet = require('./bullet.js');
 
 var Lobby = require('./lobby.js');
+var Command = require('./command.js');
 // var LobbyData = require('./lobbydata.js');
 
 //var Action = require('./action.js');
@@ -41,95 +42,168 @@ io.sockets.on('connection', newConnection);
 function newConnection(socket) {
   console.log("new connection: " + socket.id);
 
-  var data = myLobby.addPlayer(socket.id);
-  socket.emit('joined lobby', data);
-  socket.join(data.lobbyid);
+  socket.emit('welcome');
 
-  var userData = {
-    lobbyid: data.lobbyid
-  }
-  users.set(socket.id, userData);
-
-  socket.broadcast.to(myLobby.lobbyid).emit('player joined', socket.id);
+  // var data = myLobby.addPlayer(socket.id);
+  // socket.emit('joined lobby', data);
+  // socket.join(data.lobbyid);
+  //
+  // var userData = {
+  //   lobbyid: data.lobbyid
+  // }
+  // users.set(socket.id, userData);
+  //
+  // socket.broadcast.to(myLobby.lobbyid).emit('player joined', socket.id);
 
 //
-  var player = new Player(100, 200, socket.id, colours[colourCount], engine);
-  colourCount++;
-  if (colourCount >= colours.length) {
-    colourCount = 0;
-  }
-  players.set(player.id, player)
-
-  var data = {
-    width: width,
-    height: height,
-    platforms: [ground.toObject()]
-  }
+  // var player = new Player(100, 200, socket.id, colours[colourCount], engine);
+  // colourCount++;
+  // if (colourCount >= colours.length) {
+  //   colourCount = 0;
+  // }
+  // players.set(player.id, player)
+  //
+  // var data = {
+  //   width: width,
+  //   height: height,
+  //   platforms: [ground.toObject()]
+  // }
   // socket.emit('welcome', data);
+
+  socket.on('pick name', function(name) {
+    var userData = {
+      name: name
+    }
+    users.set(socket.id, userData);
+  })
+
+  socket.on('join lobby', function(lobbyid) {
+    var lobby = getLobbyFromId(lobbyid);
+    var sendData = lobby.addPlayer(socket.id);
+    socket.emit('joined lobby', sendData);
+    socket.join(lobbyid);
+    var userData = users.get(socket.id);
+    userData.lobbyid = lobbyid;
+    // var userData = {
+    //   name: data.name,
+    //   lobbyid: data.lobbyid
+    // }
+    users.set(socket.id, userData);
+
+    socket.broadcast.to(lobby.lobbyid).emit('player joined', users.get(socket.id).name);
+  })
 
   socket.on('force end', function(data) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
-    lobby.game = null;
-    var data = lobby.newGame();
-    var room = lobby.lobbyid;
-    if (data) {
-      io.in(room).emit('game start', data);
+    if (lobby) {
+      lobby.game = null;
+      var data = lobby.newGame();
+      var room = lobby.lobbyid;
+      if (data) {
+        io.in(room).emit('game start', data);
+      }
     }
   })
 
   socket.on('start game', function(data) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
-    var data = lobby.newGame();
-    var room = lobby.lobbyid;
-    if (data) {
-      io.in(room).emit('game start', data);
+    if (lobby) {
+      var data = lobby.newGame();
+      var room = lobby.lobbyid;
+      if (data) {
+        io.in(room).emit('game start', data);
+      }
     }
   })
 
   socket.on('update', function(data) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
-    lobby.updateMousePos(socket.id, data);
+      if (lobby) {
+        lobby.updateMousePos(socket.id, data);
+      }
     // var player = players.get(socket.id);
     // if (player) {
     //   player.mouseUpdate(data);
     // }
   })
 
-  // socket.on('mousePress', function(data) {
-  //   //socket.broadcast.emit('click', data);
-  //   //circles.push(new Circle(data.x, data.y, 20, engine));
-  //   //console.log(data);
-  //   var player = players.get(socket.id);
-  //   player.shoot();
-  // });
-  //
-  // socket.on('mouseRelease', function(data) {
-  //   //socket.broadcast.emit('click', data);
-  //   //circles.push(new Circle(data.x, data.y, 20, engine));
-  //   //console.log(data);
-  //   var player = players.get(socket.id);
-  //   player.shoot();
-  // });
-
   socket.on('press', function(control) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
-    lobby.keyPressed(socket.id, control);
+    if (lobby) {
+      lobby.keyPressed(socket.id, control);
+    }
     // var player = players.get(socket.id);
     // player.controls[control] = true;
   })
 
   socket.on('release', function(control) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
-    lobby.keyReleased(socket.id, control);
+    if (lobby) {
+      lobby.keyReleased(socket.id, control);
+    }
     // var player = players.get(socket.id);
     // player.controls[control] = false;
   })
 
+  socket.on('chat message', function(message) {
+    var command = Command.getCommand(message);
+    if (command) {
+      switch (command.operator) {
+        case "join":
+          var lobby = getLobbyFromSocket(socket.id);
+          if (lobby) { // this means the player is already in a lobby
+            var data = {
+              sender: "_server",
+              message: "You are already in a lobby"
+            }
+            socket.emit('chat message', data);
+          } else { // if they aren't in a lobby already
+            var lobby = getLobbyFromName(command.operand);
+            if (lobby) { // if the lobby exists
+              var sendData = lobby.addPlayer(socket.id);
+              socket.emit('joined lobby', sendData);
+              socket.join(lobby.lobbyid); // add player to socket room
+              var userData = users.get(socket.id);
+              userData.lobbyid = lobby.lobbyid;
+              users.set(socket.id, userData); // save lobbyid in user data
+
+              socket.broadcast.to(lobby.lobbyid).emit('player joined', users.get(socket.id).name);
+            } else { // lobby doesn't exist
+              var data = {
+                sender: "_server",
+                message: "Lobby does not exist"
+              }
+              socket.emit('chat message', data);
+              // NOTE: in the future I'll make this command create a lobby if it doesn't already exist
+            }
+          }
+          break;
+        default:
+        var data = {
+          sender: "_server",
+          message: "The command '" + command.operator + "' hasn't been implemented yet"
+        }
+        socket.emit('chat message', data);
+      }
+    } else { // only display a chat message if it isn't a command
+      var lobby = getLobbyFromSocket(socket.id);
+      if (lobby) {
+        var data = {
+          sender: users.get(socket.id).name,
+          message: message
+        }
+        io.in(lobby.lobbyid).emit('chat message', data);
+      }
+    }
+  })
+
   socket.on('disconnect', function() {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
-    lobby.removePlayer(socket.id);
+    if (lobby) {
+      lobby.removePlayer(socket.id);
 
-    socket.broadcast.to(lobby.lobbyid).emit('player left', socket.id);
+      socket.broadcast.to(lobby.lobbyid).emit('player left', users.get(socket.id).name);
+    }
 
     console.log("disconnect: " + socket.id);
     // var player = players.get(socket.id)
@@ -140,9 +214,26 @@ function newConnection(socket) {
   function getLobbyFromSocket(socketid) {
     // console.log(users);
     var userData = users.get(socketid);
+    if (!userData) {
+      console.log("Unlogged user: " + socketid);
+      return null;
+    }
     var lobbyid = userData.lobbyid;
+    return getLobbyFromId(lobbyid);
+  }
+
+  function getLobbyFromId(lobbyid) {
     for (var i = 0; i < lobbies.length; i++) {
       if (lobbies[i].lobbyid === lobbyid) {
+        return lobbies[i];
+      }
+    }
+    return null;
+  }
+
+  function getLobbyFromName(lobbyname) {
+    for (var i = 0; i < lobbies.length; i++) {
+      if (lobbies[i].name === lobbyname) {
         return lobbies[i];
       }
     }
@@ -258,12 +349,20 @@ function updateGame() {
     //   players: lobbies[i].players,
     //   name: lobbies[i].name
     // }
-    var data = lobbies[i].update();
+    var data = lobbies[i].update(users);
     if (data) {
       if (data.inGame) {
         io.in(room).emit('update', data.gameData);
       } else {
-        io.in(room).emit('game over', data.gameData);
+        // console.log(data.winData.winner);
+        // console.log(users.get(data.winData.winner));
+        var sendData = {
+
+        };
+        if (data.winner) {
+          sendData.winner = users.get(data.winner).name;
+        }
+        io.in(room).emit('game over', sendData);
       }
     }
   }

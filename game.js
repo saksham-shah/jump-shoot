@@ -175,7 +175,7 @@ class Game {
     this.width = 800;
     this.height = 540;
 
-    var ground = new Platform(this.width / 2, this.height, this.width - 30, 20, this.engine);
+    var ground = new Platform(this.width / 2, this.height - 20, this.width - 30, 20, this.engine);
     this.platforms.push(ground);
 
     this.deathBounds = {
@@ -228,20 +228,20 @@ class Game {
     if (player) {
       player.removeFromWorld(this.engine);
       this.players.delete(playerid);
-    }
-    if (this.players.size == 1) {
-      this.inGame = false;
-      for (var playerid of this.players.keys()) {
-        this.winner = playerid;
+      if (this.players.size == 1) {
+        this.inGame = false;
+        for (var playerid of this.players.keys()) {
+          this.winner = playerid;
+        }
+        // this.winner = this.players.keys()[0];
+        // console.log(this.players.keys())
+      } else if (this.players.size == 0) {
+        this.inGame = false;
       }
-      // this.winner = this.players.keys()[0];
-      // console.log(this.players.keys())
-    } else if (this.players.size == 0) {
-      this.inGame = false;
     }
   }
 
-  update() {
+  update(users) {
     for (var [playerid, player] of this.players.entries()) {
       var bullet = player.update(this.weapons, this.engine);
       if (bullet) {
@@ -288,7 +288,7 @@ class Game {
     }
 
     for (var player of this.players.values()) {
-      data.push(player.toObject());
+      data.push(player.toObject(users));
     }
 
     for (var i = 0; i < this.weapons.length; i++) {
