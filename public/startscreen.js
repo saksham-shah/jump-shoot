@@ -1,53 +1,53 @@
+// Displayed when the game is first opened, handles player name selection
 class StartScreen {
   constructor() {
-    this.playerName = "";
+    // this.playerName = "";
+    // Text box to enter name
     this.nameTextBox = new TextBox(12, "Enter name", function(txt) {
-      if (txt.length > 0) {
-        playerName = txt;
-        var data = {
-          name: playerName,
-          lobbyid: "abc"
-        }
-        socket.emit('pick name', playerName);
-        // socket.emit('join lobby', "abc");
+      // Send the name to the server
+      playerName = txt;
+      var data = {
+        name: playerName,
       }
-    }) // place to type in the player name
+      socket.emit('pick name', playerName);
+    });
   }
 
   update() {
+    // Make sure the name text box is selected until a name is picked
     if (this.nameTextBox && textTarget != this.nameTextBox) {
-      textTarget = this.nameTextBox; // can't do anything else until you type the name
+      textTarget = this.nameTextBox;
     }
+    // Once a name is picked, remove the name text box as it isn't needed
     if (playerName != "") {
       if (textTarget == this.nameTextBox) {
         textTarget = null;
       }
-      this.nameTextBox = null; // no longer needed as name has been decided
+      this.nameTextBox = null;
     }
   }
 
   show() {
     push();
+    // Draw the title text
     fill(255);
     noStroke();
     textAlign(CENTER);
     textSize(50);
     text("Jump & Shoot", width * 0.5, 100);
-    // pop();
 
     if (this.nameTextBox) {
+      // Draw the name text box in the centre of the screen
       var w = 300;
       var h = 50;
       var x = (width - w) * 0.5;
       var y = (height + h) * 0.5;
-      this.nameTextBox.show(x, y, w, h, true);
+      this.nameTextBox.show(x, y, w, h, true); // Box should be drawn, so the final arg is true
     } else {
-      // fill(255);
-      // noStroke();
+      // Guide message
       textSize(20);
       text("Press enter to type in the chat\nType '/join lobby' to begin", width * 0.5, height * 0.5);
     }
-
     pop();
   }
 

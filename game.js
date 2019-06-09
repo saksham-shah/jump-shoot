@@ -5,45 +5,16 @@ var BasicGun = require('./basic-gun.js');
 var Platform = require('./platform.js');
 var Bullet = require('./bullet.js');
 
-// var LobbyData = require('./lobbydata.js');
-// var serverStuff = require('./server.js');
-
+// Played within a lobby, runs the actual game and physics engine
 class Game {
   constructor(users) {
     this.users = users;
     this.winner = null;
     this.inGame = false;
-    // this.weapons = [];
-    // this.bullets = [];
-    // this.platforms = [];
-    //
-    // this.weaponCounter = 0;
-    //
-    // this.players = new Map();
-    //
-    // this.colours = [
-    //   [255, 0, 0], // red
-    //   [0, 0, 255], // blue
-    //   [0, 255, 0], // green
-    //   [255, 255, 0] // yellow
-    // ];
-    // this.colourCount = 0;
-    //
-    // this.engine = Matter.Engine.create();
-    //
-    // this.width = 0;
-    // this.height = 0;
-
   }
 
+  // Initialise the physics engine and other variables needed in the game
   initGame() {
-    // var Engine = Matter.Engine,
-    //     Render = Matter.Render,
-    //     World = Matter.World,
-    //     Bodies = Matter.Bodies,
-    //     Body = Matter.Body,
-    //     Events = Matter.Events;
-
     this.weapons = [];
     this.bullets = [];
     this.platforms = [];
@@ -60,15 +31,17 @@ class Game {
     ];
     this.colourCount = 0;
 
-    // create an engine
+    // Create an engine
     this.engine = Matter.Engine.create();
 
+    // Check if a player is colliding
     function collisionGoing(event) {
       var pairs = event.pairs;
       for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i];
         var playerA = this.players.get(pair.bodyA.label);
         var playerB = this.players.get(pair.bodyB.label);
+        // If a player is colliding with a non-player, they can jump
         if (playerA && !playerB) {
           playerA.canJump = true;
         }
@@ -78,12 +51,14 @@ class Game {
       }
     }
 
+    // Check if a player has stopped colliding
     function collisionStop(event) {
       var pairs = event.pairs;
       for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i];
         var playerA = this.players.get(pair.bodyA.label);
         var playerB = this.players.get(pair.bodyB.label);
+        // Once a player stops colliding, they can't jump
         if (playerA && !playerB) {
           playerA.canJump = false;
         }
@@ -93,76 +68,19 @@ class Game {
       }
     }
 
+    // Allow the functions above to access the list of players in the game
     var boundCollisionGoing = collisionGoing.bind({"players": this.players});
     var boundCollisionStop = collisionStop.bind({"players": this.players});
 
+    // Attach the functions to the matter.js engine
     Matter.Events.on(this.engine, 'collisionStart', boundCollisionGoing);
     Matter.Events.on(this.engine, 'collisionActive', boundCollisionGoing);
     Matter.Events.on(this.engine, 'collisionEnd', boundCollisionStop);
 
-    // Matter.Events.on(this.engine, 'collisionStart', function(event) {
-    //   var pairs = event.pairs;
-    //   for (var i = 0; i < pairs.length; i++) {
-    //     var pair = pairs[i];
-    //     // console.log(this);
-    //     // if (playerA != playerB) {
-    //     //   if (playerA == "player") {
-    //     //     playerA.canJump = true;
-    //     //   }
-    //     //   if (playerB == "player") {
-    //     //     playerB.canJump = true;
-    //     //   }
-    //     // }
-    //     var playerA = LobbyData.findPlayerInGame(pair.bodyA.label, serverStuff.users, serverStuff.lobbies);
-    //     var playerB = LobbyData.findPlayerInGame(pair.bodyB.label, serverStuff.users, serverStuff.lobbies);
-    //     // var playerA = this.players.get(pair.bodyA.label);
-    //     // var playerB = this.players.get(pair.bodyB.label);
-    //     if (playerA && !playerB) {
-    //       playerA.canJump = true;
-    //     }
-    //     if (playerB && !playerA) {
-    //       playerB.canJump = true;
-    //     }
-    //   }
-    // });
-    //
-    // Matter.Events.on(this.engine, 'collisionActive', function(event) {
-    //   var pairs = event.pairs;
-    //   for (var i = 0; i < pairs.length; i++) {
-    //     var pair = pairs[i];
-    //     var playerA = LobbyData.findPlayerInGame(pair.bodyA.label, serverStuff.users, serverStuff.lobbies);
-    //     var playerB = LobbyData.findPlayerInGame(pair.bodyB.label, serverStuff.users, serverStuff.lobbies);
-    //     // var playerA = this.players.get(pair.bodyA.label);
-    //     // var playerB = this.players.get(pair.bodyB.label);
-    //     var playerA = LobbyData
-    //     if (playerA && !playerB) {
-    //       playerA.canJump = true;
-    //     }
-    //     if (playerB && !playerA) {
-    //       playerB.canJump = true;
-    //     }
-    //   }
-    // });
-    //
-    // Matter.Events.on(this.engine, 'collisionEnd', function(event) {
-    //   var pairs = event.pairs;
-    //   for (var i = 0; i < pairs.length; i++) {
-    //     var pair = pairs[i];
-    //     var playerA = LobbyData.findPlayerInGame(pair.bodyA.label, serverStuff.users, serverStuff.lobbies);
-    //     var playerB = LobbyData.findPlayerInGame(pair.bodyB.label, serverStuff.users, serverStuff.lobbies);
-    //     // var playerA = this.players.get(pair.bodyA.label);
-    //     // var playerB = this.players.get(pair.bodyB.label);
-    //     if (playerA && !playerB) {
-    //       playerA.canJump = false;
-    //     }
-    //     if (playerB && !playerA) {
-    //       playerB.canJump = false;
-    //     }
-    //   }
-    // });
-
+    // Add each player to the game
     for (var i = 0; i < this.users.length; i++) {
       var player = new Player(100, 200, this.users[i], this.colours[this.colourCount], this.engine);
+      // Colours cycle around
       this.colourCount++;
       if (this.colourCount >= this.colours.length) {
         this.colourCount = 0;
@@ -171,6 +89,7 @@ class Game {
     }
   }
 
+  // Create the game map
   createMap() {
     this.width = 800;
     this.height = 540;
@@ -178,6 +97,7 @@ class Game {
     var ground = new Platform(this.width / 2, this.height - 20, this.width - 30, 20, this.engine);
     this.platforms.push(ground);
 
+    // Game boundary
     this.deathBounds = {
       bottom: this.height + 50
     }
@@ -188,6 +108,7 @@ class Game {
     this.createMap();
     this.inGame = true;
 
+    // Send initial static objects to the players
     this.statics = [];
     for (var i = 0; i < this.platforms.length; i++) {
       this.statics.push(this.platforms[i].toObject());
@@ -202,6 +123,8 @@ class Game {
     return data;
   }
 
+  // The following three functions process user inputs (key and mouse presses, mouse movements)
+  // Only process events if the player is in the game
   updateMousePos(playerid, mousePos) {
     var player = this.players.get(playerid);
     if (player) {
@@ -226,17 +149,18 @@ class Game {
   disconnectPlayer(playerid) {
     var player = this.players.get(playerid);
     if (player) {
+      // Remove player from the physics engine
       player.removeFromWorld(this.engine);
       this.players.delete(playerid);
+      // Declare a winner if only one is remaining
       if (this.players.size == 1) {
         this.inGame = false;
         for (var playerid of this.players.keys()) {
           this.winner = playerid;
         }
-        // this.winner = this.players.keys()[0];
-        // console.log(this.players.keys())
       } else if (this.players.size == 0) {
         this.inGame = false;
+        // No winner chosen if no players left - it's a draw
       }
     }
   }
@@ -245,16 +169,19 @@ class Game {
     for (var [playerid, player] of this.players.entries()) {
       var bullet = player.update(this.weapons, this.engine);
       if (bullet) {
+        // Add new bullets shot by the player
         this.bullets.push(bullet);
       }
 
       if (player.isOutOfBounds(this.deathBounds)) {
+        // Remove players if they exit the game boundaries
         this.disconnectPlayer(playerid);
       }
     }
 
     for (var i = 0; i < this.weapons.length; i++) {
       if (this.weapons[i].isOffScreen(this.height)) {
+        // Remove weapons if they go off screen
         this.weapons[i].removeFromWorld(this.engine);
         this.weapons.splice(i, 1);
         i--;
@@ -264,11 +191,13 @@ class Game {
     for (var i = 0; i < this.bullets.length; i++) {
       var collide = this.bullets[i].update(this.engine.world.bodies);
       if (this.bullets[i].isOffScreen(this.width, this.height) || collide) {
+        // Remove bullets if they go off screen
         this.bullets.splice(i, 1);
         i--;
       }
     }
 
+    // Add weapons into game periodically if there aren't many on screen
     if (this.weaponCounter < 0) {
       if (this.weapons.length < this.players.size * 2) {
         this.weaponCounter = 300;
@@ -279,8 +208,10 @@ class Game {
       this.weaponCounter--;
     }
 
+    // Run the physics engine
     Matter.Engine.update(this.engine);
 
+    // Send any data clients need to accurately animate the game
     var data = [];
 
     for (var i = 0; i < this.bullets.length; i++) {
@@ -299,6 +230,5 @@ class Game {
   }
 
 }
-
 
 module.exports = Game;

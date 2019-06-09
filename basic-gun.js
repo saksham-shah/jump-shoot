@@ -1,6 +1,7 @@
 var Weapon = require('./weapon.js');
 var Bullet = require('./bullet.js');
 
+// Basic test gun
 class BasicGun extends Weapon {
   constructor(x, y, engine) {
     super(x, y, 20, 10, engine);
@@ -8,6 +9,7 @@ class BasicGun extends Weapon {
   }
 
   shoot(x, y, angle, playerID) {
+    // Only fire if gun is cooled down
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
       var bullet = new Bullet(x, y, 3, 25, angle, 10, playerID);

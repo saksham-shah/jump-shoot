@@ -2,6 +2,7 @@ var socket = require('socket.io');
 
 var Game = require('./game.js');
 
+// Game room where players can play the game
 class Lobby {
   constructor(name, lobbyid, maxPlayers) {
     this.name = name;
@@ -10,24 +11,15 @@ class Lobby {
     this.players = [];
   }
 
-  // startGame() {
-  //   this.initGame();
-  //   this.createMap();
-  // }
-
   addPlayer(socketid) {
-    // var player = new Player(100, 200, socketID, this.colours[this.colourCount], this.engine);
-    // this.colourCount++;
-    // if (this.colourCount >= this.colours.length) {
-    //   this.colourCount = 0;
-    // }
-    // this.players.set(player.id, player);
     this.players.push(socketid);
+    // Send data to the client
     var data = {
       name: this.name,
       lobbyid: this.lobbyid,
       myid: socketid
     }
+    // Send game data so newly connected players can watch the ongoing game
     if (this.game) {
       data.gameinfo = {
         width: this.game.width,
@@ -36,14 +28,13 @@ class Lobby {
       }
     }
     return data;
-    //console.log(socket.broadcast);
-    //socket.broadcast.to(socketid).emit('joined lobby', data);
   }
 
   removePlayer(socketid) {
     for (var i = 0; i < this.players.length; i++) {
       if (this.players[i] === socketid) {
         if (this.game) {
+          // Remove the player from an ongoing game
           this.game.disconnectPlayer(socketid);
         }
         this.players.splice(i, 1);
@@ -60,6 +51,8 @@ class Lobby {
     }
   }
 
+  // The following three functions process user inputs (key and mouse presses, mouse movements)
+  // Only process events if a game is ongoing
   updateMousePos(playerid, mousePos) {
     if (this.game) {
       this.game.updateMousePos(playerid, mousePos);
@@ -78,6 +71,7 @@ class Lobby {
     }
   }
 
+  // Update the game state
   update(users) {
     if (this.game) {
       if (this.game.inGame) {
@@ -86,10 +80,12 @@ class Lobby {
           gameData: this.game.update(users)
         }
       } else {
+        // Send winner data to the players
         var winData = {
           winner: this.game.winner
         }
         var winner = this.game.winner;
+        // End the game
         this.game = null;
         return {
           inGame: false,

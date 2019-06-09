@@ -1,130 +1,101 @@
 var express = require('express');
 var app = express();
+// Default port no. is 3000
 var portNo = process.env.PORT || 3000;
 
 var server = app.listen(portNo);
 
+// Send files in the public folder to the client
 app.use(express.static('public'));
 
 console.log("Node server.js running on port " + portNo);
 
 var socket = require('socket.io');
 
+// Use websockets to communicate with clients
 var io = socket(server);
-
-var Matter = require('matter-js');
-
-var Player = require('./player.js');
-var BasicGun = require('./basic-gun.js');
-var Platform = require('./platform.js');
-var Bullet = require('./bullet.js');
 
 var Lobby = require('./lobby.js');
 var Command = require('./command.js');
-// var LobbyData = require('./lobbydata.js');
-
-//var Action = require('./action.js');
-
-var width = 800;
-var height = 540;
 
 var users = new Map();
 var lobbies = [];
-var myLobby = new Lobby("lobby", "abc");
-lobbies.push(myLobby);
+lobbies.push(new Lobby("lobby", "abc"));
+lobbies.push(new Lobby("secret", "def"));
 
-// var lobbyData = new LobbyData(users, lobbies);
-
+// Client connects
 io.sockets.on('connection', newConnection);
-
-// console.log(io);
 
 function newConnection(socket) {
   console.log("new connection: " + socket.id);
 
+  // Send confirmation message
   socket.emit('welcome');
+  var userData = {
+    name: null,
+    lobbyid: null
+  };
+  users.set(socket.id, userData);
 
-  // var data = myLobby.addPlayer(socket.id);
-  // socket.emit('joined lobby', data);
-  // socket.join(data.lobbyid);
-  //
-  // var userData = {
-  //   lobbyid: data.lobbyid
-  // }
-  // users.set(socket.id, userData);
-  //
-  // socket.broadcast.to(myLobby.lobbyid).emit('player joined', socket.id);
-
-//
-  // var player = new Player(100, 200, socket.id, colours[colourCount], engine);
-  // colourCount++;
-  // if (colourCount >= colours.length) {
-  //   colourCount = 0;
-  // }
-  // players.set(player.id, player)
-  //
-  // var data = {
-  //   width: width,
-  //   height: height,
-  //   platforms: [ground.toObject()]
-  // }
-  // socket.emit('welcome', data);
-
+  // Client updates their name
   socket.on('pick name', function(name) {
-    var userData = {
-      name: name
-    }
-    users.set(socket.id, userData);
-  })
-
-  socket.on('join lobby', function(lobbyid) {
-    var lobby = getLobbyFromId(lobbyid);
-    var sendData = lobby.addPlayer(socket.id);
-    socket.emit('joined lobby', sendData);
-    socket.join(lobbyid);
+    // Update user data to also save lobbyid
     var userData = users.get(socket.id);
-    userData.lobbyid = lobbyid;
-    // var userData = {
-    //   name: data.name,
-    //   lobbyid: data.lobbyid
-    // }
+    userData.name = name;
     users.set(socket.id, userData);
-
-    socket.broadcast.to(lobby.lobbyid).emit('player joined', users.get(socket.id).name);
+    // var userData = {
+    //   name: name
+    // }
+    // users.set(socket.id, userData);
   })
 
+  // Client joins a lobby - UNUSED
+  // socket.on('join lobby', function(lobbyid) {
+  //   var lobby = getLobbyFromId(lobbyid);
+  //   var sendData = lobby.addPlayer(socket.id);
+  //   socket.emit('joined lobby', sendData);
+  //   socket.join(lobbyid);
+  //   var userData = users.get(socket.id);
+  //   userData.lobbyid = lobbyid;
+  //   users.set(socket.id, userData);
+  //
+  //   socket.broadcast.to(lobby.lobbyid).emit('player joined', users.get(socket.id).name);
+  // })
+
+  // Client wants to force end a game - for debugging
   socket.on('force end', function(data) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
       lobby.game = null;
       var data = lobby.newGame();
       var room = lobby.lobbyid;
+      // Restart a new game
       if (data) {
         io.in(room).emit('game start', data);
       }
     }
   })
 
+  // New game starts
   socket.on('start game', function(data) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
       var data = lobby.newGame();
       var room = lobby.lobbyid;
+      // Send game data to everyone in the lobby
       if (data) {
         io.in(room).emit('game start', data);
       }
     }
   })
 
+  // The following three functions process user inputs (key and mouse presses, mouse movements)
+  // Only process events if the player is in a lobby
   socket.on('update', function(data) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
       if (lobby) {
         lobby.updateMousePos(socket.id, data);
       }
-    // var player = players.get(socket.id);
-    // if (player) {
-    //   player.mouseUpdate(data);
-    // }
   })
 
   socket.on('press', function(control) {
@@ -132,8 +103,6 @@ function newConnection(socket) {
     if (lobby) {
       lobby.keyPressed(socket.id, control);
     }
-    // var player = players.get(socket.id);
-    // player.controls[control] = true;
   })
 
   socket.on('release', function(control) {
@@ -141,17 +110,18 @@ function newConnection(socket) {
     if (lobby) {
       lobby.keyReleased(socket.id, control);
     }
-    // var player = players.get(socket.id);
-    // player.controls[control] = false;
   })
 
+  // Probably the most important event - player types in a chat message
+  // Also processes any chat commands
   socket.on('chat message', function(message) {
     var command = Command.getCommand(message);
     if (command) {
       switch (command.operator) {
         case "join":
           var lobby = getLobbyFromSocket(socket.id);
-          if (lobby) { // this means the player is already in a lobby
+          // If player is already in a lobby, send an error message
+          if (lobby) {
             var data = {
               sender: "_server",
               message: "You are already in a lobby"
@@ -159,16 +129,21 @@ function newConnection(socket) {
             socket.emit('chat message', data);
           } else { // if they aren't in a lobby already
             var lobby = getLobbyFromName(command.operand);
-            if (lobby) { // if the lobby exists
+            if (lobby) {
+              // If the lobby exists, add the player to it
               var sendData = lobby.addPlayer(socket.id);
+              // Send player any data about the lobby
               socket.emit('joined lobby', sendData);
-              socket.join(lobby.lobbyid); // add player to socket room
+              // Add player to socket room
+              socket.join(lobby.lobbyid);
+              // Update user data to also save lobbyid
               var userData = users.get(socket.id);
               userData.lobbyid = lobby.lobbyid;
-              users.set(socket.id, userData); // save lobbyid in user data
-
+              users.set(socket.id, userData);
+              // Notify players in the lobby
               socket.broadcast.to(lobby.lobbyid).emit('player joined', users.get(socket.id).name);
-            } else { // lobby doesn't exist
+            } else {
+              // If the lobby requested to join doesn't exist, send an error message
               var data = {
                 sender: "_server",
                 message: "Lobby does not exist"
@@ -179,13 +154,15 @@ function newConnection(socket) {
           }
           break;
         default:
+        // Default error message if a command will be implemented later
         var data = {
           sender: "_server",
           message: "The command '" + command.operator + "' hasn't been implemented yet"
         }
         socket.emit('chat message', data);
       }
-    } else { // only display a chat message if it isn't a command
+    } else {
+      // If the message isn't a command, send it to all players in the lobby
       var lobby = getLobbyFromSocket(socket.id);
       if (lobby) {
         var data = {
@@ -197,22 +174,19 @@ function newConnection(socket) {
     }
   })
 
+  // Client disconnects
   socket.on('disconnect', function() {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
+      // Remove from lobby and notify players in the lobby
       lobby.removePlayer(socket.id);
-
       socket.broadcast.to(lobby.lobbyid).emit('player left', users.get(socket.id).name);
     }
-
     console.log("disconnect: " + socket.id);
-    // var player = players.get(socket.id)
-    // player.removeFromWorld(engine);
-    // players.delete(socket.id);
   })
 
+  // Returns the lobby that a particular player is in, or null if the player is not in a lobby
   function getLobbyFromSocket(socketid) {
-    // console.log(users);
     var userData = users.get(socketid);
     if (!userData) {
       console.log("Unlogged user: " + socketid);
@@ -222,6 +196,7 @@ function newConnection(socket) {
     return getLobbyFromId(lobbyid);
   }
 
+  // Searches for a lobby by id
   function getLobbyFromId(lobbyid) {
     for (var i = 0; i < lobbies.length; i++) {
       if (lobbies[i].lobbyid === lobbyid) {
@@ -231,6 +206,7 @@ function newConnection(socket) {
     return null;
   }
 
+  // Searches for a lobby by name
   function getLobbyFromName(lobbyname) {
     for (var i = 0; i < lobbies.length; i++) {
       if (lobbies[i].name === lobbyname) {
@@ -241,124 +217,20 @@ function newConnection(socket) {
   }
 }
 
+// Update the game and send data to clients at 60 FPS
 setInterval(updateGame, 1000 / 60);
-
-//import {Matter} from './matter.min.js';
-
-
-// module aliases
-var Engine = Matter.Engine,
-    Render = Matter.Render,
-    World = Matter.World,
-    Bodies = Matter.Bodies,
-    Body = Matter.Body,
-    Events = Matter.Events;
-
-var engine;
-
-var weapons = [];
-var bullets = [];
-var actionQueue = [];
-var ground;
-
-var weaponCounter = 0;
-//var player;
-
-var players = new Map();
-
-// var controls = [
-//   {
-//     up: false,
-//     down: false,
-//     left: false,
-//     right: false
-//   }, {
-//     up: false,
-//     down: false,
-//     left: false,
-//     right: false
-//   }
-// ]
-
-var colours = [
-  [255, 0, 0], // red
-  [0, 0, 255], // blue
-  [0, 255, 0], // green
-  [255, 255, 0] // yellow
-];
-var colourCount = 0;
-
-// create an engine
-engine = Engine.create();
-Events.on(engine, 'collisionStart', function(event) {
-      var pairs = event.pairs;
-      for (var i = 0; i < pairs.length; i++) {
-          var pair = pairs[i];
-          var playerA = players.get(pair.bodyA.label);
-          var playerB = players.get(pair.bodyB.label);
-          if (playerA && !playerB) {
-            playerA.canJump = true;
-          }
-          if (playerB && !playerA) {
-            playerB.canJump = true;
-          }
-      }
-  });
-
-  Events.on(engine, 'collisionActive', function(event) {
-        var pairs = event.pairs;
-        for (var i = 0; i < pairs.length; i++) {
-            var pair = pairs[i];
-            var playerA = players.get(pair.bodyA.label);
-            var playerB = players.get(pair.bodyB.label);
-            if (playerA && !playerB) {
-              playerA.canJump = true;
-            }
-            if (playerB && !playerA) {
-              playerB.canJump = true;
-            }
-        }
-    });
-
-  Events.on(engine, 'collisionEnd', function(event) {
-        var pairs = event.pairs;
-        for (var i = 0; i < pairs.length; i++) {
-            var pair = pairs[i];
-            var playerA = players.get(pair.bodyA.label);
-            var playerB = players.get(pair.bodyB.label);
-            if (playerA && !playerB) {
-              playerA.canJump = false;
-            }
-            if (playerB && !playerA) {
-              playerB.canJump = false;
-            }
-        }
-    });
-
-ground = new Platform(width / 2, height, width - 30, 20, engine);
-
-// var player = new Player(100, 200, 0, engine);
-// players.set(player.label, player)
-// player = new Player(100, 200, 1, engine);
-// players.set(player.label, player)
 
 function updateGame() {
   for (var i = 0; i < lobbies.length; i++) {
     var room = lobbies[i].lobbyid;
-    // var data = {
-    //   players: lobbies[i].players,
-    //   name: lobbies[i].name
-    // }
     var data = lobbies[i].update(users);
     if (data) {
       if (data.inGame) {
+        // Send game data to players in the lobby
         io.in(room).emit('update', data.gameData);
       } else {
-        // console.log(data.winData.winner);
-        // console.log(users.get(data.winData.winner));
-        var sendData = {
-
-        };
+        // Send the winner to the players (if there is one)
+        var sendData = {};
         if (data.winner) {
           sendData.winner = users.get(data.winner).name;
         }
@@ -366,74 +238,4 @@ function updateGame() {
       }
     }
   }
-}
-
-function draw() {
-
-  for (var i = 0; i < lobbies.length; i++) {
-    var room = lobbies[i].lobbyid;
-    var data = {
-      players: lobbies[i].players,
-      name: lobbies[i].name
-    }
-    io.in(room).emit('lobby update', data);
-  }
-
-  while(actionQueue.length > 0) {
-    controls = actionQueue[0].execute(controls);
-    actionQueue.splice(0, 1);
-  }
-
-  for (var player of players.values()) {
-    var bullet = player.update(weapons, engine);
-    if (bullet) {
-      bullets.push(bullet);
-    }
-  }
-
-  for (var i = 0; i < weapons.length; i++) {
-    if (weapons[i].isOffScreen(height)) {
-      weapons[i].removeFromWorld(engine);
-      weapons.splice(i, 1);
-      i--;
-    }
-  }
-
-  for (var i = 0; i < bullets.length; i++) {
-    var collide = bullets[i].update(engine.world.bodies);
-    if (bullets[i].isOffScreen(width, height) || collide) {
-      bullets.splice(i, 1);
-      i--;
-    }
-  }
-
-  // console.log(engine.world.bodies[0].vertices);
-
-  if (weaponCounter < 0) {
-    if (weapons.length < players.size * 2) {
-      weaponCounter = 300;
-      var weapon = new BasicGun(Math.random() * (width - 100) + 50, 0, engine);
-      weapons.push(weapon);
-    }
-  } else {
-    weaponCounter--;
-  }
-
-  Engine.update(engine);
-
-  var data = [];
-
-  for (var i = 0; i < bullets.length; i++) {
-    data.push(bullets[i].toObject());
-  }
-
-  for (var player of players.values()) {
-    data.push(player.toObject());
-  }
-
-  for (var i = 0; i < weapons.length; i++) {
-    data.push(weapons[i].toObject());
-  }
-
-  io.sockets.emit('update', data);
 }

@@ -1,5 +1,6 @@
 var Matter = require('matter-js');
 
+// UNUSED CLASS
 class Circle {
   constructor(x, y, r, engine) {
     this.r = r;

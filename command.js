@@ -18,9 +18,12 @@ class Command {
   static getCommand(message) {
     var commandWords = ["join", "leave", "name", "accept", "reject", "kick"];
 
+    // Forward slash means the message might be a command
     if (message[0] == '/') {
+      // Location of space splitting operator and operand
       var splitPos = message.length;
       var foundSpace;
+      // Find the first space in the message
       for (var i = 1; i < message.length; i++) {
         var char = message[i];
         if (char == " " && !foundSpace) {
@@ -28,16 +31,16 @@ class Command {
           foundSpace = true;
         }
       }
-      // if (foundSpace) {
+      // Split the message into two
       var operator = message.substring(1, splitPos);
       var operand = message.substring(splitPos + 1, message.length);
+      // If a valid command word is used
       if (commandWords.includes(operator)) {
         return {
           operator: operator,
           operand: operand
         }
       }
-      // }
     }
     return null;
   }
@@ -49,19 +52,6 @@ class Command {
           command: "join",
           lobbyid: operand
         }
-        // var lobby = getLobbyFromId(operand);
-        // if (lobby) {
-          // var sendData = lobby.addPlayer(socket.id);
-          // socket.emit('joined lobby', sendData);
-          // socket.join(data.lobbyid);
-          // var userData = {
-          //   name: data.name,
-          //   lobbyid: data.lobbyid
-          // }
-          // users.set(socket.id, userData);
-
-          // socket.broadcast.to(lobby.lobbyid).emit('player joined', users.get(socket.id).name);
-        // }
         break;
       default:
         console.log("Unknown command: " + operator);
