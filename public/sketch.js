@@ -36,6 +36,8 @@ var gameSize = {
   z: 1
 }
 
+console.log("You are playing on the EU server. There are no other servers, this is just a random test console message. Enjoy!")
+
 function setup() {
 
   createCanvas(800, 540);
