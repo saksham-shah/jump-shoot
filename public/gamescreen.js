@@ -15,6 +15,11 @@ class GameScreen {
     this.dynamic = dynamic;
   }
 
+  resetGame() {
+    this.platforms = [];
+    this.dynamic = [];
+  }
+
   show(x, y, z) {
     push();
     translate(x, y);

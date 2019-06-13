@@ -2,12 +2,12 @@
 Command words:
 
 join: join a lobby
+leave: leave a lobby
+name: change username
 
 Planned:
 
 join: create a lobby if it doesn't exist
-leave: leave a lobby
-name: change username
 accept: accept someone to the lobby
 reject: reject someone from the lobby
 kick: kick someone out of the lobby

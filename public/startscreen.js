@@ -5,11 +5,11 @@ class StartScreen {
     // Text box to enter name
     this.nameTextBox = new TextBox(12, "Enter name", function(txt) {
       // Send the name to the server
-      playerName = txt;
-      var data = {
-        name: playerName,
-      }
-      socket.emit('pick name', playerName);
+      // playerName = txt;
+      // var data = {
+      //   name: playerName,
+      // }
+      socket.emit('pick name', txt);
     });
   }
 

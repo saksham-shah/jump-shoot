@@ -57,6 +57,14 @@ function setup() {
   socket.on('welcome', function() {
     inLobby = false;
     inGame = false;
+    gs.resetGame();
+
+    if (playerName != "") {
+      var data = {
+        name: playerName,
+      }
+      socket.emit('pick name', playerName);
+    }
   })
 
   // Lobby is joined
@@ -74,6 +82,18 @@ function setup() {
       platforms = data.gameinfo.platforms;
       gs.newGame(data.gameinfo.platforms);
     }
+  })
+
+  // Lobby is left
+  socket.on('left lobby', function() {
+    inLobby = false;
+    inGame = false;
+    gs.resetGame();
+  });
+
+  // Name updated
+  socket.on('name updated', function(name) {
+    playerName = name;
   })
 
   // New game starts
