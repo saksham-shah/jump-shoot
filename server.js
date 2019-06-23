@@ -39,6 +39,9 @@ function newConnection(socket) {
 
   // Client updates their name
   socket.on('pick name', function(name) {
+    if (!name) {
+      return;
+    }
     if (updateName(socket.id, name)) {
       // Tell the user that their name has been updated
       socket.emit('name updated', users.get(socket.id).name);
@@ -70,7 +73,7 @@ function newConnection(socket) {
   // })
 
   // Client wants to force end a game - for debugging
-  socket.on('force end', function(data) {
+  socket.on('force end', function() {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
       lobby.game = null;
@@ -84,7 +87,7 @@ function newConnection(socket) {
   })
 
   // New game starts
-  socket.on('start game', function(data) {
+  socket.on('start game', function() {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
       var data = lobby.newGame();
@@ -99,6 +102,9 @@ function newConnection(socket) {
   // The following three functions process user inputs (key and mouse presses, mouse movements)
   // Only process events if the player is in a lobby
   socket.on('update', function(data) {
+    if (!data) {
+      return;
+    }
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
       if (lobby) {
         lobby.updateMousePos(socket.id, data);
@@ -106,6 +112,9 @@ function newConnection(socket) {
   })
 
   socket.on('press', function(control) {
+    if (!control) {
+      return;
+    }
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
       lobby.keyPressed(socket.id, control);
@@ -113,6 +122,9 @@ function newConnection(socket) {
   })
 
   socket.on('release', function(control) {
+    if (!control) {
+      return;
+    }
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
       lobby.keyReleased(socket.id, control);
@@ -122,6 +134,9 @@ function newConnection(socket) {
   // Player types in a chat message
   // Also processes any chat commands - probably the most important event
   socket.on('chat message', function(message) {
+    if (!message) {
+      return;
+    }
     var command = Command.getCommand(message);
     if (command) {
       switch (command.operator) {
@@ -329,7 +344,7 @@ function leaveLobby(socket) {
 // Validates and updates the players name
 function updateName(socketid, name) {
   // Validate the name
-  var validName = lettersOnly(name);
+  var validName = lettersOnly(name, 12);
   if (validName.length == 0) {
     // Name is invalid
     return false;
@@ -375,9 +390,9 @@ function updateGame() {
     var room = lobbies[i].lobbyid;
     var data = lobbies[i].update(users);
     if (data) {
-      if (data.inGame) {
+      if (data.type !== 'endGame') {
         // Send game data to players in the lobby
-        io.in(room).emit('update', data.gameData);
+        io.in(room).emit('update', data);
       } else {
         // Send the winner to the players (if there is one)
         var sendData = {};

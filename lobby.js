@@ -9,6 +9,9 @@ class Lobby {
     this.lobbyid = lobbyid;
     this.maxPlayers = 4;
     this.players = [];
+    this.gameCountdown = 0;
+    // this.newGame();
+    // this.game.ending = true;
   }
 
   addPlayer(socketid) {
@@ -47,6 +50,7 @@ class Lobby {
     if (!this.game) {
       this.game = new Game(this.players);
       var data = this.game.startGame();
+      data.type = 'startGame';
       return data;
     }
   }
@@ -73,24 +77,74 @@ class Lobby {
 
   // Update the game state
   update(users) {
-    if (this.game) {
-      if (this.game.inGame) {
-        return {
-          inGame: true,
-          gameData: this.game.update(users)
+    // Start a new game if the old one has been over for a while
+    if (this.gameCountdown < 0) {
+      if (this.players.length > 0) {
+        var gameEnding = false;
+        if (this.game) {
+          if (this.game.ending) {
+            var gameEnding = true;
+          }
         }
-      } else {
+        if (!this.game || gameEnding) {
+          // End the previous game
+          this.game = null;
+          var data = this.newGame();
+          data.type = 'startGame'
+          return data;
+        }
+      }
+    } else {
+      this.gameCountdown--;
+    }
+    // Update current game and send the game state back to the players
+    if (this.game) {
+      if (!this.game.inGame && !this.game.ending) {
         // Send winner data to the players
         var winData = {
           winner: this.game.winner
         }
         var winner = this.game.winner;
+        this.game.ending = true;
         // End the game
-        this.game = null;
+        // this.game = null;
+
+        // Next game starts in 1 second
+        this.gameCountdown = 60;
         return {
-          inGame: false,
+          type: 'endGame',
           winner: winner
         }
+        // var entities = this.game.update(users);
+        // return {
+        //   type: 'updateGame',
+        //   entities: entities
+        // };
+        // return {
+        //   inGame: true,
+        //   gameData: this.game.update(users)
+        // }
+      } else {
+        var entities = this.game.update(users);
+        return {
+          type: 'updateGame',
+          entities: entities
+        };
+        // // Send winner data to the players
+        // var winData = {
+        //   winner: this.game.winner
+        // }
+        // var winner = this.game.winner;
+        // this.game.ending = true;
+        // // End the game
+        // // this.game = null;
+        //
+        // // Next game starts in 1 second
+        // this.gameCountdown = 60;
+        // return {
+        //   type: 'endGame',
+        //   winner: winner
+        // }
       }
     }
     return null;

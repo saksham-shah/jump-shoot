@@ -1,5 +1,4 @@
 // Initialise variables
-
 var ss, gs; // Various screens used in the game
 
 var inGame = false; // Whether the player is currently in a lobby/game
@@ -11,8 +10,23 @@ var SERVER = "_server"; // Server name in chat messages
 
 var chat, chatTextBox; // Variables storing the chat and chat text box
 
+// var b;
+
 var textTarget = null; // Any text typed will be added to the text box stored here
 var shiftPressed = false; // Used to type upper case characters
+
+var timer = {
+  time: -1,
+  maxTime: 0,
+  text: ""
+}
+
+// Sets the timer up
+function setTimer(time, text) {
+  timer.maxTime = time;
+  timer.time = time;
+  timer.text = text;
+}
 //
 
 // Controls of the game
@@ -41,6 +55,9 @@ console.log("You are playing on the EU server. There are no other servers, this 
 function setup() {
 
   createCanvas(800, 540);
+
+  // b = new Button(100, 30, "Join", () => console.log("click!"));
+  // b = new ButtonBar("lobby", {test: 4}, [{txt: "Join", clickFunc: lobby => console.log(lobby.test)}, {txt: "Join", clickFunc: lobby => console.log(lobby.test)}]);
 
   ss = new StartScreen();
   gs = new GameScreen();
@@ -74,7 +91,6 @@ function setup() {
     inLobby = true;
     // Send messages in the chat to tell the player they have joined a lobby
     chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
-    chat.newMessage(SERVER, "Click to start a new game");
     if (data.gameinfo) { // Lobby is currently mid game
       inGame = true;
       chat.newMessage(SERVER, "Game ongoing: please wait for it to end");
@@ -111,13 +127,24 @@ function setup() {
 
   // Next frame of the game
   socket.on('update', function(data) {
-    dynamic = data;
-    gs.update(dynamic);
+    if (data.type == 'updateGame') {
+      dynamic = data.entities;
+      gs.update(dynamic);
+    } else if (data.type == 'startGame') {
+      inGame = true;
+      // Game zooming scale depends on the size of the screen relative to the game map
+      gameSize.z = width / data.width
+      // Start displaying the game
+      platforms = data.platforms;
+      gs.newGame(data.platforms);
+      chat.newMessage(SERVER, "New game starting");
+    }
   })
 
   // Game ended
   socket.on('game over', function(data) {
-    inGame = false;
+    // inGame = false;
+    setTimer(60, "Next game");
     chat.newMessage(SERVER, "Game over");
     // Check if there is a single winner
     if (data.winner) {
@@ -125,7 +152,6 @@ function setup() {
     } else { // If no winner, it's a draw
       chat.newMessage(SERVER, "Winner: NONE - it's a draw");
     }
-    chat.newMessage(SERVER, "Click to start a new game");
   })
 
   // New player in lobby
@@ -153,11 +179,13 @@ function forceEndGame() {
 }
 
 function mousePressed() {
+  // setTimer(120);
   // Only emit to server if the player is in a lobby
   if (inLobby) {
     if (!inGame) {
       // Can start a game if there is no game going on right now
-      socket.emit('start game');
+      // socket.emit('start game');
+
     }
 
     // Searches through controls list
@@ -288,6 +316,30 @@ function draw() {
   // Only show chat text box if it is selected
   if (textTarget == chatTextBox) {
     chatTextBox.show(20, height - 24, 200, 26);
+  }
+
+  // b.updateButtonStates(y);
+  // b.show(y);//, b.isHovered(300, 200));
+  // y ++;
+
+  if (timer.time > 0 && timer.maxTime > 0) {
+    timer.time--;
+
+    // Draw the timer
+    push();
+    var progress = 1 - (timer.time / timer.maxTime);
+    fill(255);
+    noStroke();
+    translate(width * 0.5, 100);
+    textAlign(CENTER);
+    textSize(15);
+    var timerR = 50;
+    if (timer.text) {
+      text(timer.text, 0, -timerR * 0.5 - 15);
+    }
+    rotate(-HALF_PI);
+    arc(0, 0, timerR, timerR, 0, progress * TWO_PI, PIE);
+    pop();
   }
 
 }

@@ -10,6 +10,7 @@ class Game {
   constructor(users) {
     this.users = users;
     this.winner = null;
+    this.ending = false;
     this.inGame = false;
   }
 
@@ -115,6 +116,7 @@ class Game {
     }
 
     var data = {
+      // type: 'newGame',
       width: this.width,
       height: this.height,
       platforms: this.statics
@@ -152,15 +154,17 @@ class Game {
       // Remove player from the physics engine
       player.removeFromWorld(this.engine);
       this.players.delete(playerid);
-      // Declare a winner if only one is remaining
-      if (this.players.size == 1) {
-        this.inGame = false;
-        for (var playerid of this.players.keys()) {
-          this.winner = playerid;
+      if (!this.winner) {
+        // Declare a winner if only one is remaining
+        if (this.players.size == 1) {
+          this.inGame = false;
+          for (var playerid of this.players.keys()) {
+            this.winner = playerid;
+          }
+        } else if (this.players.size == 0) {
+          this.inGame = false;
+          // No winner chosen if no players left - it's a draw
         }
-      } else if (this.players.size == 0) {
-        this.inGame = false;
-        // No winner chosen if no players left - it's a draw
       }
     }
   }
@@ -212,21 +216,25 @@ class Game {
     Matter.Engine.update(this.engine);
 
     // Send any data clients need to accurately animate the game
-    var data = [];
+    var entities = [];
+    // var data = {
+    //   type: 'updateGame',
+    //   entities: []
+    // };
 
     for (var i = 0; i < this.bullets.length; i++) {
-      data.push(this.bullets[i].toObject());
+      entities.push(this.bullets[i].toObject());
     }
 
     for (var player of this.players.values()) {
-      data.push(player.toObject(users));
+      entities.push(player.toObject(users));
     }
 
     for (var i = 0; i < this.weapons.length; i++) {
-      data.push(this.weapons[i].toObject());
+      entities.push(this.weapons[i].toObject());
     }
 
-    return data;
+    return entities;
   }
 
 }
