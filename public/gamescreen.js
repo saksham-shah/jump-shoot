@@ -11,7 +11,7 @@ class GameScreen {
     this.platforms = platforms;
   }
 
-  update(dynamic) {
+  updateDynamic(dynamic) {
     this.dynamic = dynamic;
   }
 

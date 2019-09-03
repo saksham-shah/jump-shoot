@@ -20,8 +20,11 @@ var Command = require('./command.js');
 
 var users = new Map();
 var lobbies = [];
-lobbies.push(new Lobby("lobby", "abc"));
-lobbies.push(new Lobby("secret", "def"));
+lobbies.push(new Lobby("lobby1"));
+lobbies.push(new Lobby("lobby2"));
+lobbies.push(new Lobby("lobby3"));
+lobbies.push(new Lobby("lobby4"));
+lobbies.push(new Lobby("lobby5"));
 
 // Client connects
 io.sockets.on('connection', newConnection);
@@ -33,9 +36,11 @@ function newConnection(socket) {
   socket.emit('welcome');
   var userData = {
     name: null,
-    lobbyid: null
+    lobbyname: null
   };
   users.set(socket.id, userData);
+
+  socket.emit('lobbies updated', getLobbies());
 
   // Client updates their name
   socket.on('pick name', function(name) {
@@ -59,7 +64,18 @@ function newConnection(socket) {
     // users.set(socket.id, userData);
   })
 
-  // Client joins a lobby - UNUSED
+  // Client joins a lobby
+
+  socket.on('join lobby', function(lobbyname) {
+    var lobby = getLobbyFromSocket(socket.id);
+    // If player is already in a lobby, send an error message
+    if (lobby) {
+      sendServerMessage(socket.id, "You are already in a lobby");
+    } else if (!joinLobby(socket, lobbyname)) { // if they aren't in a lobby already
+        sendServerMessage(socket.id, "Lobby does not exist");
+    }
+  })
+
   // socket.on('join lobby', function(lobbyid) {
   //   var lobby = getLobbyFromId(lobbyid);
   //   var sendData = lobby.addPlayer(socket.id);
@@ -78,7 +94,7 @@ function newConnection(socket) {
     if (lobby) {
       lobby.game = null;
       var data = lobby.newGame();
-      var room = lobby.lobbyid;
+      var room = lobby.name;
       // Restart a new game
       if (data) {
         io.in(room).emit('game start', data);
@@ -91,7 +107,7 @@ function newConnection(socket) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
       var data = lobby.newGame();
-      var room = lobby.lobbyid;
+      var room = lobby.name;
       // Send game data to everyone in the lobby
       if (data) {
         io.in(room).emit('game start', data);
@@ -106,9 +122,9 @@ function newConnection(socket) {
       return;
     }
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
-      if (lobby) {
-        lobby.updateMousePos(socket.id, data);
-      }
+    if (lobby) {
+      lobby.updateMousePos(socket.id, data);
+    }
   })
 
   socket.on('press', function(control) {
@@ -183,9 +199,9 @@ function newConnection(socket) {
           }
           break;
         case "leave":
-        if (!leaveLobby(socket)) {
-          sendServerMessage(socket.id, "You are not currently in a lobby");
-        }
+          if (!leaveLobby(socket)) {
+            sendServerMessage(socket.id, "You are not currently in a lobby");
+          }
           // var lobby = getLobbyFromSocket(socket.id, users, lobbies);
           // if (lobby) {
           //   // Tell player they have left the lobby
@@ -242,19 +258,20 @@ function newConnection(socket) {
           sender: users.get(socket.id).name,
           message: message
         }
-        io.in(lobby.lobbyid).emit('chat message', data);
+        io.in(lobby.name).emit('chat message', data);
       }
     }
   })
 
   // Client disconnects
   socket.on('disconnect', function() {
-    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
-    if (lobby) {
-      // Remove from lobby and notify players in the lobby
-      lobby.removePlayer(socket.id);
-      socket.broadcast.to(lobby.lobbyid).emit('player left', users.get(socket.id).name);
-    }
+    // var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    // if (lobby) {
+    //   // Remove from lobby and notify players in the lobby
+    //   lobby.removePlayer(socket.id);
+    //   socket.broadcast.to(lobby.lobbyid).emit('player left', users.get(socket.id).name);
+    // }
+    leaveLobby(socket);
     console.log("disconnect: " + socket.id);
   })
 }
@@ -266,8 +283,8 @@ function getLobbyFromSocket(socketid) {
     console.log("Unlogged user: " + socketid);
     return null;
   }
-  var lobbyid = userData.lobbyid;
-  return getLobbyFromId(lobbyid);
+  var lobbyname = userData.lobbyname;
+  return getLobbyFromName(lobbyname);
 }
 
 // Searches for a lobby by id
@@ -282,6 +299,7 @@ function getLobbyFromId(lobbyid) {
 
 // Searches for a lobby by name
 function getLobbyFromName(lobbyname) {
+  // console.log(lobbyname);
   for (var i = 0; i < lobbies.length; i++) {
     if (lobbies[i].name === lobbyname) {
       return lobbies[i];
@@ -300,6 +318,26 @@ function sendServerMessage(socketid, message) {
   // socket.emit('chat message', data);
 }
 
+// Gets the status of all current lobbies
+function getLobbies() {
+  var lobbyObjects = [];
+  for (var lobby of lobbies) {
+    var players = []
+    for (var player of lobby.players) {
+      players.push({
+        name: users.get(player).name
+      });
+    }
+
+    lobbyObjects.push({
+      name: lobby.name,
+      players: players,
+      maxPlayers: lobby.maxPlayers
+    });
+  }
+  return lobbyObjects;
+}
+
 // Adds a player to a lobby
 function joinLobby(socket, lobbyname) {
   var lobby = getLobbyFromName(lobbyname);
@@ -309,13 +347,14 @@ function joinLobby(socket, lobbyname) {
     // Send player any data about the lobby
     socket.emit('joined lobby', sendData);
     // Add client to socket room
-    socket.join(lobby.lobbyid);
-    // Update user data to also save lobbyid
+    socket.join(lobby.name);
+    // Update user data to also save lobbyname
     var userData = users.get(socket.id);
-    userData.lobbyid = lobby.lobbyid;
+    userData.lobbyname = lobby.name;
     users.set(socket.id, userData);
     // Notify players in the lobby
-    socket.broadcast.to(lobby.lobbyid).emit('player joined', users.get(socket.id).name);
+    socket.broadcast.to(lobby.name).emit('player joined', users.get(socket.id).name);
+    io.emit('lobbies updated', getLobbies());
     return true;
   }
   return false;
@@ -328,14 +367,15 @@ function leaveLobby(socket) {
     // Tell player they have left the lobby
     socket.emit('left lobby');
     // Remove client from socket room
-    socket.leave(lobby.lobbyid);
+    socket.leave(lobby.name);
     // Update user data
     var userData = users.get(socket.id);
-    userData.lobbyid = null;
+    userData.lobbyname = null;
     users.set(socket.id, userData);
     // Remove from lobby and notify players in the lobby
     lobby.removePlayer(socket.id);
-    socket.broadcast.to(lobby.lobbyid).emit('player left', users.get(socket.id).name);
+    socket.broadcast.to(lobby.name).emit('player left', users.get(socket.id).name);
+    io.emit('lobbies updated', getLobbies());
     return true;
   }
   return false;
@@ -387,7 +427,7 @@ setInterval(updateGame, 1000 / 60);
 
 function updateGame() {
   for (var i = 0; i < lobbies.length; i++) {
-    var room = lobbies[i].lobbyid;
+    var room = lobbies[i].name;
     var data = lobbies[i].update(users);
     if (data) {
       if (data.type !== 'endGame') {

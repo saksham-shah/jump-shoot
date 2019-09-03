@@ -1,16 +1,17 @@
 // Initialise variables
-var ss, gs; // Various screens used in the game
+var ss, gs, ms, ls, cs; // Various screens used in the game
 
-var inGame = false; // Whether the player is currently in a lobby/game
-var inLobby = false;
+var scr; // Current screen
+
+var popup;
+
+var inLobby = false; // Whether the player is currently in a lobby
 
 var playerName = ""; // Starts as empty
 
 var SERVER = "_server"; // Server name in chat messages
 
 var chat, chatTextBox; // Variables storing the chat and chat text box
-
-// var b;
 
 var textTarget = null; // Any text typed will be added to the text box stored here
 var shiftPressed = false; // Used to type upper case characters
@@ -41,7 +42,6 @@ var controls = {
   bouncy: 69 // E
 }
 
-var socket;
 var gameSize = {
   x: 0,
   y: 0,
@@ -49,6 +49,8 @@ var gameSize = {
   h: 540,
   z: 1
 }
+
+var socket;
 
 console.log("You are playing on the EU server. There are no other servers, this is just a random test console message. Enjoy!")
 
@@ -59,8 +61,14 @@ function setup() {
   // b = new Button(100, 30, "Join", () => console.log("click!"));
   // b = new ButtonBar("lobby", {test: 4}, [{txt: "Join", clickFunc: lobby => console.log(lobby.test)}, {txt: "Join", clickFunc: lobby => console.log(lobby.test)}]);
 
+  // popup = new Popup('Hello there');
+
   ss = new StartScreen();
   gs = new GameScreen();
+  ms = new MenuScreen();
+  ls = new LobbyScreen();
+
+  scr = ss;
 
   chat = new Chat(5);
 
@@ -75,15 +83,26 @@ function setup() {
   // First connecting
   socket.on('welcome', function() {
     inLobby = false;
-    inGame = false;
     gs.resetGame();
+
+    scr = ss;
 
     if (playerName != "") {
       var data = {
         name: playerName,
       }
       socket.emit('pick name', playerName);
+
+      scr = ms;
     }
+
+    // for (var lobby of lobbies) {
+    //   ls.addLobby(lobby);
+    // }
+  })
+
+  socket.on('lobbies updated', function(lobbies) {
+    ls.updateLobbies(lobbies);
   })
 
   // Lobby is joined
@@ -92,7 +111,6 @@ function setup() {
     // Send messages in the chat to tell the player they have joined a lobby
     chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
     if (data.gameinfo) { // Lobby is currently mid game
-      inGame = true;
       chat.newMessage(SERVER, "Game ongoing: please wait for it to end");
       // Game zooming scale depends on the size of the screen relative to the game map
       gameSize.z = width / data.gameinfo.width
@@ -100,13 +118,14 @@ function setup() {
       platforms = data.gameinfo.platforms;
       gs.newGame(data.gameinfo.platforms);
     }
+    scr = gs;
   })
 
   // Lobby is left
   socket.on('left lobby', function() {
     inLobby = false;
-    inGame = false;
     gs.resetGame();
+    scr = ms;
   });
 
   // Name updated
@@ -116,7 +135,6 @@ function setup() {
 
   // New game starts
   socket.on('game start', function(data) {
-    inGame = true;
     // Game zooming scale depends on the size of the screen relative to the game map
     gameSize.z = width / data.width
     // Start displaying the game
@@ -129,9 +147,8 @@ function setup() {
   socket.on('update', function(data) {
     if (data.type == 'updateGame') {
       dynamic = data.entities;
-      gs.update(dynamic);
+      gs.updateDynamic(dynamic);
     } else if (data.type == 'startGame') {
-      inGame = true;
       // Game zooming scale depends on the size of the screen relative to the game map
       gameSize.z = width / data.width
       // Start displaying the game
@@ -143,7 +160,6 @@ function setup() {
 
   // Game ended
   socket.on('game over', function(data) {
-    // inGame = false;
     setTimer(60, "Next game");
     chat.newMessage(SERVER, "Game over");
     // Check if there is a single winner
@@ -182,11 +198,6 @@ function mousePressed() {
   // setTimer(120);
   // Only emit to server if the player is in a lobby
   if (inLobby) {
-    if (!inGame) {
-      // Can start a game if there is no game going on right now
-      // socket.emit('start game');
-
-    }
 
     // Searches through controls list
     var keys = Object.keys(controls);
@@ -297,17 +308,27 @@ function draw() {
   background(51);
 
   // Show game screen if in a lobby, otherwise show the start screen
-  if (inLobby) {
-    gs.show(gameSize.x, gameSize.y, gameSize.z);
-  } else {
-    ss.update();
-    ss.show();
+  // if (inLobby) {
+  //   gs.show(gameSize.x, gameSize.y, gameSize.z);
+  // } else {
+  //   ss.update();
+  //   ss.show();
+  // }
+
+  if (!popup && scr.update) {
+    scr.update();
   }
 
-  if (inGame) {
+  scr.show();
+
+  if (inLobby) {
     // Send the mouse position to the server to aim weapons
     var data = mouseToGamePos();
     socket.emit('update', data);
+  }
+
+  if (popup) {
+    popup.show();
   }
 
   // Draw chat in the bottom left corner

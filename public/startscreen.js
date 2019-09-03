@@ -23,7 +23,7 @@ class StartScreen {
       if (textTarget == this.nameTextBox) {
         textTarget = null;
       }
-      this.nameTextBox = null;
+      scr = ms;
     }
   }
 

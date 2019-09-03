@@ -1,6 +1,6 @@
 // Buttons used in ButtonBars
 class Button {
-  constructor(w, h, txt, clickFunc, objOfClick) {
+  constructor(w, h, txt, clickFunc, objOfClick, size) {
     this.w = w;
     this.h = h;
     this.txt = txt;
@@ -8,6 +8,8 @@ class Button {
     this.click = clickFunc;
     // What object the button operates on
     this.objOfClick = objOfClick;
+
+    this.size = size || this.h * 0.75;
   }
 
   isHovered(x, y) {
@@ -29,6 +31,7 @@ class Button {
   }
 
   show(x, y) {
+    // this.updateState(x, y);
     push();
     translate(x, y);
 
@@ -43,10 +46,16 @@ class Button {
     rect(0, 0, this.w, this.h);
 
     textAlign(CENTER);
-    textSize(this.h * 0.75);
+    textSize(this.size);
     noStroke();
     fill(255);
-    text(this.txt, 0, this.h * 0.25);
+
+    var t = this.txt;
+    if (t instanceof Function) {
+      t = t(this.objOfClick);
+    }
+
+    text(t, 0, this.size / 3);
     pop();
   }
 }
@@ -74,6 +83,7 @@ class ButtonBar {
   }
 
   show(y) {
+    // this.updateButtonStates(y);
     push();
     translate(50, y);
     noStroke();

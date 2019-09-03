@@ -4,9 +4,9 @@ var Game = require('./game.js');
 
 // Game room where players can play the game
 class Lobby {
-  constructor(name, lobbyid, maxPlayers) {
+  constructor(name, maxPlayers) {
     this.name = name;
-    this.lobbyid = lobbyid;
+    // this.lobbyid = lobbyid;
     this.maxPlayers = 4;
     this.players = [];
     this.gameCountdown = 0;
@@ -19,7 +19,6 @@ class Lobby {
     // Send data to the client
     var data = {
       name: this.name,
-      lobbyid: this.lobbyid,
       myid: socketid
     }
     // Send game data so newly connected players can watch the ongoing game
@@ -77,6 +76,36 @@ class Lobby {
 
   // Update the game state
   update(users) {
+
+    if (this.game) {
+      if (!this.game.inGame && this.gameCountdown < 0) {
+        var winner = this.game.winner;
+        // Next game starts in 1 second
+        this.gameCountdown = 60;
+        return {
+          type: 'endGame',
+          winner: winner
+        }
+      } else if (this.gameCountdown == 0) {
+        this.game = null;
+        this.gameCountdown = -1;
+      } else {
+        this.gameCountdown--;
+        var entities = this.game.update(users);
+        return {
+          type: 'updateGame',
+          entities: entities
+        };
+      }
+    }
+
+    if (this.players.length > 0) {
+      var data = this.newGame();
+      data.type = 'startGame';
+      return data;
+    }
+    // USED CODE ENDS HERE. THE REST IS AS GOOD AS COMMENTED
+
     // Start a new game if the old one has been over for a while
     if (this.gameCountdown < 0) {
       if (this.players.length > 0) {
