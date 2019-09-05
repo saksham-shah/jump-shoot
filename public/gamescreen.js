@@ -4,6 +4,7 @@ class GameScreen {
     this.platforms = [];
     this.dynamic = [];
     this.zoom = 1;
+    this.leaveButton = new Button(90, 30, 'LEAVE', () => socket.emit('leave lobby'), null);
   }
 
   // Reset platforms array
@@ -18,6 +19,10 @@ class GameScreen {
   resetGame() {
     this.platforms = [];
     this.dynamic = [];
+  }
+
+  update() {
+    this.leaveButton.updateState(width - 70, 40);
   }
 
   show(x, y, z) {
@@ -36,6 +41,16 @@ class GameScreen {
     }
 
     pop();
+    this.leaveButton.show(width - 70, 40);
+
+    push();
+    fill(255);
+    noStroke();
+    textSize(20);
+    textAlign(LEFT);
+    text(lobbyName, 25, 25);
+    pop();
+
   }
 }
 

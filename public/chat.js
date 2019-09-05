@@ -40,7 +40,7 @@ class ChatMessage {
   show(x, y, bigness) { // Bottom left of the text
     push();
 
-    textAlign(LEFT);
+    textAlign(LEFT, BOTTOM);
     textSize(bigness);
     fill(255);
     noStroke();
@@ -68,7 +68,7 @@ class TextBox {
 
   // Character typed
   addChar(charToAdd) {
-    if (this.typedText.length < this.charLimit) {
+    if (this.typedText.length < this.charLimit || this.charLimit <= 0) {
       this.typedText += charToAdd;
       return true;
     }

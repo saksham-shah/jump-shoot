@@ -4,12 +4,14 @@ var Game = require('./game.js');
 
 // Game room where players can play the game
 class Lobby {
-  constructor(name, maxPlayers) {
+  constructor(name, publicLobby) {
     this.name = name;
+    this.publicLobby = publicLobby;
     // this.lobbyid = lobbyid;
     this.maxPlayers = 4;
     this.players = [];
-    this.gameCountdown = 0;
+    this.gameCountdown = -1;
+    this.game = null;
     // this.newGame();
     // this.game.ending = true;
   }
@@ -104,6 +106,7 @@ class Lobby {
       data.type = 'startGame';
       return data;
     }
+    return;
     // USED CODE ENDS HERE. THE REST IS AS GOOD AS COMMENTED
 
     // Start a new game if the old one has been over for a while

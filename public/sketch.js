@@ -6,6 +6,7 @@ var scr; // Current screen
 var popup;
 
 var inLobby = false; // Whether the player is currently in a lobby
+var lobbyName = null;
 
 var playerName = ""; // Starts as empty
 
@@ -72,7 +73,7 @@ function setup() {
 
   chat = new Chat(5);
 
-  chatTextBox = new TextBox(30, "Enter to send", function(txt) {
+  chatTextBox = new TextBox(0, "Enter to send", function(txt) {
     // Send chat messages
     socket.emit('chat message', txt);
   });
@@ -108,6 +109,7 @@ function setup() {
   // Lobby is joined
   socket.on('joined lobby', function(data) {
     inLobby = true;
+    lobbyName = data.name;
     // Send messages in the chat to tell the player they have joined a lobby
     chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
     if (data.gameinfo) { // Lobby is currently mid game
@@ -272,8 +274,11 @@ function keyPressed() {
         }
         charToAdd = String.fromCharCode(code);
       }
-      textTarget.addChar(charToAdd)
+      // textTarget.addChar(charToAdd)
     };
+    if (key.length == 1) {
+      textTarget.addChar(key);
+    }
   }
 }
 

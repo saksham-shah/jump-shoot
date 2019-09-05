@@ -13,7 +13,7 @@ class Button {
   }
 
   isHovered(x, y) {
-    return mouseX > x - this.w * 0.5 && mouseX < x + this.w * 0.5 && mouseY > y - this.w * 0.5 && mouseY < y + this.h * 0.5;
+    return mouseX > x - this.w * 0.5 && mouseX < x + this.w * 0.5 && mouseY > y - this.h * 0.5 && mouseY < y + this.h * 0.5;
   }
 
   updateState(x, y) {

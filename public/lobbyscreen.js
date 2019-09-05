@@ -2,6 +2,7 @@
 class LobbyScreen {
   constructor() {
     this.lobbybars = {};
+    this.createButton = new Button(250, 50, 'Create private lobby', () => socket.emit('create lobby'), null, 20);
   }
 
   updateLobbies(lobbies) {
@@ -44,6 +45,8 @@ class LobbyScreen {
       this.lobbybars[lobby].updateButtonStates(y);
       y += 50;
     }
+
+    this.createButton.updateState(width / 2, 480);
   }
 
   show() {
@@ -60,5 +63,7 @@ class LobbyScreen {
       this.lobbybars[lobby].show(y);
       y += 50;
     }
+
+    this.createButton.show(width / 2, 480);
   }
 }
