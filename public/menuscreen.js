@@ -4,18 +4,18 @@ class MenuScreen {
     this.buttons = [];
 
     this.buttons.push({
-      obj: new Button(200, 100, 'PLAY', () => {
+      obj: new Button(0.25, 0.2, 'PLAY', () => {
         // socket.emit('join lobby', 'lobby');
         scr = ls;
-      }, null, 60),
-      x: width / 2,
-      y: height / 2
+      }, null, 0.1),
+      xRel: 0.5,
+      yRel: 0.5
     });
   }
 
   update() {
     for (var b of this.buttons) {
-      b.obj.updateState(b.x, b.y);
+      b.obj.updateState(width * b.xRel, height * b.yRel);
     }
   }
 
@@ -25,11 +25,11 @@ class MenuScreen {
     fill(255);
     noStroke();
     textAlign(CENTER);
-    textSize(50);
-    text("Jump & Shoot", width * 0.5, 100);
+    textSize(width * 0.0625);
+    text("Jump & Shoot", width * 0.5, height * 0.2);
 
     for (var b of this.buttons) {
-      b.obj.show(b.x, b.y);
+      b.obj.show(width * b.xRel, height * b.yRel);
     }
   }
 }

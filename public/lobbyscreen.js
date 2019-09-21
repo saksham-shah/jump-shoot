@@ -2,7 +2,7 @@
 class LobbyScreen {
   constructor() {
     this.lobbybars = {};
-    this.createButton = new Button(250, 50, 'Create private lobby', () => socket.emit('create lobby'), null, 20);
+    this.createButton = new Button(0.3125, 0.1, 'Create private lobby', () => socket.emit('create lobby'), null, 0.037);
   }
 
   updateLobbies(lobbies) {
@@ -40,13 +40,13 @@ class LobbyScreen {
   }
 
   update() {
-    var y = 200;
+    var y = height * 0.3;
     for (var lobby in this.lobbybars) {
       this.lobbybars[lobby].updateButtonStates(y);
-      y += 50;
+      y += height * 0.1;
     }
 
-    this.createButton.updateState(width / 2, 480);
+    this.createButton.updateState(width * 0.5, height * 0.85);
   }
 
   show() {
@@ -55,15 +55,15 @@ class LobbyScreen {
     fill(255);
     noStroke();
     textAlign(CENTER);
-    textSize(50);
-    text("Jump & Shoot", width * 0.5, 100);
+    textSize(width * 0.0625);
+    text("Jump & Shoot", width * 0.5, height * 0.2);
 
-    var y = 200;
+    var y = height * 0.3;
     for (var lobby in this.lobbybars) {
       this.lobbybars[lobby].show(y);
-      y += 50;
+      y += height * 0.1;
     }
 
-    this.createButton.show(width / 2, 480);
+    this.createButton.show(width * 0.5, height * 0.85);
   }
 }

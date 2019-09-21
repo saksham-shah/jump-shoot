@@ -1,4 +1,6 @@
 // Initialise variables
+var myid;
+
 var ss, gs, ms, ls, cs; // Various screens used in the game
 
 var scr; // Current screen
@@ -40,6 +42,7 @@ var controls = {
   shoot: "left", // LMB
   equip: "right", // RMB - UNUSED
   throw: "right", // RMB
+  shield: "right", // RMB
   bouncy: 69 // E
 }
 
@@ -55,9 +58,31 @@ var socket;
 
 console.log("You are playing on the EU server. There are no other servers, this is just a random test console message. Enjoy!")
 
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+
+  calculateGameSize();
+}
+
+function calculateGameSize(gameWidth, gameHeight) {
+  var screenRatio = width / height;
+  var gameRatio = gameSize.w / gameSize.h;
+
+  if (screenRatio > gameRatio) {
+    // The screen is wider than required
+    gameSize.z = height / gameSize.h * 0.9;
+  } else {
+    gameSize.z = width / gameSize.w * 0.9
+  }
+
+  gameSize.x = (width - gameSize.w * gameSize.z) * 0.5;
+  gameSize.y = (height - gameSize.h * gameSize.z) * 0.5;
+}
+
 function setup() {
 
-  createCanvas(800, 540);
+  // createCanvas(800 * 1.5, 540 * 1.5);
+  createCanvas(windowWidth, windowHeight);
 
   // b = new Button(100, 30, "Join", () => console.log("click!"));
   // b = new ButtonBar("lobby", {test: 4}, [{txt: "Join", clickFunc: lobby => console.log(lobby.test)}, {txt: "Join", clickFunc: lobby => console.log(lobby.test)}]);
@@ -82,7 +107,9 @@ function setup() {
   socket = io.connect();
 
   // First connecting
-  socket.on('welcome', function() {
+  socket.on('welcome', function(socketid) {
+    myid = socketid;
+
     inLobby = false;
     gs.resetGame();
 
@@ -115,7 +142,12 @@ function setup() {
     if (data.gameinfo) { // Lobby is currently mid game
       chat.newMessage(SERVER, "Game ongoing: please wait for it to end");
       // Game zooming scale depends on the size of the screen relative to the game map
-      gameSize.z = width / data.gameinfo.width
+      // gameSize.z = width / data.gameinfo.width
+
+      gameSize.w = data.gameinfo.width;
+      gameSize.h = data.gameinfo.height;
+      calculateGameSize();
+
       // Start displaying the game
       platforms = data.gameinfo.platforms;
       gs.newGame(data.gameinfo.platforms);
@@ -138,7 +170,12 @@ function setup() {
   // New game starts
   socket.on('game start', function(data) {
     // Game zooming scale depends on the size of the screen relative to the game map
-    gameSize.z = width / data.width
+    // gameSize.z = width / data.width
+
+    gameSize.w = data.gameinfo.width;
+    gameSize.h = data.gameinfo.height;
+    calculateGameSize();
+
     // Start displaying the game
     platforms = data.platforms;
     gs.newGame(data.platforms);
@@ -148,11 +185,16 @@ function setup() {
   // Next frame of the game
   socket.on('update', function(data) {
     if (data.type == 'updateGame') {
-      dynamic = data.entities;
-      gs.updateDynamic(dynamic);
+      // dynamic = data.entities;
+      gs.updateDynamic(data.entities, data.players);
     } else if (data.type == 'startGame') {
       // Game zooming scale depends on the size of the screen relative to the game map
-      gameSize.z = width / data.width
+      // gameSize.z = width / data.width
+
+      gameSize.w = data.width;
+      gameSize.h = data.height;
+      calculateGameSize();
+
       // Start displaying the game
       platforms = data.platforms;
       gs.newGame(data.platforms);

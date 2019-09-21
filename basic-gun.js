@@ -12,7 +12,7 @@ class BasicGun extends Weapon {
     // Only fire if gun is cooled down
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
-      var bullet = new Bullet(x, y, 3, 25, angle, 10, playerID);
+      var bullet = new Bullet(x, y, 3, 25, angle, 1, playerID);
       return {
         shot: true,
         angleChange: 0.4,

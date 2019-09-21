@@ -217,6 +217,7 @@ class Game {
 
     // Send any data clients need to accurately animate the game
     var entities = [];
+    var players = [];
     // var data = {
     //   type: 'updateGame',
     //   entities: []
@@ -226,15 +227,19 @@ class Game {
       entities.push(this.bullets[i].toObject());
     }
 
-    for (var player of this.players.values()) {
-      entities.push(player.toObject(users));
-    }
+    // for (var player of this.players.values()) {
+    //   entities.push(player.toObject(users));
+    // }
 
     for (var i = 0; i < this.weapons.length; i++) {
       entities.push(this.weapons[i].toObject());
     }
 
-    return entities;
+    for (var player of this.players.values()) {
+      players.push(player.toObject(users));
+    }
+
+    return [entities, players];
   }
 
 }

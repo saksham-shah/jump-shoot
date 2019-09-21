@@ -93,10 +93,11 @@ class Lobby {
         this.gameCountdown = -1;
       } else {
         this.gameCountdown--;
-        var entities = this.game.update(users);
+        var objects = this.game.update(users);
         return {
           type: 'updateGame',
-          entities: entities
+          entities: objects[0],
+          players: objects[1]
         };
       }
     }

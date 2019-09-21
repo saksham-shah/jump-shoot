@@ -16,7 +16,12 @@ class Player {
       density: 0.03,
       label: this.id // Used to identify players in collision events
     }
+    this.massDecay = 0.933
     this.body = Matter.Bodies.circle(x, y, this.r, options);
+    this.body.externalData = {
+      type: 'player',
+      obj: this
+    }
 
     // Add the body to the physics world
     Matter.World.add(engine.world, this.body);
@@ -33,6 +38,7 @@ class Player {
       shoot: false,
       equip: false,
       throw: false,
+      shield: false,
       bouncy: false
     }
 
@@ -45,6 +51,8 @@ class Player {
     this.weapon = null;
     // Prevents weapon from instantly being reequiped when thrown
     this.cooldown = 0;
+
+    this.shieldWidth = 40;
   }
 
   // Aim at the mouse position
@@ -60,9 +68,9 @@ class Player {
       // Cool weapon gun so it can shoot
       this.weapon.coolGun();
     }
-    if (this.cooldown > 0) {
-      this.cooldown--;
-    }
+    // if (this.cooldown > 0) {
+    this.cooldown++;
+    // }
 
     // Point the gun towards its target
     // mouseVel is used to make the movement smooth and natural
@@ -93,7 +101,7 @@ class Player {
     }
 
     // Pick up weapons
-    if (this.weapon == null && this.cooldown <= 0) {
+    if (this.weapon == null && this.cooldown >= 20) {
       var w = this.checkForWeapons(weapons);
       if (w) {
         // Equip weapon if there is one nearby
@@ -102,13 +110,27 @@ class Player {
     }
 
     // Throw equipped weapon
-    if (this.controls.throw && this.weapon && this.cooldown <= 0) {
+    if (this.controls.throw && this.weapon && this.cooldown >= 20) {
       this.throwWeapon(0.04, engine);
     }
 
+    // Activate shield
+    if (this.controls.shield && this.weapon == null && this.cooldown >= 10) {
+      this.shield = true;
+      this.shieldWidth -= 0.2
+    } else {
+      this.shield = false;
+      this.shieldWidth += 0.05;
+    }
+    if (this.shieldWidth < 10) {
+      this.shieldWidth = 10;
+    } else if (this.shieldWidth > 40) {
+      this.shieldWidth = 40;
+    }
+    // this.shieldWidth = 40;
+
     // Return a bullet if shot, otherwise null
     return bullet;
-
   }
 
   // Finds and returns nearby weapons (player must be nearly touching the weapons to pick up)
@@ -137,7 +159,7 @@ class Player {
     this.weapon.getEquipped(engine);
     // Can't throw the weapon for 20 frames
     // Prevents accidental throwing if the throw key is pressed when equipping
-    this.cooldown = 20;
+    this.cooldown = 0;
   }
 
   // Fire a weapon
@@ -178,7 +200,7 @@ class Player {
     this.weapon = null;
     // Can't equip a weapon for 20 frames
     // Prevents picking up a weapon immediately after throwing it
-    this.cooldown = 20;
+    this.cooldown = 0;
   }
 
   // Checks if the player is out of the game boundaries
@@ -264,10 +286,13 @@ class Player {
     var name = users.get(this.id).name;
     return {
       type: 'player',
+      id: this.id,
       x: pos.x,
       y: pos.y,
       r: this.r,
       angle: this.angle,
+      shield: this.shield,
+      shieldWidth: this.shieldWidth,
       name: name,
       colour: this.colour,
       weapon: weaponToObj

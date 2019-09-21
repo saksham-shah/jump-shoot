@@ -13,7 +13,9 @@ class Button {
   }
 
   isHovered(x, y) {
-    return mouseX > x - this.w * 0.5 && mouseX < x + this.w * 0.5 && mouseY > y - this.h * 0.5 && mouseY < y + this.h * 0.5;
+    var w = width * this.w;
+    var h = height * this.h;
+    return mouseX > x - w * 0.5 && mouseX < x + w * 0.5 && mouseY > y - h * 0.5 && mouseY < y + h * 0.5;
   }
 
   updateState(x, y) {
@@ -43,10 +45,10 @@ class Button {
       fill(100);
     }
 
-    rect(0, 0, this.w, this.h);
+    rect(0, 0, width * this.w, height * this.h);
 
     textAlign(CENTER);
-    textSize(this.size);
+    textSize(height * this.size);
     noStroke();
     fill(255);
 
@@ -55,7 +57,7 @@ class Button {
       t = t(this.objOfClick);
     }
 
-    text(t, 0, this.size / 3);
+    text(t, 0, height * this.size / 3);
     pop();
   }
 }
@@ -65,19 +67,22 @@ class ButtonBar {
     this.txt = txt;
     this.buttons = [];
     for (var b of buttons) {
-      this.buttons.push(new Button(50, 30, b.txt, b.clickFunc, obj));
+      this.buttons.push(new Button(0.0625, 0.055, b.txt, b.clickFunc, obj));
     }
 
     // Hardcoded numbers for this right now
     this.w = width - 100;
-    this.h = 40;
+    this.h = height * 0.075;
   }
 
   updateButtonStates(y) {
-    var x = this.w + 50;
+    var w = width - 100;
+    var h = height * 0.075;
+
+    var x = w + 50;
     // Update the state of each of its buttons
     for (var b of this.buttons) {
-      x -= 60;
+      x -= 0.075 * width;
       b.updateState(x, y);
     }
   }
@@ -88,20 +93,24 @@ class ButtonBar {
     translate(50, y);
     noStroke();
     fill(170);
-    rect(this.w * 0.5, 0, this.w, this.h);
+
+    var w = width - 100;
+    var h = height * 0.075;
+
+    rect(w * 0.5, 0, w, h);
 
     // Draw the text
     textAlign(LEFT);
-    textSize(30);
+    textSize(height * 0.055);
     noStroke();
     fill(255);
-    text(this.txt, 10, 10);
+    text(this.txt, h * 0.25, h * 0.25);
     pop();
 
     // Draw each of its buttons
-    var x = this.w + 50;
+    var x = w + 50;
     for (var b of this.buttons) {
-      x -= 60;
+      x -= 0.075 * width;
       b.show(x, y);
     }
   }

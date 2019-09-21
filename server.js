@@ -33,7 +33,7 @@ function newConnection(socket) {
   console.log('new connection: ' + socket.id);
 
   // Send confirmation message
-  socket.emit('welcome');
+  socket.emit('welcome', socket.id);
   var userData = {
     name: null,
     lobbyname: null
