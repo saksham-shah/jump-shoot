@@ -37,23 +37,20 @@ class Bullet {
       var body = bodies[i];
 
       // Some bodies will have some external data
-      if (body.externalData) {
+      if (body.externalData && !this.reflected) {
         // If body is a player
         if (body.externalData.type == 'player') {
           var player = body.externalData.obj;
-          var shieldX = body.position.x + (player.r + 7) * Math.cos(player.angle);
-          var shieldY = body.position.y + (player.r + 7) * Math.sin(player.angle);
-          // if (player.id != this.originPlayer) {
-            // console.log(shieldX);
-            // console.log(shieldY);
-            // console.log(collideWithRect(this.x, this.y, shieldX, shieldY, 20, 400, player.angle));
-          // }
-          if (collideWithRect(this.x, this.y, shieldX, shieldY, 7, player.shieldWidth, player.angle) && player.id != this.originPlayer && player.shield && !this.reflected) {
-            this.angle += 2 * player.angle - 2 * this.angle - Math.PI;
-            this.vel *= 1.25
-            player.shieldWidth += 2.5;
-            this.reflected = true;
-            return false;
+          if (player.shield && player.id != this.originPlayer) {
+            var shieldX = body.position.x + (player.r + 7) * Math.cos(player.angle);
+            var shieldY = body.position.y + (player.r + 7) * Math.sin(player.angle);
+            if (collideWithRect(this.x, this.y, shieldX, shieldY, 7, player.shieldWidth, player.angle)) {
+              this.angle += 2 * player.angle - 2 * this.angle - Math.PI;
+              this.vel *= 1.25
+              player.shieldWidth += 2.5;
+              this.reflected = true;
+              return false;
+            }
           }
         }
       }
@@ -65,7 +62,7 @@ class Bullet {
         if (dSq < Math.pow(body.circleRadius, 2)) {
           var force = 0.5;
           if (this.reflected) {
-            force = 2;
+            force = 1;
           }
           Matter.Body.applyForce(body, { x: this.x, y: this.y }, {
             x: force * Math.cos(this.angle),
@@ -77,7 +74,7 @@ class Bullet {
             if (body.externalData.type == 'player') {
               var damage = this.damage;
               if (this.reflected) {
-                damage += 1.5;
+                damage += 2;
               }
               var newDensity = body.density * Math.pow(body.externalData.obj.massDecay, damage);
               Matter.Body.setDensity(body, newDensity);
@@ -92,7 +89,7 @@ class Bullet {
         if (collideWithRect(this.x, this.y, body.position.x, body.position.y, w, h, body.angle)) {
           var force = 0.5;
           if (this.reflected) {
-            force = 1.5;
+            force = 1;
           }
           Matter.Body.applyForce(body, { x: this.x, y: this.y }, {
             x: force * Math.cos(this.angle),
@@ -101,23 +98,6 @@ class Bullet {
           return true;
         }
       }
-
-
-        // var dx = this.x - body.position.x;
-        // var dy = this.y - body.position.y;
-        // // Calculate distance from body
-        // var d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-        // // Check if bullet has hit the rectangle
-        // var theta = Math.atan2(dy, dx) - body.angle;
-        // var newX = d * Math.cos(theta);
-        // var newY = d * Math.sin(theta);
-        // if (newX > - w * 0.5 && newX < w * 0.5 && newY > - h * 0.5 && newY < h * 0.5) {
-        //   Matter.Body.applyForce(body, { x: this.x, y: this.y }, {
-        //     x: 0.5 * Math.cos(this.angle),
-        //     y: 0.5 * Math.sin(this.angle)
-        //   });
-        //   return true;
-        // }
     }
     return false;
   }

@@ -82,7 +82,9 @@ function calculateGameSize(gameWidth, gameHeight) {
 function setup() {
 
   // createCanvas(800 * 1.5, 540 * 1.5);
-  createCanvas(windowWidth, windowHeight);
+  var canvas = createCanvas(windowWidth, windowHeight);
+  // canvas.parent('p5canvas');
+  // canvas.style('display', 'block');
 
   // b = new Button(100, 30, "Join", () => console.log("click!"));
   // b = new ButtonBar("lobby", {test: 4}, [{txt: "Join", clickFunc: lobby => console.log(lobby.test)}, {txt: "Join", clickFunc: lobby => console.log(lobby.test)}]);

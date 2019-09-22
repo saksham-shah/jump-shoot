@@ -7,6 +7,8 @@ class GameScreen {
     this.players = [];
     this.zoom = 1;
     this.leaveButton = new Button(0.1, 0.055, 'LEAVE', () => socket.emit('leave lobby'), null);
+    this.closeButton = new Button(0.1, 0.055, 'CLOSE', () => popup = null, null);
+
   }
 
   // Reset platforms array

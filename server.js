@@ -1,4 +1,6 @@
 var express = require('express');
+var routes = require('./routes.js');
+
 var app = express();
 // Default port no. is 3000
 var portNo = process.env.PORT || 3000;
@@ -6,7 +8,9 @@ var portNo = process.env.PORT || 3000;
 var server = app.listen(portNo);
 
 // Send files in the public folder to the client
-app.use(express.static('public'));
+routes(app, express);
+
+// app.use(express.static('public'));
 
 console.log("Node server.js running on port " + portNo);
 

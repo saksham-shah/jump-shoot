@@ -25,7 +25,7 @@ class MenuScreen {
     fill(255);
     noStroke();
     textAlign(CENTER);
-    textSize(width * 0.0625);
+    textSize(height * 0.15);
     text("Jump & Shoot", width * 0.5, height * 0.2);
 
     for (var b of this.buttons) {

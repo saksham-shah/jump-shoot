@@ -30,7 +30,7 @@ class Game {
       [0, 255, 0], // green
       [255, 255, 0] // yellow
     ];
-    this.colourCount = 0;
+    // this.colourCount = 0;
 
     // Create an engine
     this.engine = Matter.Engine.create();
@@ -77,17 +77,6 @@ class Game {
     Matter.Events.on(this.engine, 'collisionStart', boundCollisionGoing);
     Matter.Events.on(this.engine, 'collisionActive', boundCollisionGoing);
     Matter.Events.on(this.engine, 'collisionEnd', boundCollisionStop);
-
-    // Add each player to the game
-    for (var i = 0; i < this.users.length; i++) {
-      var player = new Player(100, 200, this.users[i], this.colours[this.colourCount], this.engine);
-      // Colours cycle around
-      this.colourCount++;
-      if (this.colourCount >= this.colours.length) {
-        this.colourCount = 0;
-      }
-      this.players.set(player.id, player);
-    }
   }
 
   // Create the game map
@@ -102,11 +91,37 @@ class Game {
     this.deathBounds = {
       bottom: this.height + 50
     }
+
+    // Spawn points
+    this.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }, { x: 150, y: 200 }, { x: 650, y: 200 }, { x: 50, y: 200 }, { x: 750, y: 200 }];
+  }
+
+  addPlayers() {
+    var currentSpawn = 0;
+    var currentColour = 0;
+    // Add each player to the game
+    for (var i = 0; i < this.users.length; i++) {
+      var player = new Player(this.spawns[currentSpawn].x, this.spawns[currentSpawn].y, this.users[i], this.colours[currentColour], this.engine);
+      this.players.set(player.id, player);
+
+      // Colours cycle around
+      currentColour++;
+      if (currentColour >= this.colours.length) {
+        currentColour = 0;
+      }
+
+      // Spawn locations cycle around
+      currentSpawn++;
+      if (currentSpawn >= this.spawns.length) {
+        currentSpawn = 0;
+      }
+    }
   }
 
   startGame() {
     this.initGame();
     this.createMap();
+    this.addPlayers();
     this.inGame = true;
 
     // Send initial static objects to the players
