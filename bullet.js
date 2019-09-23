@@ -13,6 +13,10 @@ class Bullet {
     this.originPlayer = originPlayer;
 
     this.reflected = false;
+
+    this.colour = [255, 255, 0];
+
+    this.particles = [];
   }
 
   update(bodies) {
@@ -49,6 +53,23 @@ class Bullet {
               this.vel *= 1.25
               player.shieldWidth += 2.5;
               this.reflected = true;
+              this.colour = [255, 155, 0];
+
+              this.particles.push({
+                x: this.x,
+                y: this.y,
+                vel: 3,
+                velErr: 1.5,
+                angle: this.angle,
+                angleErr: Math.PI * 0.25,
+                gravity: 0,
+                r: 3,
+                life: 15,
+                lifeErr: 3,
+                col: this.colour,
+                num: 10
+              });
+
               return false;
             }
           }
@@ -114,7 +135,7 @@ class Bullet {
       y: this.y,
       r: this.r,
       angle: this.angle,
-      reflected: this.reflected
+      colour: this.colour
     }
   }
 }

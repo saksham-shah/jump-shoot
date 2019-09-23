@@ -53,6 +53,8 @@ class Player {
     this.cooldown = 0;
 
     this.shieldWidth = 40;
+
+    this.particles = [];
   }
 
   // Aim at the mouse position

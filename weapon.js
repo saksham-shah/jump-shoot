@@ -20,6 +20,8 @@ class Weapon {
     this.equipped = false;
     // Controls weapon fire rate
     this.cooldown = 0;
+
+    this.particles = [];
   }
 
   coolGun() {

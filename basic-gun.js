@@ -13,6 +13,22 @@ class BasicGun extends Weapon {
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
       var bullet = new Bullet(x, y, 3, 25, angle, 1, playerID);
+
+      this.particles.push({
+        x: x + this.w * Math.cos(angle),
+        y: y + this.h * Math.sin(angle),
+        vel: 3,
+        velErr: 1.5,
+        angle: angle,
+        angleErr: Math.PI * 0.25,
+        gravity: 0,
+        r: 3,
+        life: 15,
+        lifeErr: 3,
+        col: [255, 255, 0],
+        num: 10
+      });
+
       return {
         shot: true,
         angleChange: 0.4,

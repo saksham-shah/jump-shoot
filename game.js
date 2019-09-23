@@ -12,6 +12,8 @@ class Game {
     this.winner = null;
     this.ending = false;
     this.inGame = false;
+
+    this.pendingParticles = [];
   }
 
   // Initialise the physics engine and other variables needed in the game
@@ -210,6 +212,25 @@ class Game {
     for (var i = 0; i < this.bullets.length; i++) {
       var collide = this.bullets[i].update(this.engine.world.bodies);
       if (this.bullets[i].isOffScreen(this.width, this.height) || collide) {
+        // Create bullet hit particle effect
+        if (collide) {
+          var b = this.bullets[i];
+          this.pendingParticles.push({
+            x: b.x,
+            y: b.y,
+            vel: 3,
+            velErr: 1.5,
+            angle: b.angle,
+            angleErr: Math.PI * 0.25,
+            gravity: 0,
+            r: 3,
+            life: 15,
+            lifeErr: 3,
+            col: b.colour,
+            num: 10
+          });
+        }
+
         // Remove bullets if they go off screen
         this.bullets.splice(i, 1);
         i--;
@@ -255,6 +276,38 @@ class Game {
     }
 
     return [entities, players];
+  }
+
+  getParticles() {
+    var particleExplosions = [];
+
+    for (var i = 0; i < this.weapons.length; i++) {
+      for (var j = 0; j < this.weapons[i].particles.length; j++) {
+        particleExplosions.push(this.weapons[i].particles[j]);
+      }
+      this.weapons[i].particles = [];
+    }
+
+    for (var i = 0; i < this.bullets.length; i++) {
+      for (var j = 0; j < this.bullets[i].particles.length; j++) {
+        particleExplosions.push(this.bullets[i].particles[j]);
+      }
+      this.bullets[i].particles = [];
+    }
+
+    for (var i = 0; i < this.players.length; i++) {
+      for (var j = 0; j < this.players[i].particles.length; j++) {
+        particleExplosions.push(this.players[i].particles[j]);
+      }
+      this.players[i].particles = [];
+    }
+
+    for (var i = 0; i < this.pendingParticles.length; i++) {
+      particleExplosions.push(this.pendingParticles[i]);
+    }
+    this.pendingParticles = [];
+
+    return particleExplosions;
   }
 
 }

@@ -5,6 +5,7 @@ class GameScreen {
     // this.dynamic = [];
     this.entities = [];
     this.players = [];
+    this.particles = [];
     this.zoom = 1;
     this.leaveButton = new Button(0.1, 0.055, 'LEAVE', () => socket.emit('leave lobby'), null);
     this.closeButton = new Button(0.1, 0.055, 'CLOSE', () => popup = null, null);
@@ -14,12 +15,22 @@ class GameScreen {
   // Reset platforms array
   newGame(platforms) {
     this.platforms = platforms;
+    this.entities = [];
+    this.players = [];
+    this.particles = [];
   }
 
   updateDynamic(entities, players) {
     // this.dynamic = dynamic;
     this.entities = entities;
     this.players = players;
+
+    for (var i = 0; i < this.particles.length; i++) {
+      if (this.particles[i].update()) {
+        this.particles.splice(i, 1);
+        i--;
+      }
+    }
   }
 
   resetGame() {
@@ -31,6 +42,33 @@ class GameScreen {
     this.leaveButton.updateState(width * 0.9, height * 0.075);
   }
 
+  particleEffect(x, y, r, col, life) {
+    this.particles.push(new Particle(x, y, 1, 1, 0.2, r, col, life));
+  }
+
+  particleExplosion(options) {//x, y, vel, velErr, angle, angleErr, gravity, r, col, life, lifeErr, num) {
+    // this.particles.push(new Particle(x, y, 1, 1, r, col, life));
+    for (var i = 0; i < options.num; i++) {
+      if (options.velErr) {
+        options.vel += (Math.random() - 0.5) * 2 * options.velErr;
+      }
+      if (options.angleErr) {
+        options.angle += (Math.random() - 0.5) * 2 * options.angleErr;
+      }
+      if (options.lifeErr) {
+        options.life += (Math.random() - 0.5) * 2 * options.lifeErr;
+      }
+      if (!options.gravity) {
+        options.gravity = 0;
+      }
+
+      var p = new Particle(options.x, options.y, options.vel, options.angle, options.gravity, options.r, options.col, options.life);
+      this.particles.push(p);
+
+    }
+
+  }
+
   show(x, y, z) {
     push();
     translate(gameSize.x, gameSize.y);
@@ -38,21 +76,25 @@ class GameScreen {
     scale(gameSize.z);
 
     for (var i = 0; i < this.platforms.length; i++) {
-      drawObject(this.platforms[i])
+      drawObject(this.platforms[i]);
     }
 
     for (var i = 0; i < this.entities.length; i++) {
       if (this.entities[i].hide !== true) {
-        drawObject(this.entities[i])
+        drawObject(this.entities[i]);
       }
     }
 
     for (var i = 0; i < this.players.length; i++) {
-      drawPlayer(this.players[i])
+      drawPlayer(this.players[i]);
+    }
+
+    for (var i = 0; i < this.particles.length; i++) {
+      this.particles[i].show();
     }
 
     for (var i = 0; i < this.players.length; i++) {
-      drawNameTag(this.players[i])
+      drawNameTag(this.players[i]);
     }
 
     pop();
@@ -174,10 +216,10 @@ function drawObject(obj) {
       break;
     case 'bullet': // Long thin rectangle to show it is a fast bullet
       rotate(obj.angle)
-      fill(255, 255, 0);
-      if (obj.reflected) {
-        fill(255, 155, 0);
-      }
+      fill(obj.colour);
+      // if (obj.reflected) {
+      //   fill(255, 155, 0);
+      // }
       noStroke();
       rect(-obj.r * 1.5, 0, obj.r * 15, obj.r);
       break;

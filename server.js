@@ -482,6 +482,10 @@ function updateGame() {
         }
         io.in(room).emit('game over', sendData);
       }
+      var particleExplosions = lobbies[i].getParticles();
+      if (particleExplosions.length > 0) {
+        io.in(room).emit('new particles', particleExplosions);
+      }
     }
   }
 }

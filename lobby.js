@@ -182,6 +182,13 @@ class Lobby {
     }
     return null;
   }
+
+  getParticles() {
+    if (this.game) {
+      return this.game.getParticles();
+    }
+    return [];
+  }
 }
 
 module.exports = Lobby;

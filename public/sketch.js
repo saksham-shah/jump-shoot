@@ -46,6 +46,8 @@ var controls = {
   bouncy: 69 // E
 }
 
+var SHOWPARTICLES = true;
+
 var gameSize = {
   x: 0,
   y: 0,
@@ -201,6 +203,15 @@ function setup() {
       platforms = data.platforms;
       gs.newGame(data.platforms);
       chat.newMessage(SERVER, "New game starting");
+    }
+  })
+
+  // New particles created
+  socket.on('new particles', function(particles) {
+    if (SHOWPARTICLES) {
+      for (var i = 0; i < particles.length; i++) {
+        gs.particleExplosion(particles[i]);
+      }
     }
   })
 
