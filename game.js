@@ -21,6 +21,7 @@ class Game {
     this.weapons = [];
     this.bullets = [];
     this.platforms = [];
+    this.dynamic = [];
 
     this.weaponCounter = 0;
 
@@ -42,14 +43,18 @@ class Game {
       var pairs = event.pairs;
       for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i];
+        var normal = pair.collision.normal;
         var playerA = this.players.get(pair.bodyA.label);
         var playerB = this.players.get(pair.bodyB.label);
         // If a player is colliding with a non-player, they can jump
         if (playerA && !playerB) {
           playerA.canJump = true;
+          playerA.jumpNormal = normal;
         }
         if (playerB && !playerA) {
           playerB.canJump = true;
+          playerB.jumpNormal = { x: -normal.x, y: -normal.y };
+          // console.log(normal);
         }
       }
     }
@@ -59,14 +64,24 @@ class Game {
       var pairs = event.pairs;
       for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i];
+        var normal = pair.collision.normal;
+        var normalAngle = Math.atan2(normal.y, normal.x);
         var playerA = this.players.get(pair.bodyA.label);
         var playerB = this.players.get(pair.bodyB.label);
         // Once a player stops colliding, they can't jump
-        if (playerA && !playerB) {
-          playerA.canJump = false;
+        // Also creates particle effects
+        if (playerA) {
+          collisionParticles(playerA, pair.bodyA.position, normalAngle);
+          if (!playerB) {
+            playerA.canJump = false;
+          }
         }
-        if (playerB && !playerA) {
-          playerB.canJump = false;
+        if (playerB) {
+          normalAngle += Math.PI;
+          collisionParticles(playerB, pair.bodyB.position, normalAngle);
+          if (!playerA) {
+            playerB.canJump = false;
+          }
         }
       }
     }
@@ -86,8 +101,21 @@ class Game {
     this.width = 800;
     this.height = 540;
 
-    var ground = new Platform(this.width / 2, this.height - 20, this.width - 30, 20, this.engine);
-    this.platforms.push(ground);
+    var ground = new Platform(this.width * 0.5, this.height * 0.5, 600, 20, { density: 0.02, frictionAir: 0.001 }, this.engine);
+    this.dynamic.push(ground);
+    // console.log(ground.body.frictionAir);
+
+    var pivot = Matter.Constraint.create({
+            bodyA: ground.body,
+            pointB: { x: this.width / 2, y: this.height / 2 },
+            stiffness: 1,
+            length: 0
+        });
+    Matter.World.add(this.engine.world, pivot);
+    // ground = new Platform(400, 300, 400, 20, Math.PI * 0.5, this.engine);
+    // this.platforms.push(ground);
+    // ground = new Platform(200, 300, 400, 20, Math.PI * 0.5, this.engine);
+    // this.platforms.push(ground);
 
     // Game boundary
     this.deathBounds = {
@@ -197,6 +225,29 @@ class Game {
       if (player.isOutOfBounds(this.deathBounds)) {
         // Remove players if they exit the game boundaries
         this.disconnectPlayer(playerid);
+
+        // Death particles
+        var buffer = 20;
+        var deathX = player.body.position.x;
+        if (deathX < buffer) {
+          deathX = buffer;
+        } else if (deathX > this.width - buffer) {
+          deathX = this.width - buffer;
+        }
+        this.pendingParticles.push({
+          x: deathX,
+          y: this.height,
+          vel: 5,
+          velErr: 0.5,
+          angle: -Math.PI * 0.5,
+          angleErr: Math.PI * 0.125 * 0.5,
+          gravity: 0.2,
+          r: 5,
+          life: 35,
+          lifeErr: 5,
+          col: player.colour,
+          num: 50
+        });
       }
     }
 
@@ -271,6 +322,10 @@ class Game {
       entities.push(this.weapons[i].toObject());
     }
 
+    for (var i = 0; i < this.dynamic.length; i++) {
+      entities.push(this.dynamic[i].toObject());
+    }
+
     for (var player of this.players.values()) {
       players.push(player.toObject(users));
     }
@@ -295,11 +350,11 @@ class Game {
       this.bullets[i].particles = [];
     }
 
-    for (var i = 0; i < this.players.length; i++) {
-      for (var j = 0; j < this.players[i].particles.length; j++) {
-        particleExplosions.push(this.players[i].particles[j]);
+    for (var player of this.players.values()) {
+      for (var i = 0; i < player.particles.length; i++) {
+        particleExplosions.push(player.particles[i]);
       }
-      this.players[i].particles = [];
+      player.particles = [];
     }
 
     for (var i = 0; i < this.pendingParticles.length; i++) {
@@ -309,7 +364,30 @@ class Game {
 
     return particleExplosions;
   }
+}
 
+function collisionParticles(player, pos, angle) {
+  var v = player.body.velocity;
+  var vMagSq = Math.pow(v.x, 2) + Math.pow(v.y, 2);
+  if (vMagSq < 3) {
+    return;
+  }
+  var px = pos.x - player.r * Math.cos(angle);// + Math.PI);
+  var py = pos.y - player.r * Math.sin(angle);// + Math.PI);
+  player.particles.push({
+    x: px,
+    y: py,
+    vel: 3,
+    velErr: 1.5,
+    angle: angle,
+    angleErr: Math.PI * 0.25,
+    gravity: 0,
+    r: 3,
+    life: 15,
+    lifeErr: 3,
+    col: player.colour,
+    num: 10
+  });
 }
 
 module.exports = Game;

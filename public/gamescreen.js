@@ -97,6 +97,10 @@ class GameScreen {
       drawNameTag(this.players[i]);
     }
 
+    for (var i = 0; i < this.players.length; i++) {
+      drawOffScreenPlayer(this.players[i]);
+    }
+
     pop();
 
     fill(60);
@@ -170,43 +174,44 @@ function drawNameTag(obj) {
   pop();
 }
 
+function drawOffScreenPlayer(obj) {
+  if (obj.x - obj.r > gameSize.w || obj.x + obj.r < 0 || obj.y - obj.r > gameSize.h || obj.y + obj.r < 0) {
+    // Player is offscreen and an offscreen arrow needs to be drawn
+    var x = obj.x;
+    var y = obj.y;
+    var buffer = obj.r * 2;
+
+    if (x < buffer) {
+      x = buffer;
+    } else if (x > gameSize.w - buffer) {
+      x = gameSize.w - buffer;
+    }
+    if (y < buffer) {
+      y = buffer;
+    } else if (y > gameSize.h - buffer) {
+      y = gameSize.h - buffer;
+    }
+    var colour = obj.colour;
+    colour.push(50);
+    fill(colour);
+    stroke(0, 50);
+    strokeWeight(1);
+    ellipse(x, y, obj.r * 2);
+  }
+}
+
 //How to draw every possible game object - may split this into seperate functions as more game objects are added
 function drawObject(obj) {
   push();
   translate(obj.x, obj.y);
   switch (obj.type) {
     case 'platform': // Simple rectangle
+      rotate(obj.angle);
       fill(200);
       stroke(255);
       strokeWeight(1);
       rect(0, 0, obj.w, obj.h);
       break;
-    // case 'player':
-    //   fill(255);
-    //   noStroke();
-    //   textAlign(CENTER);
-    //   textSize(12);
-    //   text(obj.name, 0, obj.r + 15); // Name tag
-    //   rotate(obj.angle); // Rotate to draw the gun in the right place
-    //   fill(obj.colour);
-    //   stroke(0);
-    //   strokeWeight(1);
-    //   ellipse(0, 0, obj.r * 2); // Draw player circle
-    //   line(0, 0, obj.r, 0); // Draw direction the player is aiming
-    //   if (obj.shield) { // Draw player's shield
-    //       fill(255);
-    //       noStroke();
-    //       rect(obj.r + 5, 0, 10, obj.shieldWidth);
-    //   }
-    //   if (obj.weapon) { // Draw player's weapon
-    //     var weaponObj = obj.weapon;
-    //     weaponObj.angle = 0; // Relative to player's angle and position
-    //     weaponObj.x = obj.r;
-    //     weaponObj.y = 0;
-    //     weaponObj.hide = false;
-    //     drawObject(weaponObj);
-    //   }
-    //   break;
     case 'weapon': // Rectangle for now - may add graphics
       rotate(obj.angle);
       fill(obj.colour);

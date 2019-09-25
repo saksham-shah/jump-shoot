@@ -17,6 +17,8 @@ class Bullet {
     this.colour = [255, 255, 0];
 
     this.particles = [];
+
+    this.wasOnScreen = false;
   }
 
   update(bodies) {
@@ -125,7 +127,15 @@ class Bullet {
 
   // Bullet disappears if off screen
   isOffScreen(width, height) {
-    return (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100)
+    if (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100) {
+      if (this.wasOnScreen) {
+        return true;
+      }
+    } else {
+      this.wasOnScreen = true;
+      return false;
+    }
+    // return (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100)
   }
 
   toObject() {

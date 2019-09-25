@@ -28,6 +28,7 @@ class Player {
 
     // Whether the player can currently jump (e.g. if they are on a platform)
     this.canJump = false;
+    this.jumpNormal = {x: 0, y: 0};
 
     // Holds status of all key presses
     this.controls = {
@@ -248,8 +249,30 @@ class Player {
     }
     if (this.controls.up) {
       if (this.canJump) {
-        var vx = body.velocity.x;
-        Matter.Body.setVelocity(body, { x: vx, y: -8 });
+        var n = this.jumpNormal;
+        // console.log(n);
+        var nAng = Math.atan2(n.y, n.x);
+
+        var v = body.velocity;
+        var vMag = Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
+        var vAng = Math.atan2(v.y, v.x);
+
+        var angle = vAng - nAng;
+        var parallelV = 8;
+        var perpV = vMag * Math.sin(angle);
+        // var perpV = 0;
+        var newVMag = Math.sqrt(Math.pow(parallelV, 2) + Math.pow(perpV, 2));
+        var newVAng = Math.atan2(perpV, parallelV) + nAng;
+
+        var vx = newVMag * Math.cos(newVAng);
+        var vy = newVMag * Math.sin(newVAng);
+
+        if ((nAng >= Math.PI * 5/6 || nAng <= Math.PI / 6) && vy > -6) {
+          vy = -6;
+        }
+
+        // var vx = body.velocity.x;
+        Matter.Body.setVelocity(body, { x: vx, y: vy });
       }
       Matter.Body.applyForce(body, body.position, {
         x: 0,
