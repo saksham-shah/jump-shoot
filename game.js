@@ -101,13 +101,17 @@ class Game {
     this.width = 800;
     this.height = 540;
 
-    var ground = new Platform(this.width * 0.5, this.height * 0.5, 600, 20, { density: 0.02, frictionAir: 0.001 }, this.engine);
-    this.dynamic.push(ground);
+    var pivotPlat = new Platform(this.width * 0.5, this.height * 0.5, 450, 20, { density: 0.02, frictionAir: 0.001 }, this.engine);
+    this.dynamic.push(pivotPlat);
+
+    var ground = new Platform(this.width * 0.5, this.height, 100, 20, { isStatic: true }, this.engine);
+    this.platforms.push(ground);
+
     // console.log(ground.body.frictionAir);
 
     var pivot = Matter.Constraint.create({
-            bodyA: ground.body,
-            pointB: { x: this.width / 2, y: this.height / 2 },
+            bodyA: pivotPlat.body,
+            pointB: { x: this.width * 0.5, y: this.height * 0.5 },
             stiffness: 1,
             length: 0
         });
@@ -262,29 +266,32 @@ class Game {
 
     for (var i = 0; i < this.bullets.length; i++) {
       var collide = this.bullets[i].update(this.engine.world.bodies);
+      // if (this.bullets[i].isOffScreen(this.width, this.height) || collide) {
       if (this.bullets[i].isOffScreen(this.width, this.height) || collide) {
         // Create bullet hit particle effect
-        if (collide) {
-          var b = this.bullets[i];
-          this.pendingParticles.push({
-            x: b.x,
-            y: b.y,
-            vel: 3,
-            velErr: 1.5,
-            angle: b.angle,
-            angleErr: Math.PI * 0.25,
-            gravity: 0,
-            r: 3,
-            life: 15,
-            lifeErr: 3,
-            col: b.colour,
-            num: 10
-          });
-        }
+        // if (collide) {
+        var b = this.bullets[i];
+        this.pendingParticles.push({
+          x: b.x,
+          y: b.y,
+          vel: 3,
+          velErr: 1.5,
+          angle: b.angle,
+          angleErr: Math.PI * 0.25,
+          gravity: 0,
+          r: 3,
+          life: 15,
+          lifeErr: 3,
+          col: b.colour,
+          num: 10
+        });
+        // }
 
-        // Remove bullets if they go off screen
-        this.bullets.splice(i, 1);
-        i--;
+        if (collide) {
+          // Remove bullets if they go off screen
+          this.bullets.splice(i, 1);
+          i--;
+        }
       }
     }
 

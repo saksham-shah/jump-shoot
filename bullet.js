@@ -127,15 +127,48 @@ class Bullet {
 
   // Bullet disappears if off screen
   isOffScreen(width, height) {
-    if (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100) {
-      if (this.wasOnScreen) {
-        return true;
-      }
-    } else {
-      this.wasOnScreen = true;
-      return false;
-    }
+    // if (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100) {
+    //   if (this.wasOnScreen) {
+    //     return true;
+    //   }
+    // } else {
+    //   this.wasOnScreen = true;
+    //   return false;
+    // }
     // return (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100)
+    var collide = false;
+    if (this.x < 0 || this.x > width) {
+      var vx = this.vel * Math.cos(this.angle);
+      var vy = this.vel * Math.sin(this.angle);
+      vx *= -1;
+      this.vel = Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2));
+      this.angle = Math.atan2(vy, vx);
+    }
+    if (this.y < 0 || this.y > height) {
+      var vx = this.vel * Math.cos(this.angle);
+      var vy = this.vel * Math.sin(this.angle);
+      vy *= -1;
+      this.vel = Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2));
+      this.angle = Math.atan2(vy, vx);
+    }
+
+    if (this.x < 0) {
+      this.x = 0;
+      collide = true;
+    }
+    if (this.x > width) {
+      this.x = width;
+      collide = true;
+    }
+    if (this.y < 0) {
+      this.y = 0;
+      collide = true;
+    }
+    if (this.y > height) {
+      this.y = height;
+      collide = true;
+    }
+    return collide;
   }
 
   toObject() {
