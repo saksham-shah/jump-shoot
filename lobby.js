@@ -9,7 +9,7 @@ class Lobby {
     this.publicLobby = publicLobby;
     // this.lobbyid = lobbyid;
     this.maxPlayers = 4;
-    this.players = [];
+    this.players = new Map();
     this.gameCountdown = -1;
     this.game = null;
     // this.newGame();
@@ -17,7 +17,7 @@ class Lobby {
   }
 
   addPlayer(socketid) {
-    this.players.push(socketid);
+    this.players.set(socketid, { score: 0 });
     // Send data to the client
     var data = {
       name: this.name,
@@ -28,23 +28,25 @@ class Lobby {
       data.gameinfo = {
         width: this.game.width,
         height: this.game.height,
-        platforms: this.game.statics
+        platforms: this.game.statics,
+        bulletBounce: this.game.bulletBounce
       }
     }
     return data;
   }
 
   removePlayer(socketid) {
-    for (var i = 0; i < this.players.length; i++) {
-      if (this.players[i] === socketid) {
+    // for (var i = 0; i < this.players.length; i++) {
+    //   if (this.players[i] === socketid) {
         if (this.game) {
           // Remove the player from an ongoing game
           this.game.disconnectPlayer(socketid);
         }
-        this.players.splice(i, 1);
-        i--;
-      }
-    }
+        this.players.delete(socketid);
+        // this.players.splice(i, 1);
+        // i--;
+    //   }
+    // }
   }
 
   newGame() {
@@ -82,11 +84,20 @@ class Lobby {
     if (this.game) {
       if (!this.game.inGame && this.gameCountdown < 0) {
         var winner = this.game.winner;
+        var winnerObj = this.players.get(winner);
+        if (winnerObj) {
+          winnerObj.score++;
+          this.players.set(winner, winnerObj);
+        }
+        // for (var [id, player] of this.players) {
+        //   console.log(`${users.get(id).name}: ${player.score}`);
+        // }
         // Next game starts in 1 second
         this.gameCountdown = 60;
         return {
           type: 'endGame',
-          winner: winner
+          winner: winner,
+          scoresMap: this.players
         }
       } else if (this.gameCountdown == 0) {
         this.game = null;
@@ -102,7 +113,7 @@ class Lobby {
       }
     }
 
-    if (this.players.length > 0) {
+    if (this.players.size > 0) {
       var data = this.newGame();
       data.type = 'startGame';
       return data;
@@ -112,7 +123,7 @@ class Lobby {
 
     // Start a new game if the old one has been over for a while
     if (this.gameCountdown < 0) {
-      if (this.players.length > 0) {
+      if (this.players.size > 0) {
         var gameEnding = false;
         if (this.game) {
           if (this.game.ending) {

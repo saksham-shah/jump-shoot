@@ -5,6 +5,8 @@ var BasicGun = require('./basic-gun.js');
 var Platform = require('./platform.js');
 var Bullet = require('./bullet.js');
 
+var mapFuncs = require('./game-maps.js');
+
 // Played within a lobby, runs the actual game and physics engine
 class Game {
   constructor(users) {
@@ -20,8 +22,10 @@ class Game {
   initGame() {
     this.weapons = [];
     this.bullets = [];
-    this.platforms = [];
+    this.static = [];
     this.dynamic = [];
+
+    this.bulletBounce = false;
 
     this.weaponCounter = 0;
 
@@ -47,11 +51,11 @@ class Game {
         var playerA = this.players.get(pair.bodyA.label);
         var playerB = this.players.get(pair.bodyB.label);
         // If a player is colliding with a non-player, they can jump
-        if (playerA && !playerB) {
+        if (playerA) {
           playerA.canJump = true;
           playerA.jumpNormal = normal;
         }
-        if (playerB && !playerA) {
+        if (playerB) {
           playerB.canJump = true;
           playerB.jumpNormal = { x: -normal.x, y: -normal.y };
           // console.log(normal);
@@ -72,16 +76,16 @@ class Game {
         // Also creates particle effects
         if (playerA) {
           collisionParticles(playerA, pair.bodyA.position, normalAngle);
-          if (!playerB) {
+          // if (!playerB) {
             playerA.canJump = false;
-          }
+          // }
         }
         if (playerB) {
           normalAngle += Math.PI;
           collisionParticles(playerB, pair.bodyB.position, normalAngle);
-          if (!playerA) {
+          // if (!playerA) {
             playerB.canJump = false;
-          }
+          // }
         }
       }
     }
@@ -98,44 +102,47 @@ class Game {
 
   // Create the game map
   createMap() {
-    this.width = 800;
-    this.height = 540;
-
-    var pivotPlat = new Platform(this.width * 0.5, this.height * 0.5, 450, 20, { density: 0.02, frictionAir: 0.001 }, this.engine);
-    this.dynamic.push(pivotPlat);
-
-    var ground = new Platform(this.width * 0.5, this.height, 100, 20, { isStatic: true }, this.engine);
-    this.platforms.push(ground);
-
-    // console.log(ground.body.frictionAir);
-
-    var pivot = Matter.Constraint.create({
-            bodyA: pivotPlat.body,
-            pointB: { x: this.width * 0.5, y: this.height * 0.5 },
-            stiffness: 1,
-            length: 0
-        });
-    Matter.World.add(this.engine.world, pivot);
-    // ground = new Platform(400, 300, 400, 20, Math.PI * 0.5, this.engine);
+    var thisMapFunc = mapFuncs[Math.floor(Math.random() * mapFuncs.length)];
+    thisMapFunc(this);
+    // this.width = 800;
+    // this.height = 540;
+    // // this.bulletBounce = true;
+    //
+    // var pivotPlat = new Platform(this.width * 0.5, this.height * 0.5, 450, 20, { density: 0.02, frictionAir: 0.001 }, this.engine);
+    // this.dynamic.push(pivotPlat);
+    //
+    // var ground = new Platform(this.width * 0.5, this.height, 100, 20, { isStatic: true }, this.engine);
     // this.platforms.push(ground);
-    // ground = new Platform(200, 300, 400, 20, Math.PI * 0.5, this.engine);
-    // this.platforms.push(ground);
-
-    // Game boundary
-    this.deathBounds = {
-      bottom: this.height + 50
-    }
-
-    // Spawn points
-    this.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }, { x: 150, y: 200 }, { x: 650, y: 200 }, { x: 50, y: 200 }, { x: 750, y: 200 }];
+    //
+    // // console.log(ground.body.frictionAir);
+    //
+    // var pivot = Matter.Constraint.create({
+    //         bodyA: pivotPlat.body,
+    //         pointB: { x: this.width * 0.5, y: this.height * 0.5 },
+    //         stiffness: 1,
+    //         length: 0
+    //     });
+    // Matter.World.add(this.engine.world, pivot);
+    // // ground = new Platform(400, 300, 400, 20, Math.PI * 0.5, this.engine);
+    // // this.platforms.push(ground);
+    // // ground = new Platform(200, 300, 400, 20, Math.PI * 0.5, this.engine);
+    // // this.platforms.push(ground);
+    //
+    // // Game boundary
+    // this.deathBounds = {
+    //   bottom: this.height + 50
+    // }
+    //
+    // // Spawn points
+    // this.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }, { x: 150, y: 200 }, { x: 650, y: 200 }, { x: 50, y: 200 }, { x: 750, y: 200 }];
   }
 
   addPlayers() {
     var currentSpawn = 0;
     var currentColour = 0;
     // Add each player to the game
-    for (var i = 0; i < this.users.length; i++) {
-      var player = new Player(this.spawns[currentSpawn].x, this.spawns[currentSpawn].y, this.users[i], this.colours[currentColour], this.engine);
+    for (var user of this.users.keys()) {
+      var player = new Player(this.spawns[currentSpawn].x, this.spawns[currentSpawn].y, user, this.colours[currentColour], this.engine);
       this.players.set(player.id, player);
 
       // Colours cycle around
@@ -159,16 +166,17 @@ class Game {
     this.inGame = true;
 
     // Send initial static objects to the players
-    this.statics = [];
-    for (var i = 0; i < this.platforms.length; i++) {
-      this.statics.push(this.platforms[i].toObject());
+    var statics = [];
+    for (var i = 0; i < this.static.length; i++) {
+      statics.push(this.static[i].toObject());
     }
 
     var data = {
       // type: 'newGame',
       width: this.width,
       height: this.height,
-      platforms: this.statics
+      platforms: statics,
+      bulletBounce: this.bulletBounce
     }
 
     return data;
@@ -267,7 +275,7 @@ class Game {
     for (var i = 0; i < this.bullets.length; i++) {
       var collide = this.bullets[i].update(this.engine.world.bodies);
       // if (this.bullets[i].isOffScreen(this.width, this.height) || collide) {
-      if (this.bullets[i].isOffScreen(this.width, this.height) || collide) {
+      if (this.bullets[i].isOffScreen(this.width, this.height, this.bulletBounce) || collide) {
         // Create bullet hit particle effect
         // if (collide) {
         var b = this.bullets[i];
@@ -299,7 +307,7 @@ class Game {
     if (this.weaponCounter < 0) {
       if (this.weapons.length < this.players.size * 2) {
         this.weaponCounter = 300;
-        var weapon = new BasicGun(Math.random() * (this.width - 100) + 50, 0, this.engine);
+        var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, 0, this.engine);
         this.weapons.push(weapon);
       }
     } else {

@@ -19,6 +19,7 @@ var chat, chatTextBox; // Variables storing the chat and chat text box
 var textTarget = null; // Any text typed will be added to the text box stored here
 var shiftPressed = false; // Used to type upper case characters
 
+var scoreboard = [];
 var timer = {
   time: -1,
   maxTime: 0,
@@ -141,6 +142,7 @@ function setup() {
   socket.on('joined lobby', function(data) {
     inLobby = true;
     lobbyName = data.name;
+    scoreboard = [];
     // Send messages in the chat to tell the player they have joined a lobby
     chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
     if (data.gameinfo) { // Lobby is currently mid game
@@ -154,7 +156,7 @@ function setup() {
 
       // Start displaying the game
       platforms = data.gameinfo.platforms;
-      gs.newGame(data.gameinfo.platforms);
+      gs.newGame(data.gameinfo.platforms, data.gameinfo.bulletBounce);
     }
     scr = gs;
   })
@@ -172,19 +174,19 @@ function setup() {
   })
 
   // New game starts
-  socket.on('game start', function(data) {
-    // Game zooming scale depends on the size of the screen relative to the game map
-    // gameSize.z = width / data.width
-
-    gameSize.w = data.gameinfo.width;
-    gameSize.h = data.gameinfo.height;
-    calculateGameSize();
-
-    // Start displaying the game
-    platforms = data.platforms;
-    gs.newGame(data.platforms);
-    chat.newMessage(SERVER, "New game starting");
-  })
+  // socket.on('game start', function(data) {
+  //   // Game zooming scale depends on the size of the screen relative to the game map
+  //   // gameSize.z = width / data.width
+  //
+  //   gameSize.w = data.gameinfo.width;
+  //   gameSize.h = data.gameinfo.height;
+  //   calculateGameSize();
+  //
+  //   // Start displaying the game
+  //   platforms = data.platforms;
+  //   gs.newGame(data.platforms, data.bulletBounce);
+  //   chat.newMessage(SERVER, "New game starting");
+  // })
 
   // Next frame of the game
   socket.on('update', function(data) {
@@ -201,7 +203,7 @@ function setup() {
 
       // Start displaying the game
       platforms = data.platforms;
-      gs.newGame(data.platforms);
+      gs.newGame(data.platforms, data.bulletBounce);
       chat.newMessage(SERVER, "New game starting");
     }
   })
@@ -218,6 +220,7 @@ function setup() {
   // Game ended
   socket.on('game over', function(data) {
     setTimer(60, "Next game");
+    scoreboard = data.scoreboard;
     chat.newMessage(SERVER, "Game over");
     // Check if there is a single winner
     if (data.winner) {
@@ -391,20 +394,17 @@ function draw() {
     popup.show();
   }
 
-  // Draw chat in the bottom left corner
-  chat.show(20, height - 50);
-
-  // Only show chat text box if it is selected
-  if (textTarget == chatTextBox) {
-    chatTextBox.show(20, height - 24, 200, 26);
-  }
-
   // b.updateButtonStates(y);
   // b.show(y);//, b.isHovered(300, 200));
   // y ++;
 
   if (timer.time > 0 && timer.maxTime > 0) {
     timer.time--;
+
+    // Darken screen
+    // fill(0, 150);
+    // noStroke();
+    // rect(width / 2, height / 2, width, height);
 
     // Draw the timer
     push();
@@ -421,6 +421,30 @@ function draw() {
     rotate(-HALF_PI);
     arc(0, 0, timerR, timerR, 0, progress * TWO_PI, PIE);
     pop();
+
+    // Draw the scoreboard
+    push()
+    var txt = '';
+    for (var i = 0; i < scoreboard.length; i++) {
+      txt += `${scoreboard[i].name}: ${scoreboard[i].score}`;
+      if (i < scoreboard.length - 1) {
+        txt += '\n';
+      }
+    }
+
+    fill(255);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    textSize(40);
+    text(txt, width * 0.5, height * 0.5);
+    pop()
   }
 
+  // Draw chat in the bottom left corner
+  chat.show(20, height - 50);
+
+  // Only show chat text box if it is selected
+  if (textTarget == chatTextBox) {
+    chatTextBox.show(20, height - 24, 200, 26);
+  }
 }

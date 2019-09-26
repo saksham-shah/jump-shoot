@@ -19,11 +19,14 @@ class Bullet {
     this.particles = [];
 
     this.wasOnScreen = false;
+
+    this.timeAlive = 0;
   }
 
   update(bodies) {
     // Ensures that the bullet only moves a maximum of 5 pixels at a time
     // Prevents fast bullets from going through objects without skipping them
+    this.timeAlive ++;
     var distanceMoved = 0;
     var step = this.vel / Math.ceil(this.vel / 5)
     // Keeps moving until it collides
@@ -47,7 +50,7 @@ class Bullet {
         // If body is a player
         if (body.externalData.type == 'player') {
           var player = body.externalData.obj;
-          if (player.shield && player.id != this.originPlayer) {
+          if (player.shield) {// && (player.id != this.originPlayer)) {
             var shieldX = body.position.x + (player.r + 7) * Math.cos(player.angle);
             var shieldY = body.position.y + (player.r + 7) * Math.sin(player.angle);
             if (collideWithRect(this.x, this.y, shieldX, shieldY, 7, player.shieldWidth, player.angle)) {
@@ -79,7 +82,7 @@ class Bullet {
       }
 
       // If body is circle and is not the player who shot the bullet
-      if (body.circleRadius && (body.label != this.originPlayer || this.reflected)) {
+      if (body.circleRadius && (body.label != this.originPlayer || this.reflected || this.timeAlive > 10)) {
         var dSq = Math.pow(this.x - body.position.x, 2) + Math.pow(this.y - body.position.y, 2);
         // Check if bullet has hit the circle
         if (dSq < Math.pow(body.circleRadius, 2)) {
@@ -126,7 +129,7 @@ class Bullet {
   }
 
   // Bullet disappears if off screen
-  isOffScreen(width, height) {
+  isOffScreen(width, height, bounce) {
     // if (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100) {
     //   if (this.wasOnScreen) {
     //     return true;
@@ -136,6 +139,10 @@ class Bullet {
     //   return false;
     // }
     // return (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100)
+    if (!bounce) {
+      return (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100)
+    }
+
     var collide = false;
     if (this.x < 0 || this.x > width) {
       var vx = this.vel * Math.cos(this.angle);

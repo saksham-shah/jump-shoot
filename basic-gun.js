@@ -5,13 +5,15 @@ var Bullet = require('./bullet.js');
 class BasicGun extends Weapon {
   constructor(x, y, engine) {
     super(x, y, 20, 10, engine);
-    this.fireRate = 10;
+    this.fireRate = 12;
   }
 
   shoot(x, y, angle, playerID) {
     // Only fire if gun is cooled down
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
+      // x += this.w * Math.cos(angle);
+      // y += this.w * Math.sin(angle);
       var bullet = new Bullet(x, y, 3, 25, angle, 1, playerID);
 
       this.particles.push({

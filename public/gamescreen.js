@@ -6,6 +6,7 @@ class GameScreen {
     this.entities = [];
     this.players = [];
     this.particles = [];
+    this.bulletBounce = false;
     this.zoom = 1;
     this.leaveButton = new Button(0.1, 0.055, 'LEAVE', () => socket.emit('leave lobby'), null);
     this.closeButton = new Button(0.1, 0.055, 'CLOSE', () => popup = null, null);
@@ -13,11 +14,13 @@ class GameScreen {
   }
 
   // Reset platforms array
-  newGame(platforms) {
+  newGame(platforms, bulletBounce) {
     this.platforms = platforms;
     this.entities = [];
     this.players = [];
     this.particles = [];
+
+    this.bulletBounce = bulletBounce;
   }
 
   updateDynamic(entities, players) {
@@ -36,6 +39,8 @@ class GameScreen {
   resetGame() {
     this.platforms = [];
     this.dynamic = [];
+    this.players = [];
+    this.bulletBounce = false;
   }
 
   update() {
@@ -111,8 +116,12 @@ class GameScreen {
     rect(width - gameSize.x * 0.5, height * 0.5, gameSize.x, height);
 
     noFill();
-    stroke(255);
+    stroke(200);
     strokeWeight(2);
+    if (this.bulletBounce) {
+      stroke(255);
+      strokeWeight(4);
+    }
     rect(width * 0.5, height * 0.5, gameSize.w * gameSize.z, gameSize.h * gameSize.z)
 
     this.leaveButton.show(width * 0.9, height * 0.075);

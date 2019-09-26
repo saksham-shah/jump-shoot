@@ -353,7 +353,8 @@ function getLobbies() {
   for (var lobby of lobbies) {
     if (lobby.publicLobby) {
       var players = [];
-      for (var player of lobby.players) {
+      for (var player of lobby.players.keys()) {
+        // console.log(player);
         players.push({
           name: users.get(player).name
         });
@@ -406,7 +407,7 @@ function leaveLobby(socket) {
     // Remove from lobby
     lobby.removePlayer(socket.id);
     // Delete lobby if it is empty
-    if (lobby.players.length == 0) {
+    if (lobby.players.size == 0) {
       for (var i = 0; i < lobbies.length; i++) {
         if (lobbies[i] === lobby && !lobby.publicLobby) {
           lobbies.splice(i, 1);
@@ -476,10 +477,19 @@ function updateGame() {
         io.in(room).emit('update', data);
       } else {
         // Send the winner to the players (if there is one)
-        var sendData = {};
+        var sendData = {
+          scoreboard: []
+        };
         if (data.winner) {
           sendData.winner = users.get(data.winner).name;
         }
+        for (var [id, scoreObj] of data.scoresMap) {
+          sendData.scoreboard.push({
+            name: users.get(id).name,
+            score: scoreObj.score
+          })
+        }
+        // console.log(sendData.scoreboard);
         io.in(room).emit('game over', sendData);
       }
       var particleExplosions = lobbies[i].getParticles();
