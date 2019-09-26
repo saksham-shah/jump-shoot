@@ -166,16 +166,16 @@ class Game {
     this.inGame = true;
 
     // Send initial static objects to the players
-    var statics = [];
+    this.staticToSend = [];
     for (var i = 0; i < this.static.length; i++) {
-      statics.push(this.static[i].toObject());
+      this.staticToSend.push(this.static[i].toObject());
     }
 
     var data = {
       // type: 'newGame',
       width: this.width,
       height: this.height,
-      platforms: statics,
+      platforms: this.staticToSend,
       bulletBounce: this.bulletBounce
     }
 

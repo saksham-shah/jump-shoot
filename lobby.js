@@ -25,10 +25,11 @@ class Lobby {
     }
     // Send game data so newly connected players can watch the ongoing game
     if (this.game) {
+      // console.log(this.game.static);
       data.gameinfo = {
         width: this.game.width,
         height: this.game.height,
-        platforms: this.game.statics,
+        platforms: this.game.staticToSend,
         bulletBounce: this.game.bulletBounce
       }
     }
