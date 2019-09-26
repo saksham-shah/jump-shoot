@@ -295,7 +295,7 @@ class Game {
         });
         // }
 
-        if (collide) {
+        if (collide || !this.bulletBounce) {
           // Remove bullets if they go off screen
           this.bullets.splice(i, 1);
           i--;
