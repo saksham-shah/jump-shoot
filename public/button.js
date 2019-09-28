@@ -12,14 +12,15 @@ class Button {
     this.size = size || this.h * 0.75;
   }
 
+  // Check if the cursor is hovering over the button
   isHovered(x, y) {
     var w = width * this.w;
     var h = height * this.h;
     return mouseX > x - w * 0.5 && mouseX < x + w * 0.5 && mouseY > y - h * 0.5 && mouseY < y + h * 0.5;
   }
 
+  // Check if the mouse has clicked the button
   updateState(x, y) {
-    // Check if the mouse has clicked the button
     if (this.isHovered(x, y)) {
       if (mouseIsPressed) {
         this.pressed = true;
@@ -33,7 +34,6 @@ class Button {
   }
 
   show(x, y) {
-    // this.updateState(x, y);
     push();
     translate(x, y);
 
@@ -52,6 +52,7 @@ class Button {
     noStroke();
     fill(255);
 
+    // If the txt property is actually a function, the button has dynamic text
     var t = this.txt;
     if (t instanceof Function) {
       t = t(this.objOfClick);
@@ -62,6 +63,7 @@ class Button {
   }
 }
 
+// Used in menus
 class ButtonBar {
   constructor(txt, obj, buttons) {
     this.txt = txt;
@@ -88,7 +90,6 @@ class ButtonBar {
   }
 
   show(y) {
-    // this.updateButtonStates(y);
     push();
     translate(50, y);
     noStroke();
@@ -107,7 +108,7 @@ class ButtonBar {
     text(this.txt, h * 0.25, h * 0.25);
     pop();
 
-    // Draw each of its buttons
+    // Draw each of its buttons right to left
     var x = w + 50;
     for (var b of this.buttons) {
       x -= 0.075 * width;

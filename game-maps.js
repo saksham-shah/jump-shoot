@@ -1,5 +1,4 @@
 var Matter = require('matter-js');
-// var Platform = require('./platform.js');
 var MapUtils = require('./map-utils.js');
 
 var createMapFuncs = [];
@@ -23,7 +22,6 @@ function turnAndShoot(game) {
   // Spawn points
   game.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }];
 }
-createMapFuncs.push(turnAndShoot);
 
 function superBasic(game) {
   game.width = 800;
@@ -43,6 +41,8 @@ function superBasic(game) {
   // Spawn points
   game.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }];
 }
+
+createMapFuncs.push(turnAndShoot);
 createMapFuncs.push(superBasic);
 
 module.exports = createMapFuncs;

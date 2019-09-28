@@ -18,6 +18,7 @@ class Player {
     }
     this.massDecay = 0.933
     this.body = Matter.Bodies.circle(x, y, this.r, options);
+    // External data is currently only used for bullet-shield collisions
     this.body.externalData = {
       type: 'player',
       obj: this
@@ -28,6 +29,7 @@ class Player {
 
     // Whether the player can currently jump (e.g. if they are on a platform)
     this.canJump = false;
+    // The direction they would move if they were to jump at this moment
     this.jumpNormal = {x: 0, y: 0};
 
     // Holds status of all key presses
@@ -71,9 +73,7 @@ class Player {
       // Cool weapon gun so it can shoot
       this.weapon.coolGun();
     }
-    // if (this.cooldown > 0) {
     this.cooldown++;
-    // }
 
     // Point the gun towards its target
     // mouseVel is used to make the movement smooth and natural
@@ -95,6 +95,7 @@ class Player {
     this.angleVel = Math.min(Math.abs(this.angleVel), 0.5) * direction;
     this.angle = (this.angle + this.angleVel) % (2 * Math.PI);
 
+    // Make the player move around
     this.updateControls();
 
     // Shoot bullets
@@ -113,7 +114,7 @@ class Player {
     }
 
     // Throw equipped weapon
-    if (this.controls.throw && this.weapon && this.cooldown >= 20) {
+    if (this.controls.throw && this.weapon && this.cooldown >= 40) {
       this.throwWeapon(0.04, engine);
     }
 
@@ -125,12 +126,12 @@ class Player {
       this.shield = false;
       this.shieldWidth += 0.05;
     }
+    // Limit the shield's size to a maximum and minimum
     if (this.shieldWidth < 10) {
       this.shieldWidth = 10;
     } else if (this.shieldWidth > 40) {
       this.shieldWidth = 40;
     }
-    // this.shieldWidth = 40;
 
     // Return a bullet if shot, otherwise null
     return bullet;
@@ -160,7 +161,7 @@ class Player {
   equipWeapon(weapon, engine) {
     this.weapon = weapon;
     this.weapon.getEquipped(engine);
-    // Can't throw the weapon for 20 frames
+    // Can't throw the weapon immediately after equipping it
     // Prevents accidental throwing if the throw key is pressed when equipping
     this.cooldown = 0;
   }
@@ -187,8 +188,8 @@ class Player {
         // Return the bullet so it is added to the game
         return result.bullet;
       }
-      return null;
     }
+    return null;
   }
 
   // Throw the currently equipped weapon
@@ -201,7 +202,6 @@ class Player {
     this.weapon.getUnequipped(x, y, this.angle, engine);
     this.weapon.throw(this.body.velocity, force, this.angle, engine);
     this.weapon = null;
-    // Can't equip a weapon for 20 frames
     // Prevents picking up a weapon immediately after throwing it
     this.cooldown = 0;
   }
@@ -214,7 +214,7 @@ class Player {
         return true;
       }
     }
-    if (b.bottom) {
+    if (b.bottom) { // Used most often
       if (pos.y > b.bottom) {
         return true;
       }
@@ -235,6 +235,7 @@ class Player {
   // Moves player by applying forces based on which controls are pressed
   updateControls() {
     var body = this.body;
+    // Move the player left and right
     if (this.controls.left) {
       Matter.Body.applyForce(body, body.position, {
         x: -0.001 * body.mass,
@@ -248,44 +249,55 @@ class Player {
       });
     }
     if (this.controls.up) {
-      if (this.canJump) {
+      if (this.canJump) { // Only jump if the player is colliding with an object
         var n = this.jumpNormal;
         var nAng = Math.atan2(n.y, n.x);
+        // Can only jump at certain angles
+        // E.g. can't jump if you are touching a platform from below
         if (nAng >= Math.PI * 5/6 || nAng <= Math.PI / 6) {
+          // Calculate the magnitude and angle of current velocity
           var v = body.velocity;
           var vMag = Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
           var vAng = Math.atan2(v.y, v.x);
 
+          // Resolve velocity into components parallel and perperdicular to the normal of the collision
+          // Parallel to the normal of the collision is the direction of the jump
+          // Parallel velocity will be set to 8 (arbitrary)
+          // Perperdicular velocity will be unchanged
           var angle = vAng - nAng;
           var parallelV = 8;
           var perpV = vMag * Math.sin(angle);
-          // var perpV = 0;
+
+          // Calculate the magnitude and angle of the new velocity post-jump
           var newVMag = Math.sqrt(Math.pow(parallelV, 2) + Math.pow(perpV, 2));
           var newVAng = Math.atan2(perpV, parallelV) + nAng;
 
+          // Resolve new velocity into x and y components (as that is how they are stored in Matter.js)
           var vx = newVMag * Math.cos(newVAng);
           var vy = newVMag * Math.sin(newVAng);
 
+          // Jumps will always make the player go upwards
           if (vy > -6) {
             vy = -6;
           }
 
-          // var vx = body.velocity.x;
           Matter.Body.setVelocity(body, { x: vx, y: vy });
         }
       }
+      // Also makes the player fall slower
       Matter.Body.applyForce(body, body.position, {
         x: 0,
         y: -0.0005 * body.mass
       });
     }
+    // Makes the player fall faster
     if (this.controls.down) {
       Matter.Body.applyForce(body, body.position, {
         x: 0,
         y: 0.0005 * body.mass
       });
     }
-    // Experimental bouncy feature
+    // Experimental bouncy feature - really isn't needed but I can't get myself to remove it
     if (this.controls.bouncy) {
       this.body.restitution = 1.3
     } else {

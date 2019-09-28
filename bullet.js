@@ -5,8 +5,6 @@ class Bullet {
     this.x = x;
     this.y = y;
     this.r = r;
-    // this.vx = vel * Math.cos(angle);
-    // this.vy = vel * Math.sin(angle);
     this.vel = vel;
     this.angle = angle;
     this.damage = damage; // Exponential - 10 damage halves a player's mass
@@ -31,8 +29,6 @@ class Bullet {
     var step = this.vel / Math.ceil(this.vel / 5)
     // Keeps moving until it collides
     while (distanceMoved < this.vel && !collide) {
-      // this.x += this.vx * 0.5;
-      // this.y += this.vy * 0.5;
       this.x += step * Math.cos(this.angle);
       this.y += step * Math.sin(this.angle);
       distanceMoved += step;
@@ -50,7 +46,7 @@ class Bullet {
         // If body is a player
         if (body.externalData.type == 'player') {
           var player = body.externalData.obj;
-          if (player.shield) {// && (player.id != this.originPlayer)) {
+          if (player.shield) {
             var shieldX = body.position.x + (player.r + 7) * Math.cos(player.angle);
             var shieldY = body.position.y + (player.r + 7) * Math.sin(player.angle);
             if (collideWithRect(this.x, this.y, shieldX, shieldY, 7, player.shieldWidth, player.angle)) {
@@ -130,19 +126,45 @@ class Bullet {
 
   // Bullet disappears if off screen
   isOffScreen(width, height, bounce) {
-    // if (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100) {
-    //   if (this.wasOnScreen) {
-    //     return true;
-    //   }
-    // } else {
-    //   this.wasOnScreen = true;
-    //   return false;
-    // }
-    // return (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100)
-    if (!bounce) {
-      return (this.x < -100 || this.x > width + 100 || this.y < -100 || this.y > height + 100)
+    if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+      // Is offscreen right now
+      if (this.wasOnScreen) {
+        // Has now gone off screen
+
+        if (bounce) {
+          var collide = false;
+
+          // Checks if bullets have reached the edge and reflects them
+          if (this.x < 0 || this.x > width) {
+            var vx = this.vel * Math.cos(this.angle);
+            var vy = this.vel * Math.sin(this.angle);
+            vx *= -1;
+            this.angle = Math.atan2(vy, vx);
+            collide = true;
+            this.wasOnScreen = false;
+          }
+          if (this.y < 0 || this.y > height) {
+            var vx = this.vel * Math.cos(this.angle);
+            var vy = this.vel * Math.sin(this.angle);
+            vy *= -1;
+            this.angle = Math.atan2(vy, vx);
+            collide = true;
+            this.wasOnScreen = false;
+          }
+          return collide;
+        }
+
+        // If bullet doesn't bounce and is away from the screen, it can simply be removed
+        return (this.x < -200 || this.x > width + 200 || this.y < -200 || this.y > height + 200)
+      }
+      return false;
+    } else {
+      this.wasOnScreen = true;
+      return false;
     }
 
+    // Below code is as good as commented out. Needs to be removed during next code clean up
+    console.log("This code should not be running right now. bullet.js line 179");
     var collide = false;
     if (this.x < 0 || this.x > width) {
       var vx = this.vel * Math.cos(this.angle);
@@ -190,6 +212,7 @@ class Bullet {
   }
 }
 
+// Check if a rectangle contains a point
 function collideWithRect(xBul, yBul, xRect, yRect, w, h, angle) {
   var dx = xBul - xRect;
   var dy = yBul - yRect;

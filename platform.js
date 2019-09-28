@@ -1,17 +1,13 @@
 var Matter = require('matter-js');
 
 // Wrapper class for a Matter.js body
-// Currently used for static platforms - may change later
+// Can be used for static and dynamic platforms
 class Platform {
   constructor(x, y, w, h, options, engine) {
     this.w = w;
     this.h = h;
-    // var options = {
-    //   isStatic: true,
-    //   angle: angle
-    // }
     this.body = Matter.Bodies.rectangle(x, y, w, h, options);
-    // Arbitrary numbers
+    // Arbitrary numbers that seem to work well
     this.body.friction = 0.2;
     this.body.restitution = 0.5;
 

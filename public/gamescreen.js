@@ -1,33 +1,30 @@
 // Handles drawing of game objects
 class GameScreen {
   constructor() {
+    // Properties about the game currently being shown
     this.platforms = [];
-    // this.dynamic = [];
     this.entities = [];
     this.players = [];
     this.particles = [];
     this.bulletBounce = false;
-    this.zoom = 1;
+
     this.leaveButton = new Button(0.1, 0.055, 'LEAVE', () => socket.emit('leave lobby'), null);
     this.closeButton = new Button(0.1, 0.055, 'CLOSE', () => popup = null, null);
-
   }
 
-  // Reset platforms array
+  // Reset arrays and store static platforms
   newGame(platforms, bulletBounce) {
+    this.resetGame();
     this.platforms = platforms;
-    this.entities = [];
-    this.players = [];
-    this.particles = [];
-
     this.bulletBounce = bulletBounce;
   }
 
+  // Update arrays when the server sends data
   updateDynamic(entities, players) {
-    // this.dynamic = dynamic;
     this.entities = entities;
     this.players = players;
 
+    // Update particles at the same rate as the server sends data
     for (var i = 0; i < this.particles.length; i++) {
       if (this.particles[i].update()) {
         this.particles.splice(i, 1);
@@ -40,19 +37,21 @@ class GameScreen {
     this.platforms = [];
     this.dynamic = [];
     this.players = [];
+    this.particles = [];
     this.bulletBounce = false;
   }
 
+  // Just updates the button(s)
   update() {
     this.leaveButton.updateState(width * 0.9, height * 0.075);
   }
 
-  particleEffect(x, y, r, col, life) {
-    this.particles.push(new Particle(x, y, 1, 1, 0.2, r, col, life));
-  }
+  // particleEffect(x, y, r, col, life) {
+  //   this.particles.push(new Particle(x, y, 1, 1, 0.2, r, col, life));
+  // }
 
-  particleExplosion(options) {//x, y, vel, velErr, angle, angleErr, gravity, r, col, life, lifeErr, num) {
-    // this.particles.push(new Particle(x, y, 1, 1, r, col, life));
+  // Creates several particles which will move around
+  particleExplosion(options) {
     for (var i = 0; i < options.num; i++) {
       if (options.velErr) {
         options.vel += (Math.random() - 0.5) * 2 * options.velErr;
@@ -69,9 +68,7 @@ class GameScreen {
 
       var p = new Particle(options.x, options.y, options.vel, options.angle, options.gravity, options.r, options.col, options.life);
       this.particles.push(p);
-
     }
-
   }
 
   show(x, y, z) {
@@ -103,11 +100,16 @@ class GameScreen {
     }
 
     for (var i = 0; i < this.players.length; i++) {
+      drawPlayerWeapon(this.players[i]);
+    }
+
+    for (var i = 0; i < this.players.length; i++) {
       drawOffScreenPlayer(this.players[i]);
     }
 
     pop();
 
+    // Draw rectangles around the game screen so all players have equal vision
     fill(60);
     noStroke();
     rect(width * 0.5, gameSize.y * 0.5, width, gameSize.y);
@@ -115,9 +117,11 @@ class GameScreen {
     rect(gameSize.x * 0.5, height * 0.5, gameSize.x, height);
     rect(width - gameSize.x * 0.5, height * 0.5, gameSize.x, height);
 
+    // Draw the border of the game screen
     noFill();
     stroke(200);
     strokeWeight(2);
+    // Thicker border is bullet bounce is active
     if (this.bulletBounce) {
       stroke(255);
       strokeWeight(4);
@@ -126,6 +130,7 @@ class GameScreen {
 
     this.leaveButton.show(width * 0.9, height * 0.075);
 
+    // Draw the lobby name in the top left
     push();
     fill(255);
     noStroke();
@@ -146,6 +151,13 @@ function drawPlayer(obj) {
   strokeWeight(1);
   ellipse(0, 0, obj.r * 2); // Draw player circle
   line(0, 0, obj.r, 0); // Draw direction the player is aiming
+  pop();
+}
+
+function drawPlayerWeapon(obj) {
+  push();
+  translate(obj.x, obj.y);
+  rotate(obj.angle);
   if (obj.weapon) { // Draw player's weapon
     var weaponObj = obj.weapon;
     weaponObj.angle = 0; // Relative to player's angle and position
@@ -158,17 +170,16 @@ function drawPlayer(obj) {
         fill(200);
         noStroke();
         rect(obj.r + 7, 0, 7, obj.shieldWidth);
-        // rect(obj.r + 7, 0, 7, 400);
     } else if (obj.id == myid) {
       fill(200, 50);
       noStroke();
       rect(obj.r + 7, 0, 7, obj.shieldWidth);
-      // rect(obj.r + 7, 0, 20, 400);
     }
   }
   pop();
 }
 
+// Draws the names of all players below them, as well as a crown on the previous winner
 function drawNameTag(obj) {
   push();
   translate(obj.x, obj.y);
@@ -180,6 +191,24 @@ function drawNameTag(obj) {
     textStyle(BOLD);
   }
   text(obj.name, 0, obj.r + 15);
+
+  // Draw crown on previous winner
+  if (obj.id == lastWinner) {
+    fill(255, 150, 0);
+    stroke(255, 255, 0);
+    strokeWeight(1);
+    var r = obj.r;
+    beginShape();
+    vertex(-r, -r - 5);
+    vertex(-r, -r - 15);
+    vertex(-r * 0.5, -r - 10);
+    vertex(0, -r - 15);
+    vertex(r * 0.5, -r - 10);
+    vertex(r, -r - 15);
+    vertex(r, -r - 5);
+    endShape(CLOSE);
+  }
+
   pop();
 }
 
@@ -231,9 +260,6 @@ function drawObject(obj) {
     case 'bullet': // Long thin rectangle to show it is a fast bullet
       rotate(obj.angle)
       fill(obj.colour);
-      // if (obj.reflected) {
-      //   fill(255, 155, 0);
-      // }
       noStroke();
       rect(-obj.r * 1.5, 0, obj.r * 15, obj.r);
       break;

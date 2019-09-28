@@ -12,10 +12,9 @@ class BasicGun extends Weapon {
     // Only fire if gun is cooled down
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
-      // x += this.w * Math.cos(angle);
-      // y += this.w * Math.sin(angle);
       var bullet = new Bullet(x, y, 3, 25, angle, 1, playerID);
 
+      // Fire particle effect
       this.particles.push({
         x: x + this.w * Math.cos(angle),
         y: y + this.h * Math.sin(angle),
@@ -27,7 +26,7 @@ class BasicGun extends Weapon {
         r: 3,
         life: 15,
         lifeErr: 3,
-        col: [255, 255, 0],
+        col: [255, 255, 0], //yellow
         num: 10
       });
 

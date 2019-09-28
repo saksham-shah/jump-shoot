@@ -4,10 +4,7 @@ class MenuScreen {
     this.buttons = [];
 
     this.buttons.push({
-      obj: new Button(0.25, 0.2, 'PLAY', () => {
-        // socket.emit('join lobby', 'lobby');
-        scr = ls;
-      }, null, 0.1),
+      obj: new Button(0.25, 0.2, 'PLAY', () => { scr = ls }, null, 0.1),
       xRel: 0.5,
       yRel: 0.5
     });

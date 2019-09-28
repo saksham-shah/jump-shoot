@@ -37,7 +37,6 @@ class Game {
       [0, 255, 0], // green
       [255, 255, 0] // yellow
     ];
-    // this.colourCount = 0;
 
     // Create an engine
     this.engine = Matter.Engine.create();
@@ -58,7 +57,6 @@ class Game {
         if (playerB) {
           playerB.canJump = true;
           playerB.jumpNormal = { x: -normal.x, y: -normal.y };
-          // console.log(normal);
         }
       }
     }
@@ -76,16 +74,12 @@ class Game {
         // Also creates particle effects
         if (playerA) {
           collisionParticles(playerA, pair.bodyA.position, normalAngle);
-          // if (!playerB) {
-            playerA.canJump = false;
-          // }
+          playerA.canJump = false;
         }
         if (playerB) {
           normalAngle += Math.PI;
           collisionParticles(playerB, pair.bodyB.position, normalAngle);
-          // if (!playerA) {
-            playerB.canJump = false;
-          // }
+          playerB.canJump = false;
         }
       }
     }
@@ -104,37 +98,6 @@ class Game {
   createMap() {
     var thisMapFunc = mapFuncs[Math.floor(Math.random() * mapFuncs.length)];
     thisMapFunc(this);
-    // this.width = 800;
-    // this.height = 540;
-    // // this.bulletBounce = true;
-    //
-    // var pivotPlat = new Platform(this.width * 0.5, this.height * 0.5, 450, 20, { density: 0.02, frictionAir: 0.001 }, this.engine);
-    // this.dynamic.push(pivotPlat);
-    //
-    // var ground = new Platform(this.width * 0.5, this.height, 100, 20, { isStatic: true }, this.engine);
-    // this.platforms.push(ground);
-    //
-    // // console.log(ground.body.frictionAir);
-    //
-    // var pivot = Matter.Constraint.create({
-    //         bodyA: pivotPlat.body,
-    //         pointB: { x: this.width * 0.5, y: this.height * 0.5 },
-    //         stiffness: 1,
-    //         length: 0
-    //     });
-    // Matter.World.add(this.engine.world, pivot);
-    // // ground = new Platform(400, 300, 400, 20, Math.PI * 0.5, this.engine);
-    // // this.platforms.push(ground);
-    // // ground = new Platform(200, 300, 400, 20, Math.PI * 0.5, this.engine);
-    // // this.platforms.push(ground);
-    //
-    // // Game boundary
-    // this.deathBounds = {
-    //   bottom: this.height + 50
-    // }
-    //
-    // // Spawn points
-    // this.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }, { x: 150, y: 200 }, { x: 650, y: 200 }, { x: 50, y: 200 }, { x: 750, y: 200 }];
   }
 
   addPlayers() {
@@ -172,7 +135,6 @@ class Game {
     }
 
     var data = {
-      // type: 'newGame',
       width: this.width,
       height: this.height,
       platforms: this.staticToSend,
@@ -274,10 +236,8 @@ class Game {
 
     for (var i = 0; i < this.bullets.length; i++) {
       var collide = this.bullets[i].update(this.engine.world.bodies);
-      // if (this.bullets[i].isOffScreen(this.width, this.height) || collide) {
       if (this.bullets[i].isOffScreen(this.width, this.height, this.bulletBounce) || collide) {
         // Create bullet hit particle effect
-        // if (collide) {
         var b = this.bullets[i];
         this.pendingParticles.push({
           x: b.x,
@@ -293,10 +253,10 @@ class Game {
           col: b.colour,
           num: 10
         });
-        // }
 
         if (collide || !this.bulletBounce) {
-          // Remove bullets if they go off screen
+          // Remove bullets if they collide or if bullet bouncing is disabled
+          // If bullets can bounce then they shouldn't be removed for going out of the map
           this.bullets.splice(i, 1);
           i--;
         }
@@ -306,8 +266,9 @@ class Game {
     // Add weapons into game periodically if there aren't many on screen
     if (this.weaponCounter < 0) {
       if (this.weapons.length < this.players.size * 2) {
-        this.weaponCounter = 300;
-        var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, 0, this.engine);
+        // Weapons drop more frequently if there are more players
+        this.weaponCounter = 600 / this.players.size;
+        var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
         this.weapons.push(weapon);
       }
     } else {
@@ -317,21 +278,14 @@ class Game {
     // Run the physics engine
     Matter.Engine.update(this.engine);
 
-    // Send any data clients need to accurately animate the game
+    // Send any data that clients need to accurately animate the game
     var entities = [];
     var players = [];
-    // var data = {
-    //   type: 'updateGame',
-    //   entities: []
-    // };
+
 
     for (var i = 0; i < this.bullets.length; i++) {
       entities.push(this.bullets[i].toObject());
     }
-
-    // for (var player of this.players.values()) {
-    //   entities.push(player.toObject(users));
-    // }
 
     for (var i = 0; i < this.weapons.length; i++) {
       entities.push(this.weapons[i].toObject());
@@ -348,6 +302,7 @@ class Game {
     return [entities, players];
   }
 
+  // Send any pending particle effects to the clients
   getParticles() {
     var particleExplosions = [];
 
@@ -381,14 +336,16 @@ class Game {
   }
 }
 
+// Generate particles in the direction of the normal of a player collision
 function collisionParticles(player, pos, angle) {
   var v = player.body.velocity;
   var vMagSq = Math.pow(v.x, 2) + Math.pow(v.y, 2);
   if (vMagSq < 3) {
+    // Don't create particles if the player wasn't moving very fast
     return;
   }
-  var px = pos.x - player.r * Math.cos(angle);// + Math.PI);
-  var py = pos.y - player.r * Math.sin(angle);// + Math.PI);
+  var px = pos.x - player.r * Math.cos(angle);
+  var py = pos.y - player.r * Math.sin(angle);
   player.particles.push({
     x: px,
     y: py,

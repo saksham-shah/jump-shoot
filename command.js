@@ -7,17 +7,33 @@ name: change username
 
 Planned:
 
-join: create a lobby if it doesn't exist
-accept: accept someone to the lobby
-reject: reject someone from the lobby
-kick: kick someone out of the lobby
+Nothing right now
 
 */
 
 class Command {
   static getCommand(message) {
-    var commandWords = ["join", "leave", "name", "accept", "reject", "kick"];
+    var commandWords = ["join", "leave", "name"];
 
+    // Forward slash means the message might be a command
+    if (!(message[0] == '/')) return null;
+
+    // Remove the '/' prefix and split the message into words
+    var messageWords = message.slice(1).split(' ');
+
+    var operator = messageWords.shift();
+    var operand = messageWords.join(' ');
+
+    if (commandWords.includes(operator)) {
+      return {
+        operator: operator,
+        operand: operand
+      }
+    }
+
+    return null;
+
+    // UNUSED CODE BELOW
     // Forward slash means the message might be a command
     if (message[0] == '/') {
       // Location of space splitting operator and operand

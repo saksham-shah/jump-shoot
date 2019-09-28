@@ -1,6 +1,4 @@
-var GRAVITY = 0.2;
-var DRAG = 0.96;
-
+// Used for particle effects
 class Particle {
   constructor(x, y, vel, angle, gravity, r, col, life) {
     this.x = x;
@@ -19,9 +17,6 @@ class Particle {
     this.y += this.vy;
     this.vy += this.gravity;
 
-    // this.vx *= DRAG;
-    // this.vy *= DRAG;
-
     this.currentLife--;
 
     if (this.currentLife <= 0) {
@@ -35,6 +30,7 @@ class Particle {
     translate(this.x, this.y);
     fill(this.col);
     noStroke();
+    // Gets smaller as time goes on
     ellipse(0, 0, this.r * this.currentLife / this.maxLife * 2);
     pop();
   }
