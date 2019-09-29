@@ -21,7 +21,7 @@ class Bullet {
     this.timeAlive = 0;
   }
 
-  update(bodies) {
+  update(bodies, engine) {
     // Ensures that the bullet only moves a maximum of 5 pixels at a time
     // Prevents fast bullets from going through objects without skipping them
     this.timeAlive ++;
@@ -32,12 +32,12 @@ class Bullet {
       this.x += step * Math.cos(this.angle);
       this.y += step * Math.sin(this.angle);
       distanceMoved += step;
-      var collide = this.checkCollisions(bodies)
+      var collide = this.checkCollisions(bodies, engine)
     }
     return collide;
   }
 
-  checkCollisions(bodies) {
+  checkCollisions(bodies, engine) {
     for (var i = 0; i < bodies.length; i++) {
       var body = bodies[i];
 
@@ -94,9 +94,13 @@ class Bullet {
           // Deal damage if hit a player
           if (body.externalData) {
             if (body.externalData.type == 'player') {
+              var player = body.externalData.obj;
               var damage = this.damage;
               if (this.reflected) {
                 damage += 2;
+                if (player.weapon) {
+                  player.throwWeapon(0, engine);
+                }
               }
               var newDensity = body.density * Math.pow(body.externalData.obj.massDecay, damage);
               Matter.Body.setDensity(body, newDensity);

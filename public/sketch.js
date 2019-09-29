@@ -131,6 +131,7 @@ function setup() {
     inLobby = true;
     lobbyName = data.name;
     scoreboard = [];
+    lastWinner = null;
     // Send messages in the chat to tell the player they have joined a lobby
     chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
     if (data.gameinfo) { // Lobby is currently mid game
@@ -188,7 +189,9 @@ function setup() {
   socket.on('game over', function(data) {
     setTimer(60, "Next game");
     scoreboard = data.scoreboard;
-    lastWinner = data.winnerId;
+    if (data.winnerId) {
+      lastWinner = data.winnerId;
+    }
     chat.newMessage(SERVER, "Game over");
     // Check if there is a single winner
     if (data.winner) {

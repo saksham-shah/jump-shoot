@@ -235,7 +235,7 @@ class Game {
     }
 
     for (var i = 0; i < this.bullets.length; i++) {
-      var collide = this.bullets[i].update(this.engine.world.bodies);
+      var collide = this.bullets[i].update(this.engine.world.bodies, this.engine);
       if (this.bullets[i].isOffScreen(this.width, this.height, this.bulletBounce) || collide) {
         // Create bullet hit particle effect
         var b = this.bullets[i];
