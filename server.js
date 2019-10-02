@@ -1,5 +1,5 @@
 var express = require('express');
-var routes = require('./routes.js');
+// var routes = require('./routes.js');
 
 var app = express();
 // Default port no. is 3000
@@ -7,8 +7,23 @@ var portNo = process.env.PORT || 3000;
 
 var server = app.listen(portNo);
 
+var pendingConnections = 0;
+
+app.get('/', (req, res) => {
+  res.sendFile('public/index.html', { root: __dirname });
+  pendingConnections++;
+  console.log(pendingConnections);
+});
+
 // Send files in the public folder to the client
-routes(app, express);
+app.use(express.static('public'));
+app.use(express.json());
+
+// app.get('/:lobbyId', (req, res) => {
+//   res.sendFile('public/index.html', { root: __dirname });
+// });
+
+// routes(app, express);
 
 console.log("Node server.js running on port " + portNo);
 
@@ -19,8 +34,6 @@ var io = socket(server);
 
 var Lobby = require('./lobby.js');
 var Command = require('./command.js');
-
-var addresses = new Map();
 
 var users = new Map();
 var lobbies = [];
@@ -34,32 +47,41 @@ lobbies.push(new Lobby('Public 5', true));
 io.sockets.on('connection', newConnection);
 
 function newConnection(socket) {
+
+  if (pendingConnections <= 0) {
+    socket.emit('duplicate');
+    socket.disconnect();
+    console.log('bad connection: ' + socket.id);
+    return;
+  }
+  
+  pendingConnections--;
+
   console.log('new connection: ' + socket.id);
   console.log(socket.conn.remoteAddress);
 
-  // Check for duplicate connections from the same IP address
-  var thisIp = socket.conn.remoteAddress;
-  var duplicate = false;
-  for (var user of users.values()) {
-    if (user.ip == thisIp) {
-      socket.emit('duplicate');
-      console.log('duplicate: ' + socket.id);
-      duplicate = true;
-    }
-  }
+  // Check for duplicate connections from the same IP address - DOES NOT WORK
+  // var thisIp = socket.conn.remoteAddress;
+  // var duplicate = false;
+  // for (var user of users.values()) {
+  //   if (user.ip == thisIp) {
+  //     socket.emit('duplicate');
+  //     console.log('duplicate: ' + socket.id);
+  //     duplicate = true;
+  //   }
+  // }
 
   // Send confirmation message
   socket.emit('welcome', socket.id);
   var userData = {
     name: null,
-    lobbyname: null,
-    ip: thisIp
+    lobbyname: null
   };
   users.set(socket.id, userData);
 
   //Debug data
   // console.log(socket);
-  socket.emit('debug', socket.conn.remoteAddress);
+  // socket.emit('debug', socket.conn.remoteAddress);
 
   // Send a list of lobbies for the client to display
   socket.emit('lobbies updated', getLobbies());

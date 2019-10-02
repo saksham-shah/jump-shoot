@@ -107,7 +107,10 @@ function setup() {
 
   socket.on('debug', data => { debug = data; console.log(`DEBUG: ${debug}`); });
 
-  socket.on('duplicate', () => { console.log("duplicate detected (may not be 100% accurate sorry)") });
+  socket.on('duplicate', () => {
+    console.log("duplicate detected (may not be 100% accurate sorry). All features have been disabled for you (just to be safe). Reload the page and all should be good.");
+    location.reload();
+  });
 
   // First connecting
   socket.on('welcome', function(socketid) {
