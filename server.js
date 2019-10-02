@@ -20,6 +20,8 @@ var io = socket(server);
 var Lobby = require('./lobby.js');
 var Command = require('./command.js');
 
+var addresses = new Map();
+
 var users = new Map();
 var lobbies = [];
 lobbies.push(new Lobby('Public 1', true));
@@ -33,14 +35,31 @@ io.sockets.on('connection', newConnection);
 
 function newConnection(socket) {
   console.log('new connection: ' + socket.id);
+  console.log(socket.conn.remoteAddress);
+
+  // Check for duplicate connections from the same IP address
+  var thisIp = socket.conn.remoteAddress;
+  var duplicate = false;
+  for (var user of users.values()) {
+    if (user.ip == thisIp) {
+      socket.emit('duplicate');
+      console.log('duplicate: ' + socket.id);
+      duplicate = true;
+    }
+  }
 
   // Send confirmation message
   socket.emit('welcome', socket.id);
   var userData = {
     name: null,
-    lobbyname: null
+    lobbyname: null,
+    ip: thisIp
   };
   users.set(socket.id, userData);
+
+  //Debug data
+  // console.log(socket);
+  socket.emit('debug', socket.conn.remoteAddress);
 
   // Send a list of lobbies for the client to display
   socket.emit('lobbies updated', getLobbies());
@@ -220,6 +239,7 @@ function newConnection(socket) {
   socket.on('disconnect', function() {
     leaveLobby(socket);
     console.log("disconnect: " + socket.id);
+    users.delete(socket.id);
   })
 }
 
@@ -234,7 +254,7 @@ function getLobbyFromSocket(socketid) {
   return getLobbyFromName(lobbyname);
 }
 
-// Searches for a lobby by id
+// Searches for a lobby by id - unused (?)
 function getLobbyFromId(lobbyid) {
   for (var i = 0; i < lobbies.length; i++) {
     if (lobbies[i].lobbyid === lobbyid) {
@@ -288,6 +308,15 @@ function getLobbies() {
 
 // Adds a player to a lobby
 function joinLobby(socket, lobbyname) {
+  var userData = users.get(socket.id);
+  if (!userData) {
+    console.log("Unlogged user: " + socket.id);
+    return false;
+  }
+  if (!userData.name) {
+    console.log("User hasn't picked name: " + socket.id);
+    return false;
+  }
   var lobby = getLobbyFromName(lobbyname);
   if (lobby) {
     // If the lobby exists, add the player to it
@@ -297,7 +326,7 @@ function joinLobby(socket, lobbyname) {
     // Add client to socket room
     socket.join(lobby.name);
     // Update user data to also save lobbyname
-    var userData = users.get(socket.id);
+    // var userData = users.get(socket.id);
     userData.lobbyname = lobby.name;
     users.set(socket.id, userData);
     // Notify players in the lobby

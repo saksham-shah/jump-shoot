@@ -83,6 +83,8 @@ function calculateGameSize(gameWidth, gameHeight) {
   gameSize.y = (height - gameSize.h * gameSize.z) * 0.5;
 }
 
+var debug = null;
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
@@ -102,6 +104,10 @@ function setup() {
 
   // Connect to the server
   socket = io.connect();
+
+  socket.on('debug', data => { debug = data; console.log(`DEBUG: ${debug}`); });
+
+  socket.on('duplicate', () => { console.log("duplicate detected (may not be 100% accurate sorry)") });
 
   // First connecting
   socket.on('welcome', function(socketid) {
