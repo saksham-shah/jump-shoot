@@ -12,7 +12,6 @@ var pendingConnections = 0;
 app.get('/', (req, res) => {
   res.sendFile('public/index.html', { root: __dirname });
   pendingConnections++;
-  console.log(pendingConnections);
 });
 
 // Send files in the public folder to the client
@@ -54,11 +53,11 @@ function newConnection(socket) {
     console.log('bad connection: ' + socket.id);
     return;
   }
-  
+
   pendingConnections--;
 
   console.log('new connection: ' + socket.id);
-  console.log(socket.conn.remoteAddress);
+  // console.log(socket.conn.remoteAddress);
 
   // Check for duplicate connections from the same IP address - DOES NOT WORK
   // var thisIp = socket.conn.remoteAddress;
@@ -144,13 +143,14 @@ function newConnection(socket) {
   socket.on('force end', function() {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
-      lobby.game = null;
-      var data = lobby.newGame();
-      var room = lobby.name;
-      // Restart a new game
-      if (data) {
-        io.in(room).emit('game start', data);
-      }
+      lobby.game.inGame = false;
+      // lobby.game = null;
+      // var data = lobby.newGame();
+      // var room = lobby.name;
+      // // Restart a new game
+      // if (data) {
+      //   io.in(room).emit('game start', data);
+      // }
     }
   })
 
@@ -261,8 +261,13 @@ function newConnection(socket) {
   socket.on('disconnect', function() {
     leaveLobby(socket);
     console.log("disconnect: " + socket.id);
-    users.delete(socket.id);
+    // users.delete(socket.id);
+    removePlayerAfterTimeout(socket.id);
   })
+}
+
+function removePlayerAfterTimeout(socketid) {
+  setTimeout(id => { users.delete(id) }, 1000, socketid);
 }
 
 // Returns the lobby that a particular player is in, or null if the player is not in a lobby

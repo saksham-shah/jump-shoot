@@ -105,6 +105,9 @@ function setup() {
   // Connect to the server
   socket = io.connect();
 
+  // Redefining io() so it can't be used to create bot connections
+  io = () => socket;
+
   socket.on('debug', data => { debug = data; console.log(`DEBUG: ${debug}`); });
 
   socket.on('duplicate', () => {
