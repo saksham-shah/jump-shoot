@@ -1,7 +1,7 @@
 // Initialise variables
 var myid;
 
-var ss, gs, ms, ls; // Various screens used in the game
+var ss, gs, ms, ls, cs; // Various screens used in the game
 
 var scr; // Current screen
 
@@ -34,20 +34,8 @@ function setTimer(time, text) {
   timer.text = text;
 }
 
-// Controls of the game
-var controls = {
-  up: 87, // W
-  down: 83, // S
-  left: 65, // A
-  right: 68, // D
-  shoot: "left", // LMB
-  equip: "right", // RMB - UNUSED
-  throw: "right", // RMB
-  shield: "right", // RMB
-  bouncy: 69 // E
-}
-
 var SHOWPARTICLES = true;
+var OLDGRAPHICS = false;
 
 // Stores information about where on the screen the game is being drawn
 var gameSize = {
@@ -58,12 +46,21 @@ var gameSize = {
   z: 1
 }
 
+var baseWidth = 800;
+var baseHeight = 550;
+var ratio;
+
 var socket;
 
 console.log("You are playing on the EU server. There are no other servers, this is just a random test console message. Enjoy!")
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+
+  var xr = width / baseWidth;
+  var yr = height / baseHeight;
+  ratio = (xr + yr) / 2;
+
   calculateGameSize();
 }
 
@@ -88,10 +85,15 @@ var debug = null;
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
+  var xr = width / baseWidth;
+  var yr = height / baseHeight;
+  ratio = (xr + yr) / 2;
+
   ss = new StartScreen();
   gs = new GameScreen();
   ms = new MenuScreen();
   ls = new LobbyScreen();
+  cs = new ControlsScreen();
 
   scr = ss;
 
@@ -101,6 +103,17 @@ function setup() {
     // Send chat messages
     socket.emit('chat message', txt);
   });
+
+  if (!(localStorage.controls && localStorage.controlKeys)) {
+    localStorage.controls = JSON.stringify(controls);
+    localStorage.controlKeys = JSON.stringify(controlKeys);
+  } else {
+    controls = JSON.parse(localStorage.controls);
+    controlKeys = JSON.parse(localStorage.controlKeys);
+  }
+  if (!localStorage.nickname) {
+    localStorage.nickname = playerName;
+  }
 
   // Connect to the server
   socket = io.connect();
@@ -124,11 +137,18 @@ function setup() {
 
     scr = ss;
 
-    if (playerName != "") {
-      var data = {
-        name: playerName,
-      }
-      socket.emit('pick name', playerName);
+    // if (playerName != "") {
+    //   var data = {
+    //     name: playerName,
+    //   }
+    //   socket.emit('pick name', playerName);
+    //
+    //   scr = ms;
+    // }
+    if (localStorage.nickname != "") {
+      socket.emit('pick name', localStorage.nickname);
+      playerName = localStorage.nickname;
+      ss.nameTextBox.typedText = localStorage.nickname;
 
       scr = ms;
     }
@@ -170,6 +190,10 @@ function setup() {
   // Name updated
   socket.on('name updated', function(name) {
     playerName = name;
+    localStorage.nickname = name;
+    if (textTarget == ss.nameTextBox) {
+      textTarget = null;
+    }
   })
 
   // Next frame of the game
@@ -270,7 +294,16 @@ function mouseReleased() {
 }
 
 function keyPressed() {
-  // First check various keys relating to text boxes
+  // First check if any of the controls in the control screen are clicked
+  if (controlClicked) {
+    controls[controlClicked] = keyCode;
+    controlKeys[controlClicked] = specialKeyNames[key] ? specialKeyNames[key] : key.toUpperCase();
+    controlClicked = null;
+    localStorage.controls = JSON.stringify(controls);
+    localStorage.controlKeys = JSON.stringify(controlKeys);
+    return;
+  }
+  // Next check various keys relating to text boxes
   if (keyCode == 13) { // enter key
     // If a text box was selected, run its enter function
     if (textTarget) {
@@ -354,18 +387,38 @@ function draw() {
     // Draw the timer
     push();
     var progress = 1 - (timer.time / timer.maxTime);
+
+    var { x, y, w } = getPosSize({
+      type: 'circle',
+      x: 0.5,
+      y: 0.2,
+      w: 50
+    });
+
     fill(255);
     noStroke();
-    translate(width * 0.5, 100);
+    translate(x, y);
     textAlign(CENTER);
-    textSize(15);
-    var timerR = 50;
+    textSize(15 * ratio);
     if (timer.text) {
-      text(timer.text, 0, -timerR * 0.5 - 15);
+      text(timer.text, 0, -w * 0.5 - 15 * ratio);
     }
     rotate(-HALF_PI);
-    arc(0, 0, timerR, timerR, 0, progress * TWO_PI, PIE);
+    arc(0, 0, w, w, 0, progress * TWO_PI, PIE);
     pop();
+
+    // fill(255);
+    // noStroke();
+    // translate(width * 0.5, 100);
+    // textAlign(CENTER);
+    // textSize(15);
+    // var timerR = 50;
+    // if (timer.text) {
+    //   text(timer.text, 0, -timerR * 0.5 - 15);
+    // }
+    // rotate(-HALF_PI);
+    // arc(0, 0, timerR, timerR, 0, progress * TWO_PI, PIE);
+    // pop();
 
     // Draw the scoreboard
     push()
@@ -380,16 +433,22 @@ function draw() {
     fill(255);
     noStroke();
     textAlign(CENTER, CENTER);
-    textSize(40);
+    textSize(40 * ratio);
     text(txt, width * 0.5, height * 0.5);
     pop()
   }
 
   // Draw chat in the bottom left corner
-  chat.show(20, height - 50);
+  chat.show(20 * ratio, height - 40 * ratio);
 
   // Only show chat text box if it is selected
   if (textTarget == chatTextBox) {
-    chatTextBox.show(20, height - 24, 200, 26);
+    // chatTextBox.show(20, height - 24, 200, 26);
+    chatTextBox.show({
+      x: 20,
+      y: -24,
+      textSize: 15,
+      xEdge: true
+    });
   }
 }

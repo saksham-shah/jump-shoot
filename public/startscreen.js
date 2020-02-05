@@ -25,19 +25,45 @@ class StartScreen {
   show() {
     push();
     // Draw the title text
-    fill(255);
-    noStroke();
-    textAlign(CENTER);
-    textSize(height * 0.15);
-    text("Jump & Shoot", width * 0.5, height * 0.2);
+    // fill(255);
+    // noStroke();
+    // textAlign(CENTER);
+    // textSize(height * 0.15);
+    // text("Jump & Shoot", width * 0.5, height * 0.2);
+    drawText('Jump & Shoot', {
+      x: 0.5,
+      y: 0.15,
+      textSize: 65
+    });
 
     if (this.nameTextBox) {
       // Draw the name text box in the centre of the screen
-      var w = width * 0.375;
-      var h = height * 0.1;
-      var x = (width - w) * 0.5;
-      var y = (height + h) * 0.5;
-      this.nameTextBox.show(x, y, w, h, true); // Box should be drawn, so the final argument is true
+      // var w = width * 0.375;
+      // var h = height * 0.1;
+      // var x = (width - w) * 0.5;
+      // var y = (height + h) * 0.5;
+      strokeWeight(ratio);
+      stroke(255);
+      noFill();
+      drawRect({
+        x: 0.5,
+        y: 0.5,
+        w: 300,
+        h: 50
+      })
+      // var { x, y, w, h } = getPosSize({
+      //   x: 0.5,
+      //   y: 0.5,
+      //   w: 300,
+      //   h: 50,
+      //   type: 'rect'
+      // });
+      // this.nameTextBox.show(x, y, w, h, true); // Box should be drawn, so the final argument is true
+      this.nameTextBox.show({
+        x: 0.5,
+        y: 0.5,
+        textSize: 30
+      }); // Box should be drawn, so the final argument is true
      }
     pop();
   }

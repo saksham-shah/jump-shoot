@@ -8,8 +8,8 @@ class GameScreen {
     this.particles = [];
     this.bulletBounce = false;
 
-    this.leaveButton = new Button(0.1, 0.055, 'LEAVE', () => socket.emit('leave lobby'), null);
-    this.closeButton = new Button(0.1, 0.055, 'CLOSE', () => popup = null, null);
+    // this.leaveButton = new Button(0.1, 0.055, 'LEAVE', () => socket.emit('leave lobby'), null);
+    this.leaveButton = new Button(backButtonOptions, 'LEAVE', () => socket.emit('leave lobby'), null);
   }
 
   // Reset arrays and store static platforms
@@ -43,7 +43,8 @@ class GameScreen {
 
   // Just updates the button(s)
   update() {
-    this.leaveButton.updateState(width * 0.9, height * 0.075);
+    // this.leaveButton.updateState(width * 0.9, height * 0.075);
+    this.leaveButton.updateState();
   }
 
   // particleEffect(x, y, r, col, life) {
@@ -95,8 +96,10 @@ class GameScreen {
       this.particles[i].show();
     }
 
-    for (var i = 0; i < this.players.length; i++) {
-      drawNameTag(this.players[i]);
+    if (!OLDGRAPHICS) {
+      for (var i = 0; i < this.players.length; i++) {
+        drawNameTag(this.players[i]);
+      }
     }
 
     for (var i = 0; i < this.players.length; i++) {
@@ -128,16 +131,23 @@ class GameScreen {
     }
     rect(width * 0.5, height * 0.5, gameSize.w * gameSize.z, gameSize.h * gameSize.z)
 
-    this.leaveButton.show(width * 0.9, height * 0.075);
+    // this.leaveButton.show(width * 0.9, height * 0.075);
+    this.leaveButton.show();
 
     // Draw the lobby name in the top left
-    push();
-    fill(255);
-    noStroke();
-    textSize(20);
-    textAlign(LEFT);
-    text(lobbyName, 25, 25);
-    pop();
+    drawText(lobbyName, {
+      x: 25,
+      y: 25,
+      textSize: 20,
+      xEdge: true
+    })
+    // push();
+    // fill(255);
+    // noStroke();
+    // textSize(20);
+    // textAlign(LEFT);
+    // text(lobbyName, 25, 25);
+    // pop();
 
   }
 }
@@ -165,7 +175,7 @@ function drawPlayerWeapon(obj) {
     weaponObj.y = 0;
     weaponObj.hide = false;
     drawObject(weaponObj);
-  } else {
+  } else if (!OLDGRAPHICS) {
     if (obj.shield) { // Draw player's shield
         fill(200);
         noStroke();

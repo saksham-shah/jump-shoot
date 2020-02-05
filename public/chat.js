@@ -19,13 +19,13 @@ class Chat {
     // Show chat if currently typing in the chat
     if (this.timeSinceMsg < 240 || textTarget == chatTextBox) {
       this.timeSinceMsg++; // Disappears after inactivity
-      var bigness = 14; // bigness refers to text size in the whole project
-      var currentY = y; // because size is already a property (I think)
+      var size = 12 * ratio;
+      var currentY = y;
 
       // Loop through chat messages in reverse
       for (var i = this.messages.length - 1; i >= 0; i--) {
-        this.messages[i].show(x, currentY, bigness);
-        currentY -= bigness + 2;
+        this.messages[i].show(x, currentY, size);
+        currentY -= size + 2 * ratio;
       }
     }
   }
@@ -37,11 +37,11 @@ class ChatMessage {
     this.message = message;
   }
 
-  show(x, y, bigness) { // Bottom left of the text
+  show(x, y, size) { // Bottom left of the text
     push();
 
     textAlign(LEFT, BOTTOM);
-    textSize(bigness);
+    textSize(size);
     fill(255);
     noStroke();
     var showText = this.message;
@@ -104,32 +104,41 @@ class TextBox {
     this.typedText = txt;
   }
 
-  show(x, y, w, h, showRect) { // Bottom left of box
+  show(options, y, w, h, showRect) { // Bottom left of box
     push();
 
-    noFill();
-    stroke(255);
-    // Some text boxes need a box to be drawn
-    if (showRect) {
-      rect(x + w * 0.5, y - h * 0.5, w, h);
-    }
+    // noFill();
+    // stroke(255);
+    // strokeWeight(ratio);
+    // // Some text boxes need a box to be drawn
+    // if (showRect) {
+    //   rect(x + w * 0.5, y - h * 0.5, w, h);
+    // }
+    //
+    // var padding = 5 * ratio;
+    // var textX = x;
+    // var textY = y - padding;
+    // var textsize = h - 2 * padding;
 
-    var padding = 5;
-    var textX = x;
-    var textY = y - padding;
-    var textBigness = h - 2 * padding;
+    // var options = {
+    //   x: x,
+    //   y: y,
+    //   textSize: 30
+    // }
 
-    textAlign(LEFT);
-    textSize(textBigness);
-    noStroke();
+    // textAlign(LEFT);
+    // textSize(textsize * ratio);
+    // noStroke();
     if (this.typedText.length == 0) {
-      fill(150);
+      // fill(150);
       // Draw default text if empty
-      text(this.defaultText, textX, textY);
+      drawText(this.defaultText, options, 150);
+      // text(this.defaultText, textX, textY);
     } else {
-      fill(255);
+      // fill(255);
       // Otherwise draw normal text
-      text(this.typedText, textX, textY);
+      drawText(this.typedText, options, 255);
+      // text(this.typedText, textX, textY);
     }
 
     pop();

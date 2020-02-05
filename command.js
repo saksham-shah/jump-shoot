@@ -13,7 +13,7 @@ Nothing right now
 
 class Command {
   static getCommand(message) {
-    var commandWords = ["join", "leave", "name"];
+    var commandWords = ["join", "create", "leave", "name"];
 
     // Forward slash means the message might be a command
     if (!(message[0] == '/')) return null;

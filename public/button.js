@@ -1,27 +1,38 @@
-// Buttons used in ButtonBars
 class Button {
-  constructor(w, h, txt, clickFunc, objOfClick, size) {
-    this.w = w;
-    this.h = h;
-    this.txt = txt;
-    this.pressed = false;
-    this.click = clickFunc;
-    // What object the button operates on
-    this.objOfClick = objOfClick;
+  constructor(options, text, click, obj) {
+    this.options = options;
+    if (this.options.type == undefined) this.options.type = 'rect';
 
-    this.size = size || this.h * 0.75;
+    this.text = text;
+    this.click = click;
+    // What object the button operates on
+    this.objOfClick = obj;
+
+    this.pressed = false;
   }
 
   // Check if the cursor is hovering over the button
-  isHovered(x, y) {
-    var w = width * this.w;
-    var h = height * this.h;
-    return mouseX > x - w * 0.5 && mouseX < x + w * 0.5 && mouseY > y - h * 0.5 && mouseY < y + h * 0.5;
+  isHovered(offsetX, offsetY, options) {
+    if (options) {
+      var { x, y, w, h } = options;
+    } else {
+      var { x, y, w, h } = getPosSize(this.options);
+    }
+
+    // Add any offsets (used in button bars)
+    if (offsetY !== undefined) {
+      x += offsetX * ratio;
+      y += offsetY * ratio;
+    }
+
+    var relX = mouseX - x;
+    var relY = mouseY - y;
+    return relX > - w / 2 && relX < w / 2 && relY > - h / 2 && relY < h / 2;
   }
 
   // Check if the mouse has clicked the button
-  updateState(x, y) {
-    if (this.isHovered(x, y)) {
+  updateState(offsetX, offsetY, options) {
+    if (this.isHovered(offsetX, offsetY, options)) {
       if (mouseIsPressed) {
         this.pressed = true;
       } else if (this.pressed) {
@@ -33,86 +44,124 @@ class Button {
     }
   }
 
-  show(x, y) {
+  show(offsetX, offsetY, options) {
+    if (options) {
+      var { x, y, w, h, size } = options;
+    } else {
+      var { x, y, w, h, size } = getPosSize(this.options);
+    }
+
+    if (offsetY !== undefined) {
+      x += offsetX * ratio;
+      y += offsetY * ratio;
+    }
+
+
     push();
     translate(x, y);
 
     noStroke();
+    fill(100);
+
     // Change colour when hovered over
-    if (this.isHovered(x, y)) {
-      fill(150);
-    } else {
-      fill(100);
-    }
+    if (this.isHovered(offsetX, offsetY, options)) fill(150);
 
-    rect(0, 0, width * this.w, height * this.h);
+    rect(0, 0, w, h);
 
-    textAlign(CENTER);
-    textSize(height * this.size);
-    noStroke();
     fill(255);
+    textAlign(CENTER);
+    textSize(size);
 
-    // If the txt property is actually a function, the button has dynamic text
-    var t = this.txt;
-    if (t instanceof Function) {
-      t = t(this.objOfClick);
-    }
+    // If the text property is actually a function, the button has dynamic text
+    var t = this.text;
+    if (t instanceof Function) t = this.text(this.objOfClick);
 
-    text(t, 0, height * this.size / 3);
+    text(t, 0, size / 3);
+
     pop();
   }
 }
 
 // Used in menus
 class ButtonBar {
-  constructor(txt, obj, buttons) {
-    this.txt = txt;
+  constructor(y, txt, buttons, obj, options) {
+    this.y = y;
+    this.w = options && options.w || 100;
+    this.h = options && options.h || 30;
+    this.size = options && options.size || 25;
+
+    this.buttonW = options && options.buttonW || 50;
+    this.buttonH = options && options.buttonH || 20;
+    this.buttonSize = options && options.buttonSize || 20;
+
+    this.text = txt;
+
+    // Hardcoded numbers
     this.buttons = [];
+    var x = 0.5;
     for (var b of buttons) {
-      this.buttons.push(new Button(0.0625, 0.055, b.txt, b.clickFunc, obj));
+      this.buttons.push(new Button({
+        x: x,
+        y: y,
+        w: this.buttonW,
+        h: this.buttonH,
+        textSize: this.buttonSize
+      }, b.text, b.click, obj));
     }
-
-    // Hardcoded numbers for this right now
-    this.w = width - 100;
-    this.h = height * 0.075;
   }
 
-  updateButtonStates(y) {
-    var w = width - 100;
-    var h = height * 0.075;
-
-    var x = w + 50;
+  updateButtonStates(offsetY) {
     // Update the state of each of its buttons
+    var x = width - this.w * ratio / 2 - 5 * ratio - this.buttonW * ratio;
     for (var b of this.buttons) {
-      x -= 0.075 * width;
-      b.updateState(x, y);
+      b.updateState(0, offsetY, {
+        x: x,
+        y: this.y * height,
+        w: this.buttonW * ratio,
+        h: this.buttonH * ratio
+      });
+      // Each button is slightly to the left of the previous one
+      x -= 10 * ratio + this.buttonW * ratio;
     }
   }
 
-  show(y) {
+  show(offsetY) {
+    var w = width - this.w * ratio;
+    var y = this.y * height;
+    if (offsetY !== undefined) y += offsetY * ratio;
+
     push();
-    translate(50, y);
+    translate(width / 2, y);
+
     noStroke();
     fill(170);
 
-    var w = width - 100;
-    var h = height * 0.075;
-
-    rect(w * 0.5, 0, w, h);
+    rect(0, 0, w, this.h * ratio);
 
     // Draw the text
     textAlign(LEFT);
-    textSize(height * 0.055);
-    noStroke();
     fill(255);
-    text(this.txt, h * 0.25, h * 0.25);
+    textSize(this.size * ratio);
+
+    // If the text property is actually a function, the button has dynamic text
+    var t = this.text;
+    if (t instanceof Function) t = this.text(this.objOfClick);
+
+    text(t, 20 * ratio - w / 2, this.size * ratio / 3);
+
     pop();
 
     // Draw each of its buttons right to left
-    var x = w + 50;
+    var x = width - this.w * ratio / 2 - 5 * ratio - this.buttonW * ratio;
     for (var b of this.buttons) {
-      x -= 0.075 * width;
-      b.show(x, y);
+      b.show(0, offsetY, {
+        x: x,
+        y: this.y * height,
+        w: this.buttonW * ratio,
+        h: this.buttonH * ratio,
+        size: this.buttonSize * ratio
+      });
+      x -= 10 * ratio + this.buttonW * ratio;
     }
   }
 }
