@@ -162,7 +162,7 @@ function setup() {
   socket.on('joined lobby', function(data) {
     inLobby = true;
     lobbyName = data.name;
-    scoreboard = [];
+    scoreboard = data.scoreboard;
     lastWinner = null;
     // Send messages in the chat to tell the player they have joined a lobby
     chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
@@ -178,6 +178,7 @@ function setup() {
       gs.newGame(data.gameinfo.platforms, data.gameinfo.bulletBounce);
     }
     scr = gs;
+    timer.time = 0;
   })
 
   // Lobby is left
@@ -379,63 +380,6 @@ function draw() {
 
   if (popup) {
     popup.show();
-  }
-
-  if (timer.time > 0 && timer.maxTime > 0) {
-    timer.time--;
-
-    // Draw the timer
-    push();
-    var progress = 1 - (timer.time / timer.maxTime);
-
-    var { x, y, w } = getPosSize({
-      type: 'circle',
-      x: 0.5,
-      y: 0.2,
-      w: 50
-    });
-
-    fill(255);
-    noStroke();
-    translate(x, y);
-    textAlign(CENTER);
-    textSize(15 * ratio);
-    if (timer.text) {
-      text(timer.text, 0, -w * 0.5 - 15 * ratio);
-    }
-    rotate(-HALF_PI);
-    arc(0, 0, w, w, 0, progress * TWO_PI, PIE);
-    pop();
-
-    // fill(255);
-    // noStroke();
-    // translate(width * 0.5, 100);
-    // textAlign(CENTER);
-    // textSize(15);
-    // var timerR = 50;
-    // if (timer.text) {
-    //   text(timer.text, 0, -timerR * 0.5 - 15);
-    // }
-    // rotate(-HALF_PI);
-    // arc(0, 0, timerR, timerR, 0, progress * TWO_PI, PIE);
-    // pop();
-
-    // Draw the scoreboard
-    push()
-    var txt = '';
-    for (var i = 0; i < scoreboard.length; i++) {
-      txt += `${scoreboard[i].name}: ${scoreboard[i].score}`;
-      if (i < scoreboard.length - 1) {
-        txt += '\n';
-      }
-    }
-
-    fill(255);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    textSize(40 * ratio);
-    text(txt, width * 0.5, height * 0.5);
-    pop()
   }
 
   // Draw chat in the bottom left corner

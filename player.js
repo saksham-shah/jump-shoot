@@ -99,9 +99,9 @@ class Player {
     this.updateControls();
 
     // Shoot bullets
-    var bullet = null;
+    var bullets = null;
     if (this.controls.shoot) {
-      bullet = this.shoot();
+      bullets = this.shoot();
     }
 
     // Pick up weapons
@@ -133,8 +133,8 @@ class Player {
       this.shieldWidth = 40;
     }
 
-    // Return a bullet if shot, otherwise null
-    return bullet;
+    // Return bullets if shot, otherwise null
+    return bullets;
   }
 
   // Finds and returns nearby weapons (player must be nearly touching the weapons to pick up)
@@ -185,8 +185,8 @@ class Player {
           x: result.recoil * Math.cos(recoilAngle),
           y: result.recoil * Math.sin(recoilAngle)
         });
-        // Return the bullet so it is added to the game
-        return result.bullet;
+        // Return the bullets so they are added to the game
+        return result.bullets;
       }
     }
     return null;

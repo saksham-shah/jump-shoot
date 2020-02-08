@@ -82,9 +82,9 @@ class Bullet {
         var dSq = Math.pow(this.x - body.position.x, 2) + Math.pow(this.y - body.position.y, 2);
         // Check if bullet has hit the circle
         if (dSq < Math.pow(body.circleRadius, 2)) {
-          var force = 0.5;
+          var force = this.damage / 2;
           if (this.reflected) {
-            force = 1;
+            force *= 2;
           }
           Matter.Body.applyForce(body, { x: this.x, y: this.y }, {
             x: force * Math.cos(this.angle),
@@ -113,9 +113,9 @@ class Bullet {
         var w = Math.sqrt(Math.pow(body.vertices[0].x - body.vertices[1].x, 2) + Math.pow(body.vertices[0].y - body.vertices[1].y, 2));
         var h = Math.sqrt(Math.pow(body.vertices[1].x - body.vertices[2].x, 2) + Math.pow(body.vertices[1].y - body.vertices[2].y, 2));
         if (collideWithRect(this.x, this.y, body.position.x, body.position.y, w, h, body.angle)) {
-          var force = 0.5;
+          var force = this.damage / 2;
           if (this.reflected) {
-            force = 1;
+            force *= 2;
           }
           Matter.Body.applyForce(body, { x: this.x, y: this.y }, {
             x: force * Math.cos(this.angle),
@@ -128,7 +128,7 @@ class Bullet {
     return false;
   }
 
-  // Bullet disappears if off screen
+  // Bullet disappears if offscreen
   isOffScreen(width, height, bounce) {
     if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
       // Is offscreen right now
@@ -142,18 +142,18 @@ class Bullet {
           if (this.x < 0 || this.x > width) {
             var vx = this.vel * Math.cos(this.angle);
             var vy = this.vel * Math.sin(this.angle);
-            vx *= -1;
+            if ((this.x < 0 && vx < 0) || (this.x > width && vx > 0)) vx *= -1;
             this.angle = Math.atan2(vy, vx);
             collide = true;
-            this.wasOnScreen = false;
+            // this.wasOnScreen = false;
           }
           if (this.y < 0 || this.y > height) {
             var vx = this.vel * Math.cos(this.angle);
             var vy = this.vel * Math.sin(this.angle);
-            vy *= -1;
+            if ((this.y < 0 && vy < 0) || (this.y > height && vy > 0)) vy *= -1;
             this.angle = Math.atan2(vy, vx);
             collide = true;
-            this.wasOnScreen = false;
+            // this.wasOnScreen = false;
           }
           return collide;
         }

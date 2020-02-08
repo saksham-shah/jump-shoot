@@ -1,3 +1,4 @@
+// Special cases where the key name shouldn't be displayed
 var specialKeyNames = {
   " ": "SPACE",
   "ArrowUp" : "UP",
@@ -6,6 +7,7 @@ var specialKeyNames = {
   "ArrowRight" : "RIGHT"
 }
 
+// The user friendly names of the controls
 var controlNames = {
   up: "Jump",
   down: "Go down really fast",
@@ -38,6 +40,7 @@ var controlKeys = {
   shield: "RMB"
 }
 
+// Store the above controls as the default ones
 var defaultControls = Object.assign(controls, {});
 var defaultControlKeys = Object.assign(controlKeys, {});
 
@@ -47,8 +50,8 @@ var controlClicked = null;
 class ControlsScreen {
   constructor() {
     this.controlbars = {};
-    this.backButton = new Button(backButtonOptions, 'MENU', () => scr = ms, null);
 
+    // Used to set a control as the right mouse button
     this.rmbButton = new Button({
         x: 0.85,
         y: 0.85,
@@ -56,15 +59,19 @@ class ControlsScreen {
         w: 100,
         h: 50
     }, 'Right click', () => {
+      // If a control is currently being changed
       if (controlClicked) {
+        // Change the control
         controls[controlClicked] = 'right';
         controlKeys[controlClicked] = 'RMB';
         controlClicked = null;
+        // Store the controls in cache
         localStorage.controls = JSON.stringify(controls);
         localStorage.controlKeys = JSON.stringify(controlKeys);
       }
     }, null);
 
+    // Same as above but for the left mouse button
     this.lmbButton = new Button({
         x: 0.15,
         y: 0.85,
@@ -81,6 +88,7 @@ class ControlsScreen {
       }
     }, null);
 
+    // Resets all of the controls
     this.defaultButton = new Button({
         x: 0.5,
         y: 0.85,
@@ -88,22 +96,31 @@ class ControlsScreen {
         w: 250,
         h: 50
     }, 'Reset to default', () => {
+      // Loop through each control
       for (var control in controls) {
+        // Reset the controls
         controls[control] = defaultControls[control];
         controlKeys[control] = defaultControlKeys[control];
         controlClicked = null;
+        // Store the controls in cache
         localStorage.controls = JSON.stringify(controls);
         localStorage.controlKeys = JSON.stringify(controlKeys);
       }
     }, null);
-    // this.backButton = new Button(0.1, 0.055, 'MENU', () => scr = ms, null);
+
     this.backButton = new Button(backButtonOptions, 'MENU', () => { scr = ms; controlClicked = null }, null);
 
+    var colourPattern = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple'];
+    var colourCount = 0;
+    // Make button bars for each control
     for (var control in controls) {
       this.controlbars[control] = new ButtonBar(0.3, controlNames[control], [{
+        // If the control is clicked, display '...'
+        // Otherwise display the key
         text: control => controlClicked == control ? '...' : controlKeys[control],
+        // Set controlClicked to this control (or set it to null if already selected)
         click: control => controlClicked = controlClicked == control ? null : control
-      }], control, {
+      }], control, colourPattern[colourCount], {
         w: 400,
         h: 20,
         size: 15,
@@ -111,16 +128,19 @@ class ControlsScreen {
         buttonH: 15,
         buttonSize: 10
       });
+      colourCount = (colourCount + 1) % colourPattern.length;
     }
   }
 
   update() {
+    // Update each button bar
     var y = 0;
     for (var control in this.controlbars) {
       this.controlbars[control].updateButtonStates(y);
       y += 30;
     }
 
+    // Update all of the buttons
     this.rmbButton.updateState();
     this.lmbButton.updateState();
     this.defaultButton.updateState();
@@ -136,12 +156,14 @@ class ControlsScreen {
       textSize: 65
     });
 
+    // Draw each button bar
     var y = 0;
     for (var control in this.controlbars) {
       this.controlbars[control].show(y);
       y += 30;
     }
 
+    // Draw all of the buttons
     this.rmbButton.show();
     this.lmbButton.show();
     this.defaultButton.show();

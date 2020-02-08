@@ -17,6 +17,8 @@ class LobbyScreen {
 
   // Called when a lobby update is sent by the server
   updateLobbies(lobbies) {
+    var colourPattern = ['red', 'orange', 'yellow', 'green', 'blue'];
+    var colourCount = 0;
     this.lobbybars = {};
     for (var lobby of lobbies) {
       // this.lobbybars[lobby.name] = new ButtonBar(lobby.name, lobby, [{
@@ -55,7 +57,8 @@ class LobbyScreen {
           }
           popupMessage(text)
         }
-      }], lobby);
+      }], lobby, colourPattern[colourCount]);
+      colourCount = (colourCount + 1) % colourPattern.length;
     }
   }
 

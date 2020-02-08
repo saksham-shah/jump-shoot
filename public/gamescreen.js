@@ -149,6 +149,65 @@ class GameScreen {
     // text(lobbyName, 25, 25);
     // pop();
 
+
+    if (timer.time > 0 && timer.maxTime > 0) {
+      timer.time--;
+
+      // Draw the timer
+      push();
+      var progress = 1 - (timer.time / timer.maxTime);
+
+      var { x, y, w } = getPosSize({
+        type: 'circle',
+        x: 0.5,
+        y: 0.2,
+        w: 50
+      });
+
+      fill(255);
+      noStroke();
+      translate(x, y);
+      textAlign(CENTER);
+      textSize(15 * ratio);
+      if (timer.text) {
+        text(timer.text, 0, -w * 0.5 - 15 * ratio);
+      }
+      rotate(-HALF_PI);
+      arc(0, 0, w, w, 0, progress * TWO_PI, PIE);
+      pop();
+
+      // fill(255);
+      // noStroke();
+      // translate(width * 0.5, 100);
+      // textAlign(CENTER);
+      // textSize(15);
+      // var timerR = 50;
+      // if (timer.text) {
+      //   text(timer.text, 0, -timerR * 0.5 - 15);
+      // }
+      // rotate(-HALF_PI);
+      // arc(0, 0, timerR, timerR, 0, progress * TWO_PI, PIE);
+      // pop();
+    }
+
+    if ((timer.time > 0 && timer.maxTime > 0) || keyIsDown(76)) {
+      // Draw the scoreboard
+      push()
+      var txt = '';
+      for (var i = 0; i < scoreboard.length; i++) {
+        txt += `${scoreboard[i].name}: ${scoreboard[i].score}`;
+        if (i < scoreboard.length - 1) {
+          txt += '\n';
+        }
+      }
+
+      fill(255);
+      noStroke();
+      textAlign(CENTER, CENTER);
+      textSize(40 * ratio);
+      text(txt, width * 0.5, height * 0.5);
+      pop();
+    }
   }
 }
 
@@ -251,16 +310,22 @@ function drawOffScreenPlayer(obj) {
 //How to draw every possible game object - may split this into seperate functions as more game objects are added
 function drawObject(obj) {
   push();
-  translate(obj.x, obj.y);
   switch (obj.type) {
     case 'platform': // Simple rectangle
-      rotate(obj.angle);
-      fill(200);
-      stroke(255);
-      strokeWeight(1);
-      rect(0, 0, obj.w, obj.h);
+      // translate(obj.x, obj.y);
+      // rotate(obj.angle);
+      fill(platformColours[obj.colour].fill);
+      stroke(platformColours[obj.colour].edge);
+      strokeWeight(platformColours[obj.colour].weight || 1);
+      beginShape();
+      for (var v of obj.vertices) {
+        vertex(v.x, v.y);
+      }
+      endShape(CLOSE);
+      // rect(0, 0, obj.w, obj.h);
       break;
     case 'weapon': // Rectangle for now - may add graphics
+      translate(obj.x, obj.y);
       rotate(obj.angle);
       fill(obj.colour);
       stroke(0);
@@ -268,6 +333,7 @@ function drawObject(obj) {
       rect(0, 0, obj.w, obj.h);
       break;
     case 'bullet': // Long thin rectangle to show it is a fast bullet
+      translate(obj.x, obj.y);
       rotate(obj.angle)
       fill(obj.colour);
       noStroke();
@@ -276,3 +342,44 @@ function drawObject(obj) {
   }
   pop();
 }
+
+var platformColours = {
+  default: {
+    fill: 200,
+    edge: 150,
+    weight: 1
+  },
+  spike: {
+    fill: 25,
+    edge: 75,
+    weight: 3
+  },
+  red: {
+    fill: [200, 0, 0],
+    edge: [150, 0, 0]
+  },
+  orange: {
+    fill: [200, 120, 0],
+    edge: [150, 90, 0]
+  },
+  yellow: {
+    fill: [200, 200, 0],
+    edge: [150, 150, 0]
+  },
+  green: {
+    fill: [0, 200, 0],
+    edge: [0, 150, 0]
+  },
+  cyan: {
+    fill: [0, 200, 200],
+    edge: [0, 150, 150]
+  },
+  blue: {
+    fill: [0, 0, 200],
+    edge: [0, 0, 150]
+  },
+  purple: {
+    fill: [200, 0, 200],
+    edge: [150, 0, 150]
+  }
+};

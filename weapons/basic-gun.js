@@ -1,5 +1,5 @@
 var Weapon = require('./weapon.js');
-var Bullet = require('./bullet.js');
+var Bullet = require('../bullet.js');
 
 // Basic test gun
 class BasicGun extends Weapon {
@@ -34,7 +34,7 @@ class BasicGun extends Weapon {
         shot: true,
         angleChange: 0.4,
         recoil: 0.01,
-        bullet: bullet
+        bullets: [bullet]
       }
     }
     return {

@@ -1,5 +1,5 @@
 class Button {
-  constructor(options, text, click, obj) {
+  constructor(options, text, click, obj, colour = 'default') {
     this.options = options;
     if (this.options.type == undefined) this.options.type = 'rect';
 
@@ -9,6 +9,8 @@ class Button {
     this.objOfClick = obj;
 
     this.pressed = false;
+
+    this.colour = colour;
   }
 
   // Check if the cursor is hovering over the button
@@ -61,10 +63,10 @@ class Button {
     translate(x, y);
 
     noStroke();
-    fill(100);
+    fill(buttonColours[this.colour].main);
 
     // Change colour when hovered over
-    if (this.isHovered(offsetX, offsetY, options)) fill(150);
+    if (this.isHovered(offsetX, offsetY, options)) fill(buttonColours[this.colour].hover);
 
     rect(0, 0, w, h);
 
@@ -84,7 +86,7 @@ class Button {
 
 // Used in menus
 class ButtonBar {
-  constructor(y, txt, buttons, obj, options) {
+  constructor(y, txt, buttons, obj, colour = 'default', options) {
     this.y = y;
     this.w = options && options.w || 100;
     this.h = options && options.h || 30;
@@ -95,6 +97,7 @@ class ButtonBar {
     this.buttonSize = options && options.buttonSize || 20;
 
     this.text = txt;
+    this.colour = colour;
 
     // Hardcoded numbers
     this.buttons = [];
@@ -106,7 +109,7 @@ class ButtonBar {
         w: this.buttonW,
         h: this.buttonH,
         textSize: this.buttonSize
-      }, b.text, b.click, obj));
+      }, b.text, b.click, obj, this.colour));
     }
   }
 
@@ -134,7 +137,7 @@ class ButtonBar {
     translate(width / 2, y);
 
     noStroke();
-    fill(170);
+    fill(buttonColours[this.colour].bar);
 
     rect(0, 0, w, this.h * ratio);
 
@@ -165,3 +168,46 @@ class ButtonBar {
     }
   }
 }
+
+var buttonColours = {
+  default: {
+    main: 100,
+    hover: 150,
+    bar: 175
+  },
+  red: {
+    main: [100, 0, 0],
+    hover: [150, 0, 0],
+    bar: [175, 0, 0]
+  },
+  orange: {
+    main: [100, 60, 0],
+    hover: [150, 90, 0],
+    bar: [175, 105, 0]
+  },
+  yellow: {
+    main: [100, 100, 0],
+    hover: [150, 150, 0],
+    bar: [175, 175, 0]
+  },
+  green: {
+    main: [0, 100, 0],
+    hover: [0, 150, 0],
+    bar: [0, 175, 0]
+  },
+  cyan: {
+    main: [0, 100, 100],
+    hover: [0, 150, 150],
+    bar: [0, 175, 175]
+  },
+  blue: {
+    main: [0, 0, 100],
+    hover: [0, 0, 150],
+    bar: [0, 0, 175]
+  },
+  purple: {
+    main: [100, 0, 100],
+    hover: [150, 0, 150],
+    bar: [175, 0, 175]
+  }
+};

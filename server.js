@@ -389,6 +389,7 @@ function joinLobby(socket, lobbyname) {
   if (lobby) {
     // If the lobby exists, add the player to it
     var sendData = lobby.addPlayer(socket.id);
+    sendData.scoreboard = getScoreboard(sendData.scoreboard);
     // Send player any data about the lobby
     socket.emit('joined lobby', sendData);
     // Add client to socket room
@@ -525,13 +526,24 @@ function lettersOnly(word, maxChars) {
       return output;
     }
   }
-  
+
   // Remove last character if it is a space
   if (output[output.length - 1] == " ") {
     // New substring without last characer
     output = output.substring(0, output.length - 1);
   }
   return output;
+}
+
+function getScoreboard(scoresMap) {
+  var scoreboard = [];
+  for (var [id, scoreObj] of scoresMap) {
+    scoreboard.push({
+      name: users.get(id).name,
+      score: scoreObj.score
+    });
+  }
+  return scoreboard;
 }
 
 // Update the game and send data to clients at 60 FPS
@@ -548,18 +560,18 @@ function updateGame() {
       } else {
         // Send the winner to the players (if there is one) as well as the scoreboard
         var sendData = {
-          scoreboard: []
+          scoreboard: getScoreboard(data.scoresMap)
         };
         if (data.winner) {
           sendData.winner = users.get(data.winner).name;
           sendData.winnerId = data.winner
         }
-        for (var [id, scoreObj] of data.scoresMap) {
-          sendData.scoreboard.push({
-            name: users.get(id).name,
-            score: scoreObj.score
-          })
-        }
+        // for (var [id, scoreObj] of data.scoresMap) {
+        //   sendData.scoreboard.push({
+        //     name: users.get(id).name,
+        //     score: scoreObj.score
+        //   });
+        // }
         io.in(room).emit('game over', sendData);
       }
       var particleExplosions = lobbies[i].getParticles();

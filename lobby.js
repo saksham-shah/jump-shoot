@@ -18,7 +18,8 @@ class Lobby {
     // Send data to the client
     var data = {
       name: this.name,
-      myid: socketid
+      myid: socketid,
+      scoreboard: this.players
     }
     // Send game data so newly connected players can watch the ongoing game
     if (this.game) {

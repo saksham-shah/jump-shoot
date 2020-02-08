@@ -1,11 +1,11 @@
 var Matter = require('matter-js');
 
 var Player = require('./player.js');
-var BasicGun = require('./basic-gun.js');
-var Platform = require('./platform.js');
-var Bullet = require('./bullet.js');
+// var BasicGun = require('./weapons/basic-gun.js');
+// var Platform = require('./platform.js');
+// var Bullet = require('./bullet.js');
 
-var mapFuncs = require('./game-maps.js');
+var mapFuncs = require('./maps/game-maps.js');
 
 // Played within a lobby, runs the actual game and physics engine
 class Game {
@@ -25,7 +25,15 @@ class Game {
     this.static = [];
     this.dynamic = [];
 
+    this.width = 800;
+    this.height = 540;
     this.bulletBounce = false;
+
+    // Game boundary
+    this.deathBounds = {
+      top: -this.height / 2,
+      bottom: this.height + 50
+    }
 
     this.weaponCounter = 0;
 
@@ -51,12 +59,14 @@ class Game {
         var playerB = this.players.get(pair.bodyB.label);
         // If a player is colliding with a non-player, they can jump
         if (playerA) {
-          playerA.canJump = true;
-          playerA.jumpNormal = normal;
+          this.collidePlayer(playerA, pair.bodyB, normal);
+          // playerA.canJump = true;
+          // playerA.jumpNormal = normal;
         }
         if (playerB) {
-          playerB.canJump = true;
-          playerB.jumpNormal = { x: -normal.x, y: -normal.y };
+          this.collidePlayer(playerB, pair.bodyA, { x: -normal.x, y: -normal.y });
+          // playerB.canJump = true;
+          // playerB.jumpNormal = { x: -normal.x, y: -normal.y };
         }
       }
     }
@@ -85,8 +95,10 @@ class Game {
     }
 
     // Allow the functions above to access the list of players in the game
-    var boundCollisionGoing = collisionGoing.bind({"players": this.players});
-    var boundCollisionStop = collisionStop.bind({"players": this.players});
+    // var boundCollisionGoing = collisionGoing.bind({"players": this.players});
+    // var boundCollisionStop = collisionStop.bind({"players": this.players});
+    var boundCollisionGoing = collisionGoing.bind(this);
+    var boundCollisionStop = collisionStop.bind(this);
 
     // Attach the functions to the matter.js engine
     Matter.Events.on(this.engine, 'collisionStart', boundCollisionGoing);
@@ -98,6 +110,11 @@ class Game {
   createMap() {
     var thisMapFunc = mapFuncs[Math.floor(Math.random() * mapFuncs.length)];
     thisMapFunc(this);
+
+    this.weaponSpawnTotal = 0;
+    for (var w of this.weaponSpawn) {
+      this.weaponSpawnTotal += w[1];
+    }
   }
 
   addPlayers() {
@@ -144,6 +161,37 @@ class Game {
     return data;
   }
 
+  collidePlayer(player, other, normal) {
+    if (other.label != 'nojump') {
+      player.canJump = true;
+      player.jumpNormal = normal;
+    } else {
+      player.canJump = false;
+    }
+
+    // Spikes kill players
+    if (other.label == 'spike') {
+      this.disconnectPlayer(player.id)
+    }
+  }
+
+  addWeapon() {
+    // Weapons drop more frequently if there are more players
+    this.weaponCounter = 600 / this.players.size;
+
+    var num = Math.random() * this.weaponSpawnTotal;
+    var counter = 0;
+    while (num > this.weaponSpawn[counter][1]) {
+      num -= this.weaponSpawn[counter][1];
+      counter++;
+    }
+    var chosenWeaponClass = this.weaponSpawn[counter][0];
+
+    // var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
+    var weapon = new chosenWeaponClass(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
+    this.weapons.push(weapon);
+  }
+
   // The following three functions process user inputs (key and mouse presses, mouse movements)
   // Only process events if the player is in the game
   updateMousePos(playerid, mousePos) {
@@ -186,42 +234,52 @@ class Game {
         }
       }
     }
+
+    // Death particles
+    var buffer = 20;
+    var direction = 1;
+    var deathX = player.body.position.x;
+    if (deathX < buffer) {
+      deathX = buffer;
+    } else if (deathX > this.width - buffer) {
+      deathX = this.width - buffer;
+    }
+    var deathY = player.body.position.y;
+    if (deathY < 0) {
+      deathY = 0;
+      direction = -1;
+    } else if (deathY > this.height) {
+      deathY = this.height;
+    }
+    this.pendingParticles.push({
+      x: deathX,
+      y: deathY,
+      vel: 5,
+      velErr: 0.5,
+      angle: -Math.PI * 0.5 * direction,
+      angleErr: Math.PI * 0.125 * 0.5,
+      gravity: 0.2,
+      r: 5,
+      life: 35,
+      lifeErr: 5,
+      col: player.colour,
+      num: 50
+    });
   }
 
   update(users) {
     for (var [playerid, player] of this.players.entries()) {
-      var bullet = player.update(this.weapons, this.engine);
-      if (bullet) {
+      var bullets = player.update(this.weapons, this.engine);
+      if (bullets) {
         // Add new bullets shot by the player
-        this.bullets.push(bullet);
+        for (var b of bullets) {
+          this.bullets.push(b);
+        }
       }
 
       if (player.isOutOfBounds(this.deathBounds)) {
         // Remove players if they exit the game boundaries
         this.disconnectPlayer(playerid);
-
-        // Death particles
-        var buffer = 20;
-        var deathX = player.body.position.x;
-        if (deathX < buffer) {
-          deathX = buffer;
-        } else if (deathX > this.width - buffer) {
-          deathX = this.width - buffer;
-        }
-        this.pendingParticles.push({
-          x: deathX,
-          y: this.height,
-          vel: 5,
-          velErr: 0.5,
-          angle: -Math.PI * 0.5,
-          angleErr: Math.PI * 0.125 * 0.5,
-          gravity: 0.2,
-          r: 5,
-          life: 35,
-          lifeErr: 5,
-          col: player.colour,
-          num: 50
-        });
       }
     }
 
@@ -266,10 +324,8 @@ class Game {
     // Add weapons into game periodically if there aren't many on screen
     if (this.weaponCounter < 0) {
       if (this.weapons.length < this.players.size * 2) {
-        // Weapons drop more frequently if there are more players
-        this.weaponCounter = 600 / this.players.size;
-        var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
-        this.weapons.push(weapon);
+        // Add the weapon
+        this.addWeapon();
       }
     } else {
       this.weaponCounter--;
