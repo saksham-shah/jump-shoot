@@ -36,7 +36,7 @@ class Lobby {
   removePlayer(socketid) {
     if (this.game) {
       // Remove the player from an ongoing game
-      this.game.disconnectPlayer(socketid);
+      this.game.removePlayer(socketid);
     }
     this.players.delete(socketid);
   }

@@ -51,6 +51,8 @@ var baseHeight = 550;
 var ratio;
 
 var socket;
+var pingSent = Date.now(); // Used to calculate ping time
+var pingTime = 0;
 
 console.log("You are playing on the EU server. There are no other servers, this is just a random test console message. Enjoy!")
 
@@ -152,6 +154,11 @@ function setup() {
 
       scr = ms;
     }
+  })
+
+  // Used to calculate ping time
+  socket.on('pongCheck', () => {
+    pingTime = Date.now() - pingSent;
   })
 
   socket.on('lobbies updated', function(lobbies) {
@@ -376,6 +383,11 @@ function draw() {
     // Send the mouse position to the server to aim weapons
     var data = mouseToGamePos();
     socket.emit('update', data);
+
+    if (Date.now() - pingSent > 5000) {
+      pingSent = Date.now();
+      socket.emit('pingCheck');
+    }
   }
 
   if (popup) {

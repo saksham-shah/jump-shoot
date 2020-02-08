@@ -32,7 +32,9 @@ class Game {
     // Game boundary
     this.deathBounds = {
       top: -this.height / 2,
-      bottom: this.height + 50
+      bottom: this.height + 50,
+      left: -this.width / 2,
+      right: this.width * 3 / 2
     }
 
     this.weaponCounter = 0;
@@ -47,7 +49,13 @@ class Game {
     ];
 
     // Create an engine
-    this.engine = Matter.Engine.create();
+    this.engine = Matter.Engine.create({
+      // Trying to prevent fast objects from phasing through platforms
+      // constraintIterations: 20,
+      positionIterations: 20,
+      velocityIterations: 20
+    });
+    console.log(this.engine);
 
     // Check if a player is colliding
     function collisionGoing(event) {
@@ -171,7 +179,7 @@ class Game {
 
     // Spikes kill players
     if (other.label == 'spike') {
-      this.disconnectPlayer(player.id)
+      this.removePlayer(player.id)
     }
   }
 
@@ -215,7 +223,7 @@ class Game {
     }
   }
 
-  disconnectPlayer(playerid) {
+  removePlayer(playerid) {
     var player = this.players.get(playerid);
     if (player) {
       // Remove player from the physics engine
@@ -233,38 +241,38 @@ class Game {
           // No winner chosen if no players left - it's a draw
         }
       }
-    }
 
-    // Death particles
-    var buffer = 20;
-    var direction = 1;
-    var deathX = player.body.position.x;
-    if (deathX < buffer) {
-      deathX = buffer;
-    } else if (deathX > this.width - buffer) {
-      deathX = this.width - buffer;
+      // Death particles
+      var buffer = 20;
+      var direction = 1;
+      var deathX = player.body.position.x;
+      if (deathX < buffer) {
+        deathX = buffer;
+      } else if (deathX > this.width - buffer) {
+        deathX = this.width - buffer;
+      }
+      var deathY = player.body.position.y;
+      if (deathY < 0) {
+        deathY = 0;
+        direction = -1;
+      } else if (deathY > this.height) {
+        deathY = this.height;
+      }
+      this.pendingParticles.push({
+        x: deathX,
+        y: deathY,
+        vel: 5,
+        velErr: 0.5,
+        angle: -Math.PI * 0.5 * direction,
+        angleErr: Math.PI * 0.125 * 0.5,
+        gravity: 0.2,
+        r: 5,
+        life: 35,
+        lifeErr: 5,
+        col: player.colour,
+        num: 50
+      });
     }
-    var deathY = player.body.position.y;
-    if (deathY < 0) {
-      deathY = 0;
-      direction = -1;
-    } else if (deathY > this.height) {
-      deathY = this.height;
-    }
-    this.pendingParticles.push({
-      x: deathX,
-      y: deathY,
-      vel: 5,
-      velErr: 0.5,
-      angle: -Math.PI * 0.5 * direction,
-      angleErr: Math.PI * 0.125 * 0.5,
-      gravity: 0.2,
-      r: 5,
-      life: 35,
-      lifeErr: 5,
-      col: player.colour,
-      num: 50
-    });
   }
 
   update(users) {
@@ -279,7 +287,7 @@ class Game {
 
       if (player.isOutOfBounds(this.deathBounds)) {
         // Remove players if they exit the game boundaries
-        this.disconnectPlayer(playerid);
+        this.removePlayer(playerid);
       }
     }
 

@@ -74,19 +74,19 @@ function sixPlatforms(game) {
   platform = MapUtils.staticPlatform(400, 150, 150, 20, game.engine, {}, 'green');
   game.static.push(platform);
 
-  platform = MapUtils.staticPlatform(400, 300, 100, 20, game.engine, { label: 'spike' }, 'spike');
+  platform = MapUtils.staticPlatform(400, 300, 75, 20, game.engine, { label: 'spike' }, 'spike');
   game.static.push(platform);
 
   platform = MapUtils.staticPlatform(400, 450, 150, 20, game.engine, {}, 'green');
   game.static.push(platform);
 
-  platform = MapUtils.staticPlatform(200, 250, 100, 20, game.engine, {}, 'cyan');
+  platform = MapUtils.staticPlatform(100, 250, 100, 20, game.engine, {}, 'cyan');
   game.static.push(platform);
 
   platform = MapUtils.staticPlatform(200, 350, 100, 20, game.engine, {}, 'cyan');
   game.static.push(platform);
 
-  platform = MapUtils.staticPlatform(600, 250, 100, 20, game.engine, {}, 'cyan');
+  platform = MapUtils.staticPlatform(700, 250, 100, 20, game.engine, {}, 'cyan');
   game.static.push(platform);
 
   platform = MapUtils.staticPlatform(600, 350, 100, 20, game.engine, {}, 'cyan');
@@ -105,7 +105,7 @@ function sixPlatforms(game) {
   // }
 
   // Spawn points
-  game.spawns = [{ x: 200, y: 300 }, { x: 600, y: 300 }, { x: 200, y: 200 }, { x: 600, y: 200 }, { x: 400, y: 100 }, { x: 400, y: 400 }];
+  game.spawns = [{ x: 200, y: 300 }, { x: 600, y: 300 }, { x: 100, y: 200 }, { x: 700, y: 200 }, { x: 400, y: 100 }, { x: 400, y: 400 }];
 }
 
 function debugMap(game) {

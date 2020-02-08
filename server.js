@@ -87,6 +87,11 @@ function newConnection(socket) {
   // Send a list of lobbies for the client to display
   socket.emit('lobbies updated', getLobbies());
 
+  // Used to calculate ping time
+  socket.on('pingCheck', () => {
+    socket.emit('pongCheck');
+  })
+
   // Client updates their name
   socket.on('pick name', name => {
     if (!name) {

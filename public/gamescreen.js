@@ -140,7 +140,7 @@ class GameScreen {
       y: 25,
       textSize: 20,
       xEdge: true
-    })
+    });
     // push();
     // fill(255);
     // noStroke();
@@ -190,7 +190,7 @@ class GameScreen {
       // pop();
     }
 
-    if ((timer.time > 0 && timer.maxTime > 0) || keyIsDown(76)) {
+    if ((timer.time > 0 && timer.maxTime > 0) || (keyIsDown(76) && !textTarget)) {
       // Draw the scoreboard
       push()
       var txt = '';
@@ -207,6 +207,16 @@ class GameScreen {
       textSize(40 * ratio);
       text(txt, width * 0.5, height * 0.5);
       pop();
+    }
+
+    // Show the ping time if 'P' is pressed
+    if (keyIsDown(80) && !textTarget) {
+      drawText(pingTime + 'ms', {
+        x: 25,
+        y: 50,
+        textSize: 20,
+        xEdge: true
+      })
     }
   }
 }
