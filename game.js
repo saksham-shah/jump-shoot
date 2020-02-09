@@ -24,20 +24,15 @@ class Game {
     this.bullets = [];
     this.static = [];
     this.dynamic = [];
+    this.paths = [];
 
     this.width = 800;
     this.height = 540;
     this.bulletBounce = false;
 
-    // Game boundary
-    this.deathBounds = {
-      top: -this.height / 2,
-      bottom: this.height + 50,
-      left: -this.width / 2,
-      right: this.width * 3 / 2
-    }
-
     this.weaponCounter = 0;
+
+    this.storedObjects = {};
 
     this.players = new Map();
 
@@ -55,7 +50,6 @@ class Game {
       positionIterations: 20,
       velocityIterations: 20
     });
-    console.log(this.engine);
 
     // Check if a player is colliding
     function collisionGoing(event) {
@@ -122,6 +116,16 @@ class Game {
     this.weaponSpawnTotal = 0;
     for (var w of this.weaponSpawn) {
       this.weaponSpawnTotal += w[1];
+    }
+
+    if (!this.deathBounds) {
+      // Game boundary
+      this.deathBounds = {
+        top: -300,
+        bottom: this.height + 50,
+        left: -400,
+        right: this.width + 400
+      }
     }
   }
 
@@ -337,6 +341,12 @@ class Game {
       }
     } else {
       this.weaponCounter--;
+    }
+
+    if (this.platformUpdate) this.platformUpdate(this.storedObjects);
+
+    for (var path of this.paths) {
+      path.update(this.engine);
     }
 
     // Run the physics engine

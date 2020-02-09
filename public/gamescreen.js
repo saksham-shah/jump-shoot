@@ -211,7 +211,7 @@ class GameScreen {
 
     // Show the ping time if 'P' is pressed
     if (keyIsDown(80) && !textTarget) {
-      drawText(pingTime + 'ms', {
+      drawText('Ping: ' + pingTime + 'ms', {
         x: 25,
         y: 50,
         textSize: 20,

@@ -69,7 +69,7 @@ class ControlsScreen {
         localStorage.controls = JSON.stringify(controls);
         localStorage.controlKeys = JSON.stringify(controlKeys);
       }
-    }, null);
+    }, null, 'purple');
 
     // Same as above but for the left mouse button
     this.lmbButton = new Button({
@@ -86,7 +86,7 @@ class ControlsScreen {
         localStorage.controls = JSON.stringify(controls);
         localStorage.controlKeys = JSON.stringify(controlKeys);
       }
-    }, null);
+    }, null, 'purple');
 
     // Resets all of the controls
     this.defaultButton = new Button({
@@ -106,11 +106,11 @@ class ControlsScreen {
         localStorage.controls = JSON.stringify(controls);
         localStorage.controlKeys = JSON.stringify(controlKeys);
       }
-    }, null);
+    }, null, 'cyan');
 
     this.backButton = new Button(backButtonOptions, 'MENU', () => { scr = ms; controlClicked = null }, null);
 
-    var colourPattern = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple'];
+    var colourPattern = ['red', 'orange', 'yellow'];//, 'green', 'cyan', 'blue', 'purple'];
     var colourCount = 0;
     // Make button bars for each control
     for (var control in controls) {

@@ -9,7 +9,7 @@ class LobbyScreen {
         textSize: 20,
         w: 250,
         h: 50
-    }, 'Create private lobby', () => socket.emit('create lobby'), null);
+    }, 'Create private lobby', () => socket.emit('create lobby'), null, 'blue');
     // this.backButton = new Button(0.1, 0.055, 'MENU', () => scr = ms, null);
     this.backButton = new Button(backButtonOptions, 'MENU', () => scr = ms, null);
 
@@ -17,7 +17,7 @@ class LobbyScreen {
 
   // Called when a lobby update is sent by the server
   updateLobbies(lobbies) {
-    var colourPattern = ['red', 'orange', 'yellow', 'green', 'blue'];
+    var colourPattern = ['green', 'cyan'];
     var colourCount = 0;
     this.lobbybars = {};
     for (var lobby of lobbies) {

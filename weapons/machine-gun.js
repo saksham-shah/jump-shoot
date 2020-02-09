@@ -12,7 +12,7 @@ class MachineGun extends Weapon {
     // Only fire if gun is cooled down
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
-      var bullet = new Bullet(x, y, 1, 15, angle + Math.random() * Math.PI / 8 - Math.PI / 16, 0.5, playerID);
+      var bullet = new Bullet(x, y, 1, 15, angle + Math.random() * Math.PI / 8 - Math.PI / 16, 0.75, playerID);
 
       // Fire particle effect
       this.particles.push({

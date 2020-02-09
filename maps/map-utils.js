@@ -1,4 +1,7 @@
 var Matter = require('matter-js');
+
+var Path = require('../platforms/path.js');
+
 var RectPlatform = require('../platforms/rectplatform.js');
 var PolyPlatform = require('../platforms/polyplatform.js');
 
@@ -39,6 +42,10 @@ class MapUtils {
       length: 0
     });
     Matter.World.add(engine.world, pivot);
+  }
+
+  static addPath(body, x1, y1, x2, y2, period, offset) {
+    return new Path(body, x1, y1, x2, y2, period, offset);
   }
 
   static polyPlatform(x, y, sides, r, engine, options = {}, colour) {

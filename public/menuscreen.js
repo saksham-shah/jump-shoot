@@ -24,7 +24,7 @@ class MenuScreen {
       w: 200,
       h: 100,
       textSize: 50
-    }, 'PLAY', () => scr = ls, null));
+    }, 'PLAY', () => scr = ls, null, 'red'));
 
     this.buttons.push(new Button({
       x: 0.25,
@@ -32,7 +32,7 @@ class MenuScreen {
       w: 150,
       h: 75,
       textSize: 20
-    }, 'CONTROLS', () => { scr = cs; controlClicked = null }, null));
+    }, 'CONTROLS', () => { scr = cs; controlClicked = null }, null, 'yellow'));
 
     this.buttons.push(new Button({
       x: 0.75,
@@ -40,7 +40,7 @@ class MenuScreen {
       w: 150,
       h: 75,
       textSize: 20
-    }, 'HELP', () => console.log('heeelp'), null));
+    }, 'HELP', () => console.log('heeelp'), null, 'blue'));
 
     this.buttons.push(new Button(backButtonOptions, 'RENAME', () => {
       playerName = "";
