@@ -112,5 +112,7 @@ class LobbyScreen {
     this.createButton.show();
     // this.backButton.show(width * 0.9, height * 0.075);
     this.backButton.show();
+
+    pop();
   }
 }

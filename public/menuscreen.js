@@ -40,7 +40,7 @@ class MenuScreen {
       w: 150,
       h: 75,
       textSize: 20
-    }, 'HELP', () => console.log('heeelp'), null, 'blue'));
+    }, 'HELP', () => scr = hs, null, 'blue'));
 
     this.buttons.push(new Button(backButtonOptions, 'RENAME', () => {
       playerName = "";
@@ -75,5 +75,7 @@ class MenuScreen {
       // b.obj.show(width * b.xRel, height * b.yRel);
       b.show();
     }
+
+    pop();
   }
 }

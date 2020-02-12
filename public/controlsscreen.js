@@ -11,10 +11,10 @@ var specialKeyNames = {
 var controlNames = {
   up: "Jump",
   down: "Go down really fast",
-  left: "Left",
-  right: "Right",
+  left: "Move left",
+  right: "Move right",
   shoot: "Shoot",
-  throw: "Throw",
+  throw: "Throw weapon",
   shield: "Shield"
 }
 
@@ -168,5 +168,7 @@ class ControlsScreen {
     this.lmbButton.show();
     this.defaultButton.show();
     this.backButton.show();
+
+    pop();
   }
 }

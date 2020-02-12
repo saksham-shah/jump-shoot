@@ -1,7 +1,7 @@
 // Initialise variables
 var myid;
 
-var ss, gs, ms, ls, cs; // Various screens used in the game
+var ss, gs, ms, ls, cs, hs; // Various screens used in the game
 
 var scr; // Current screen
 
@@ -96,6 +96,7 @@ function setup() {
   ms = new MenuScreen();
   ls = new LobbyScreen();
   cs = new ControlsScreen();
+  hs = new HelpScreen();
 
   scr = ss;
 
