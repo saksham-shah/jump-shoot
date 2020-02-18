@@ -28,9 +28,10 @@ class Game {
 
     this.width = 800;
     this.height = 540;
-    this.bulletBounce = false;
+    this.bulletBounce = null;
 
-    this.weaponCounter = 0;
+    this.weaponCounter = 180;
+    this.nextWeaponX = null;
 
     this.storedObjects = {};
 
@@ -118,6 +119,10 @@ class Game {
       this.weaponSpawnTotal += w[1];
     }
 
+    if (this.bulletBounce === null) {
+      this.bulletBounce = Math.random() > 0.25 ? false : true;
+    }
+
     if (!this.deathBounds) {
       // Game boundary
       this.deathBounds = {
@@ -130,7 +135,7 @@ class Game {
   }
 
   addPlayers() {
-    var currentSpawn = 0;
+    var currentSpawn = Math.floor(Math.random() * this.spawns.length);
     var currentColour = 0;
     // Add each player to the game
     for (var user of this.users.keys()) {
@@ -200,8 +205,10 @@ class Game {
     var chosenWeaponClass = this.weaponSpawn[counter][0];
 
     // var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
-    var weapon = new chosenWeaponClass(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
+    var weapon = new chosenWeaponClass(this.nextWeaponX, Math.random() * -100, this.engine);
     this.weapons.push(weapon);
+
+    this.nextWeaponX = null;
   }
 
   // The following three functions process user inputs (key and mouse presses, mouse movements)
@@ -333,12 +340,17 @@ class Game {
       }
     }
 
+    // Decide where the next weapon will drop
+    if (this.weaponCounter < 180 && this.nextWeaponX == null) {
+      this.nextWeaponX = Math.random() * (this.width - 300) + 150;
+    }
+
     // Add weapons into game periodically if there aren't many on screen
     if (this.weaponCounter < 0) {
-      if (this.weapons.length < this.players.size * 2) {
-        // Add the weapon
-        this.addWeapon();
-      }
+      // if (this.weapons.length < this.players.size * 2) {
+      // Add the weapon
+      this.addWeapon();
+      // }
     } else {
       this.weaponCounter--;
     }
@@ -373,7 +385,7 @@ class Game {
       players.push(player.toObject(users));
     }
 
-    return [entities, players];
+    return { entities, players, nextWeaponX: this.nextWeaponX };
   }
 
   // Send any pending particle effects to the clients

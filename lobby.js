@@ -97,11 +97,12 @@ class Lobby {
       } else {
         // Otherwise, the game is ongoing as usual
         this.gameCountdown--;
-        var objects = this.game.update(users);
+        var { entities, players, nextWeaponX } = this.game.update(users);
         return {
           type: 'updateGame',
-          entities: objects[0],
-          players: objects[1]
+          entities: entities,
+          players: players,
+          nextWeaponX: nextWeaponX
         };
       }
     }

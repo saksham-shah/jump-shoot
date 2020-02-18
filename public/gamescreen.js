@@ -6,6 +6,7 @@ class GameScreen {
     this.entities = [];
     this.players = [];
     this.particles = [];
+    this.nextWeaponX = null;
     this.bulletBounce = false;
 
     // this.leaveButton = new Button(0.1, 0.055, 'LEAVE', () => socket.emit('leave lobby'), null);
@@ -20,9 +21,10 @@ class GameScreen {
   }
 
   // Update arrays when the server sends data
-  updateDynamic(entities, players) {
-    this.entities = entities;
-    this.players = players;
+  updateDynamic(data) {
+    this.entities = data.entities;
+    this.players = data.players;
+    this.nextWeaponX = data.nextWeaponX;
 
     // Update particles at the same rate as the server sends data
     for (var i = 0; i < this.particles.length; i++) {
@@ -38,6 +40,7 @@ class GameScreen {
     this.dynamic = [];
     this.players = [];
     this.particles = [];
+    this.nextWeaponX = null;
     this.bulletBounce = false;
   }
 
@@ -108,6 +111,20 @@ class GameScreen {
 
     for (var i = 0; i < this.players.length; i++) {
       drawOffScreenPlayer(this.players[i]);
+    }
+
+    // Draw arrow for next weapon drop
+    if (this.nextWeaponX !== null) {
+      fill(200, 100);
+      noStroke();
+
+      // Draw the triangle
+      translate(this.nextWeaponX, 30);
+      beginShape();
+      vertex(0, 0);
+      vertex(20, -30);
+      vertex(-20, -30);
+      endShape(CLOSE);
     }
 
     pop();

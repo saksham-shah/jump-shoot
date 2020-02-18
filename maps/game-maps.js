@@ -10,7 +10,7 @@ var createMapFuncs = [];
 function turnAndShoot(game) {
   game.width = 800;
   game.height = 540;
-  game.bulletBounce = true;
+  // game.bulletBounce = true;
 
   // var pivotPlat = MapUtils.pivotPlatform(game.width * 0.5, game.height * 0.5, 450, 20, { density: 0.02, frictionAir: 0.001 }, game.engine);
   // game.dynamic.push(pivotPlat);
@@ -112,37 +112,37 @@ function lifts(game) {
   var platform, path;
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'green');
-  path = MapUtils.addPath(platform.body, 400, 100, 400, 700, 10000, -0.25);
+  path = MapUtils.addPath(platform.body, 400, 100, 400, 620, 10000, -0.25);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'yellow');
-  path = MapUtils.addPath(platform.body, 290, 100, 290, 700, 10000);
+  path = MapUtils.addPath(platform.body, 290, 100, 290, 620, 10000);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'yellow');
-  path = MapUtils.addPath(platform.body, 510, 100, 510, 700, 10000);
+  path = MapUtils.addPath(platform.body, 510, 100, 510, 620, 10000);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'orange');
-  path = MapUtils.addPath(platform.body, 180, 100, 180, 700, 10000, 0.25);
+  path = MapUtils.addPath(platform.body, 180, 100, 180, 620, 10000, 0.25);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'orange');
-  path = MapUtils.addPath(platform.body, 620, 100, 620, 700, 10000, 0.25);
+  path = MapUtils.addPath(platform.body, 620, 100, 620, 620, 10000, 0.25);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'red');
-  path = MapUtils.addPath(platform.body, 70, 100, 70, 700, 10000, 0.5);
+  path = MapUtils.addPath(platform.body, 70, 100, 70, 620, 10000, 0.5);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'red');
-  path = MapUtils.addPath(platform.body, 730, 100, 730, 700, 10000, 0.5);
+  path = MapUtils.addPath(platform.body, 730, 100, 730, 620, 10000, 0.5);
   game.dynamic.push(platform);
   game.paths.push(path);
 
@@ -155,44 +155,9 @@ function lifts(game) {
   ]
 
   // Spawn points
-  game.spawns = [{ x: 400, y: 0 }, { x: 70, y: 200 }, { x: 730, y: 200 }];
+  game.spawns = [{ x: 375, y: 0 }, { x: 425, y: 0 }, { x: 45, y: 200 }, { x: 95, y: 200 }, { x: 705, y: 200 }, { x: 755, y: 200 }];
+  // game.spawns = [{ x: 70, y: 0 }, { x: 400, y: 0 }, { x: 730, y: 0 }];
 
-}
-
-function debugMap(game) {
-  game.width = 800;
-  game.height = 540;
-
-  var ground = MapUtils.staticPlatform(game.width * 0.5, game.height - 50, game.width - 100, 20, game.engine);
-  game.static.push(ground);
-
-  // var platform = MapUtils.staticPlatform(600, 400, 100, 20, game.engine, { label: 'spike' }, 'spike');
-  // game.static.push(platform);
-  // var platform = MapUtils.polyPlatform(600, 400, 3, 20, game.engine, { isStatic: true, label: 'spike' }, 'default');
-  // game.static.push(platform);
-
-  platform = MapUtils.staticPlatform(400, 400, 100, 20, game.engine, {}, 'red');
-  // game.storedObjects.bodies = platform.body;
-  // game.dynamic.push(platform);
-
-  game.paths.push(MapUtils.addPath(platform.body, 100, 100, 600, 500, 10000))
-
-  // game.platformUpdate = game => {
-  //   var body = game.storedObjects.red;
-  //   var py = 270 + 150 * Math.sin(game.engine.timing.timestamp * 0.001);
-  //   Matter.Body.setVelocity(body, { x: 0, y: py - body.position.y });
-  //   Matter.Body.setPosition(body, { x: 100, y: py });
-  // }
-
-  // Weapons
-  game.weaponSpawn = [
-    [BasicGun, 1],
-    [MachineGun, 1],
-    [Sniper, 1]
-  ]
-
-  // Spawn points
-  game.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }];
 }
 
 function rotations(game) {
@@ -234,7 +199,7 @@ function rotations(game) {
     // Matter.Body.setAngularVelocity(obj.compound, 0.02);
     Matter.Body.rotate(obj.compound, 0.002);
   }
-  
+
   // Weapons
   game.weaponSpawn = [
     [BasicGun, 1],
@@ -244,6 +209,42 @@ function rotations(game) {
 
   // Spawn points
   game.spawns = [{ x: 100, y: 350 }, { x: 1100, y: 350 }, { x: 200, y: 350 }, { x: 1000, y: 350 }];
+}
+
+function debugMap(game) {
+  game.width = 800;
+  game.height = 540;
+
+  var ground = MapUtils.staticPlatform(game.width * 0.5, game.height - 50, game.width - 100, 20, game.engine);
+  game.static.push(ground);
+
+  // var platform = MapUtils.staticPlatform(600, 400, 100, 20, game.engine, { label: 'spike' }, 'spike');
+  // game.static.push(platform);
+  // var platform = MapUtils.polyPlatform(600, 400, 3, 20, game.engine, { isStatic: true, label: 'spike' }, 'default');
+  // game.static.push(platform);
+
+  platform = MapUtils.staticPlatform(400, 400, 100, 20, game.engine, {}, 'red');
+  // game.storedObjects.bodies = platform.body;
+  // game.dynamic.push(platform);
+
+  game.paths.push(MapUtils.addPath(platform.body, 100, 100, 600, 500, 10000))
+
+  // game.platformUpdate = game => {
+  //   var body = game.storedObjects.red;
+  //   var py = 270 + 150 * Math.sin(game.engine.timing.timestamp * 0.001);
+  //   Matter.Body.setVelocity(body, { x: 0, y: py - body.position.y });
+  //   Matter.Body.setPosition(body, { x: 100, y: py });
+  // }
+
+  // Weapons
+  game.weaponSpawn = [
+    [BasicGun, 1],
+    [MachineGun, 1],
+    [Sniper, 1]
+  ]
+
+  // Spawn points
+  game.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }];
 }
 
 createMapFuncs.push(turnAndShoot);

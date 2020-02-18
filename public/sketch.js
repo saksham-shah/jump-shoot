@@ -209,7 +209,7 @@ function setup() {
   // Next frame of the game
   socket.on('update', function(data) {
     if (data.type == 'updateGame') {
-      gs.updateDynamic(data.entities, data.players);
+      gs.updateDynamic(data);
     } else if (data.type == 'startGame') {
       gameSize.w = data.width;
       gameSize.h = data.height;
