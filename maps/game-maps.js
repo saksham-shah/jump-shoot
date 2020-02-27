@@ -112,37 +112,37 @@ function lifts(game) {
   var platform, path;
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'green');
-  path = MapUtils.addPath(platform.body, 400, 100, 400, 620, 10000, -0.25);
+  path = MapUtils.addPath(platform.body, 400, 100, 400, 500, 10000, -0.25);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'yellow');
-  path = MapUtils.addPath(platform.body, 290, 100, 290, 620, 10000);
+  path = MapUtils.addPath(platform.body, 290, 100, 290, 500, 10000);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'yellow');
-  path = MapUtils.addPath(platform.body, 510, 100, 510, 620, 10000);
+  path = MapUtils.addPath(platform.body, 510, 100, 510, 500, 10000);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'orange');
-  path = MapUtils.addPath(platform.body, 180, 100, 180, 620, 10000, 0.25);
+  path = MapUtils.addPath(platform.body, 180, 100, 180, 500, 10000, 0.25);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'orange');
-  path = MapUtils.addPath(platform.body, 620, 100, 620, 620, 10000, 0.25);
+  path = MapUtils.addPath(platform.body, 620, 100, 620, 500, 10000, 0.25);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'red');
-  path = MapUtils.addPath(platform.body, 70, 100, 70, 620, 10000, 0.5);
+  path = MapUtils.addPath(platform.body, 70, 100, 70, 500, 10000, 0.5);
   game.dynamic.push(platform);
   game.paths.push(path);
 
   platform = MapUtils.staticPlatform(0, 0, 100, 20, game.engine, {}, 'red');
-  path = MapUtils.addPath(platform.body, 730, 100, 730, 620, 10000, 0.5);
+  path = MapUtils.addPath(platform.body, 730, 100, 730, 500, 10000, 0.5);
   game.dynamic.push(platform);
   game.paths.push(path);
 
@@ -155,8 +155,8 @@ function lifts(game) {
   ]
 
   // Spawn points
-  game.spawns = [{ x: 375, y: 0 }, { x: 425, y: 0 }, { x: 45, y: 200 }, { x: 95, y: 200 }, { x: 705, y: 200 }, { x: 755, y: 200 }];
-  // game.spawns = [{ x: 70, y: 0 }, { x: 400, y: 0 }, { x: 730, y: 0 }];
+  // game.spawns = [{ x: 375, y: 0 }, { x: 425, y: 0 }, { x: 45, y: 200 }, { x: 95, y: 200 }, { x: 705, y: 200 }, { x: 755, y: 200 }];
+  game.spawns = [{ x: 400, y: 50 }, { x: 70, y: 250 }, { x: 730, y: 250 }, { x: 180, y: 450 }, { x: 620, y: 450 }, { x: 290, y: 250 }, { x: 510, y: 250 }];
 
 }
 

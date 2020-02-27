@@ -40,7 +40,7 @@ class LobbyScreen {
       //   }
       // }]);
 
-      this.lobbybars[lobby.name] = new ButtonBar(0.3, lobby.name, [{
+      var buttons = [{
         text: 'Join',
         click: lobby => socket.emit('join lobby', lobby.name)
       }, {
@@ -57,7 +57,18 @@ class LobbyScreen {
           }
           popupMessage(text)
         }
-      }], lobby, colourPattern[colourCount]);
+      }];
+
+      if (lobby.info) {
+        buttons.push({
+          text: 'Info',
+          click: lobby => {
+            popupMessage(lobby.info);
+          }
+        })
+      }
+
+      this.lobbybars[lobby.name] = new ButtonBar(0.3, lobby.name, buttons, lobby, colourPattern[colourCount]);
       colourCount = (colourCount + 1) % colourPattern.length;
     }
   }

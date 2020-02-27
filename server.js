@@ -41,8 +41,14 @@ var lobbies = [];
 lobbies.push(new Lobby('Public 1', true));
 lobbies.push(new Lobby('Public 2', true));
 lobbies.push(new Lobby('Public 3', true));
-lobbies.push(new Lobby('Public 4', true));
-lobbies.push(new Lobby('Public 5', true));
+lobbies.push(new Lobby('Experimental 1', true, true, `New experimental features:
+
+Players don't bounce as much
+New shotgun weapon`));
+lobbies.push(new Lobby('Experimental 2', true, true, `New experimental features:
+
+Players don't bounce as much
+New shotgun weapon`));
 
 // Client connects
 io.sockets.on('connection', newConnection);
@@ -366,6 +372,7 @@ function getLobbies() {
       lobbyObjects.push({
         name: lobby.name,
         players: players,
+        info: lobby.info,
         maxPlayers: lobby.maxPlayers
       });
     }
@@ -558,6 +565,16 @@ function updateGame() {
   for (var i = 0; i < lobbies.length; i++) {
     var room = lobbies[i].name;
     var data = lobbies[i].update(users);
+
+    for (var [playerid, player] of lobbies[i].players.entries()) {
+      if (player.timeLeft == 600) {
+        sendServerMessage(playerid, 'You are idle. Move or you will be kicked in 10 seconds!');
+      } else if (player.timeLeft <= 0) {
+        leaveLobby(io.sockets.connected[playerid]);
+        sendServerMessage(playerid, 'You were kicked for being idle for too long!');
+      }
+    }
+
     if (data) {
       if (data.type !== 'endGame') {
         // Send game data to players in the lobby

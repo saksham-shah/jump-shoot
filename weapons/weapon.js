@@ -3,13 +3,14 @@ var Matter = require('matter-js');
 // Wrapper class for a Matter.js body
 // Used by players to shoot at each other, can be equipped and thrown
 class Weapon {
-  constructor(x, y, w, h, engine) {
+  constructor(x, y, w, h, engine, experimental) {
     this.w = w;
     this.h = h;
     // Arbitrary numbers
     this.options = {
       density: 0.05,
       friction: 0.5
+      // frictionAir: experimental ? 0.2 : 0.01
     }
     this.body = Matter.Bodies.rectangle(x, y, w, h, this.options);
 

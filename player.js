@@ -3,14 +3,14 @@ var Matter = require('matter-js');
 // Wrapper class for a Matter.js body
 // Handles player actions based on controls
 class Player {
-  constructor(x, y, id, colour, engine) {
+  constructor(x, y, id, colour, engine, experimental) {
     this.id = id;
     this.colour = colour;
 
     this.r = 15;
     // Arbitrary numbers
     var options = {
-      restitution: 1.3,
+      restitution: experimental ? 0.6 : 1,
       friction: 0.5,
       frictionAir: 0.02,
       density: 0.03,
@@ -57,6 +57,11 @@ class Player {
 
     this.shieldWidth = 40;
 
+    this.lastShot = {
+      timeAgo: 0,
+      player: null
+    }
+
     this.particles = [];
   }
 
@@ -74,6 +79,8 @@ class Player {
       this.weapon.coolGun();
     }
     this.cooldown++;
+
+    this.lastShot.timeAgo++;
 
     // Point the gun towards its target
     // mouseVel is used to make the movement smooth and natural
@@ -298,11 +305,11 @@ class Player {
       });
     }
     // Experimental bouncy feature - really isn't needed but I can't get myself to remove it
-    if (this.controls.bouncy) {
-      this.body.restitution = 1.3
-    } else {
-      this.body.restitution = 1;
-    }
+    // if (this.controls.bouncy) {
+    //   this.body.restitution = 1.3
+    // } else {
+    //   this.body.restitution = 1;
+    // }
   }
 
   removeFromWorld(engine) {

@@ -1,19 +1,26 @@
 var Weapon = require('./weapon.js');
 var Bullet = require('../bullet.js');
 
-// Machine gun
-class MachineGun extends Weapon {
+// Basic test gun
+class Shotgun extends Weapon {
   constructor(x, y, engine, experimental) {
-    super(x, y, 15, 15, engine, experimental);
-    this.fireRate = 3;
+    super(x, y, 20, 15, engine, experimental);
+    this.fireRate = 60;
   }
 
   shoot(x, y, angle, playerID) {
     // Only fire if gun is cooled down
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
-      angle += Math.random() * Math.PI / 8 - Math.PI / 16;
-      var bullet = new Bullet(x, y, 1, 15, angle, 0.75, playerID);
+      var bullets = [];
+
+      var numEitherSide = 3;
+      var angleRange = Math.PI / 4;
+      angle -= angleRange / 2;
+      for (var i = 0; i < 1 + 2 * numEitherSide; i++) {
+        bullets.push(new Bullet(x, y, 1, 20, angle, 0.5, playerID));
+        angle += angleRange / 2 / numEitherSide;
+      }
 
       // Fire particle effect
       this.particles.push({
@@ -28,14 +35,14 @@ class MachineGun extends Weapon {
         life: 15,
         lifeErr: 3,
         col: [255, 255, 0], //yellow
-        num: 3
+        num: 20
       });
 
       return {
         shot: true,
-        angleChange: 0.4,
-        recoil: 0.05,
-        bullets: [bullet]
+        angleChange: 1,
+        recoil: 0.4,
+        bullets: bullets
       }
     }
     return {
@@ -47,7 +54,7 @@ class MachineGun extends Weapon {
     var pos = this.body.position;
     return {
       type: 'weapon',
-      weapon: 'machine gun',
+      weapon: 'shotgun',
       x: pos.x,
       y: pos.y,
       w: this.w,
@@ -59,4 +66,4 @@ class MachineGun extends Weapon {
   }
 }
 
-module.exports = MachineGun;
+module.exports = Shotgun;

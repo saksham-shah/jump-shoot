@@ -4,9 +4,12 @@ var Game = require('./game.js');
 
 // Game room where players can play the game
 class Lobby {
-  constructor(name, publicLobby) {
+  constructor(name, publicLobby, experimental = false, info = '') {
     this.name = name;
     this.publicLobby = publicLobby;
+    this.experimental = experimental;
+    this.info = info;
+
     this.maxPlayers = 4;
     this.players = new Map();
     this.gameCountdown = -1;
@@ -14,7 +17,7 @@ class Lobby {
   }
 
   addPlayer(socketid) {
-    this.players.set(socketid, { score: 0 });
+    this.players.set(socketid, { score: 0, timeLeft: 10800 });
     // Send data to the client
     var data = {
       name: this.name,
@@ -43,7 +46,7 @@ class Lobby {
 
   newGame() {
     if (!this.game) {
-      this.game = new Game(this.players);
+      this.game = new Game(this.players, this.experimental);
       var data = this.game.startGame();
       data.type = 'startGame';
       return data;
@@ -61,6 +64,10 @@ class Lobby {
   keyPressed(playerid, control) {
     if (this.game) {
       this.game.keyPressed(playerid, control);
+
+      // Update player's idle time
+      var player = this.players.get(playerid);
+      player.timeLeft = 10800; // 3 minutes
     }
   }
 
@@ -80,7 +87,6 @@ class Lobby {
         var winnerObj = this.players.get(winner);
         if (winnerObj) {
           winnerObj.score++;
-          this.players.set(winner, winnerObj);
         }
 
         // Next game starts in 1 second
@@ -98,6 +104,13 @@ class Lobby {
         // Otherwise, the game is ongoing as usual
         this.gameCountdown--;
         var { entities, players, nextWeaponX } = this.game.update(users);
+
+        // Increment idle time of all alive players
+        for (var playerid of this.game.players.keys()) {
+          var player = this.players.get(playerid);
+          player.timeLeft--;
+        }
+
         return {
           type: 'updateGame',
           entities: entities,

@@ -1,3 +1,5 @@
+var gameTime = 0;
+
 // Handles drawing of game objects
 class GameScreen {
   constructor() {
@@ -18,6 +20,7 @@ class GameScreen {
     this.resetGame();
     this.platforms = platforms;
     this.bulletBounce = bulletBounce;
+    gameTime = 0;
   }
 
   // Update arrays when the server sends data
@@ -33,6 +36,8 @@ class GameScreen {
         i--;
       }
     }
+
+    gameTime++;
   }
 
   resetGame() {
@@ -287,6 +292,16 @@ function drawNameTag(obj) {
     textStyle(BOLD);
   }
   text(obj.name, 0, obj.r + 15);
+
+  // Draw circle around local player at the start of the game
+  if ( gameTime < 180 && obj.id == myid) {
+    noFill();
+    var c = color(obj.colour);
+    c.setAlpha(75 + 75 * Math.cos(gameTime * 2 * Math.PI / 40));
+    stroke(c);
+    strokeWeight(obj.r);
+    ellipse(0, 0, obj.r * 4, obj.r * 4);
+  }
 
   // Draw crown on previous winner
   if (obj.id == lastWinner) {

@@ -5,15 +5,22 @@ var Player = require('./player.js');
 // var Platform = require('./platform.js');
 // var Bullet = require('./bullet.js');
 
+var BasicGun = require('./weapons/basic-gun.js');
+var MachineGun = require('./weapons/machine-gun.js');
+var Sniper = require('./weapons/sniper.js');
+var Shotgun = require('./weapons/shotgun.js');
+
 var mapFuncs = require('./maps/game-maps.js');
 
 // Played within a lobby, runs the actual game and physics engine
 class Game {
-  constructor(users) {
+  constructor(users, experimental) {
     this.users = users;
     this.winner = null;
     this.ending = false;
     this.inGame = false;
+
+    this.experimental = experimental;
 
     this.pendingParticles = [];
   }
@@ -114,6 +121,17 @@ class Game {
     var thisMapFunc = mapFuncs[Math.floor(Math.random() * mapFuncs.length)];
     thisMapFunc(this);
 
+    // Weapons
+    this.weaponSpawn = [
+      [BasicGun, 1],
+      [MachineGun, 1],
+      [Sniper, 1]
+    ]
+
+    if (this.experimental) {
+      this.weaponSpawn.push([Shotgun, 1]);
+    }
+
     this.weaponSpawnTotal = 0;
     for (var w of this.weaponSpawn) {
       this.weaponSpawnTotal += w[1];
@@ -126,10 +144,10 @@ class Game {
     if (!this.deathBounds) {
       // Game boundary
       this.deathBounds = {
-        top: -300,
+        top: -400,
         bottom: this.height + 50,
-        left: -400,
-        right: this.width + 400
+        left: -600,
+        right: this.width + 600
       }
     }
   }
@@ -139,7 +157,7 @@ class Game {
     var currentColour = 0;
     // Add each player to the game
     for (var user of this.users.keys()) {
-      var player = new Player(this.spawns[currentSpawn].x, this.spawns[currentSpawn].y, user, this.colours[currentColour], this.engine);
+      var player = new Player(this.spawns[currentSpawn].x, this.spawns[currentSpawn].y, user, this.colours[currentColour], this.engine, this.experimental);
       this.players.set(player.id, player);
 
       // Colours cycle around
@@ -198,14 +216,14 @@ class Game {
 
     var num = Math.random() * this.weaponSpawnTotal;
     var counter = 0;
-    while (num > this.weaponSpawn[counter][1]) {
+    while (num >= this.weaponSpawn[counter][1]) {
       num -= this.weaponSpawn[counter][1];
       counter++;
     }
     var chosenWeaponClass = this.weaponSpawn[counter][0];
 
     // var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
-    var weapon = new chosenWeaponClass(this.nextWeaponX, Math.random() * -100, this.engine);
+    var weapon = new chosenWeaponClass(this.nextWeaponX, -50, this.engine, this.experimental);
     this.weapons.push(weapon);
 
     this.nextWeaponX = null;

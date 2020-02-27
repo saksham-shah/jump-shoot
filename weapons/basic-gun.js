@@ -3,8 +3,8 @@ var Bullet = require('../bullet.js');
 
 // Basic test gun
 class BasicGun extends Weapon {
-  constructor(x, y, engine) {
-    super(x, y, 20, 10, engine);
+  constructor(x, y, engine, experimental) {
+    super(x, y, 20, 10, engine, experimental);
     this.fireRate = 12;
   }
 
@@ -46,6 +46,7 @@ class BasicGun extends Weapon {
     var pos = this.body.position;
     return {
       type: 'weapon',
+      weapon: 'pistol',
       x: pos.x,
       y: pos.y,
       w: this.w,

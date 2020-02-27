@@ -3,8 +3,8 @@ var Bullet = require('../bullet.js');
 
 // Sniper gun
 class Sniper extends Weapon {
-  constructor(x, y, engine) {
-    super(x, y, 30, 10, engine);
+  constructor(x, y, engine, experimental) {
+    super(x, y, 30, 10, engine, experimental);
     this.fireRate = 90;
   }
 
@@ -46,6 +46,7 @@ class Sniper extends Weapon {
     var pos = this.body.position;
     return {
       type: 'weapon',
+      weapon: 'sniper',
       x: pos.x,
       y: pos.y,
       w: this.w,

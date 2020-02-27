@@ -218,7 +218,13 @@ function setup() {
       // Start displaying the game
       platforms = data.platforms;
       gs.newGame(data.platforms, data.bulletBounce);
-      chat.newMessage(SERVER, "New game starting");
+      // chat.newMessage(SERVER, "New game starting");
+    }
+
+    if (data.messages) {
+      for (var msg of data.messages) {
+        chat.newMessage(SERVER, msg);
+      }
     }
   })
 
@@ -238,7 +244,7 @@ function setup() {
     if (data.winnerId) {
       lastWinner = data.winnerId;
     }
-    chat.newMessage(SERVER, "Game over");
+    // chat.newMessage(SERVER, "Game over");
     // Check if there is a single winner
     if (data.winner) {
       chat.newMessage(SERVER, "Winner: " + data.winner);

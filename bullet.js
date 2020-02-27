@@ -46,6 +46,7 @@ class Bullet {
         // If body is a player
         if (body.externalData.type == 'player') {
           var player = body.externalData.obj;
+          // Collide with shield
           if (player.shield) {
             var shieldX = body.position.x + (player.r + 7) * Math.cos(player.angle);
             var shieldY = body.position.y + (player.r + 7) * Math.sin(player.angle);
@@ -55,6 +56,7 @@ class Bullet {
               player.shieldWidth += 2.5;
               this.reflected = true;
               this.colour = [255, 155, 0];
+              this.originPlayer = player.id;
 
               this.particles.push({
                 x: this.x,
@@ -102,6 +104,10 @@ class Bullet {
                   player.throwWeapon(0, engine);
                 }
               }
+
+              player.lastShot.timeAgo = 0;
+              player.lastShot.player = this.originPlayer;
+
               var newDensity = body.density * Math.pow(body.externalData.obj.massDecay, damage);
               Matter.Body.setDensity(body, newDensity);
             }
