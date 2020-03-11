@@ -7,10 +7,12 @@ class Player {
     this.id = id;
     this.colour = colour;
 
+    this.experimental = experimental;
+
     this.r = 15;
     // Arbitrary numbers
     var options = {
-      restitution: experimental ? 0.6 : 1,
+      restitution: 0.6,
       friction: 0.5,
       frictionAir: 0.02,
       density: 0.03,
@@ -122,7 +124,7 @@ class Player {
 
     // Throw equipped weapon
     if (this.controls.throw && this.weapon && this.cooldown >= 40) {
-      this.throwWeapon(0.04, engine);
+      this.throwWeapon(this.experimental ? 0.08 : 0.04, engine);
     }
 
     // Activate shield
@@ -147,7 +149,7 @@ class Player {
   // Finds and returns nearby weapons (player must be nearly touching the weapons to pick up)
   checkForWeapons(weapons) {
     for (var i = 0; i < weapons.length; i++) {
-      if (!weapons[i].equipped) {
+      if (!weapons[i].equipped && !(this.experimental && weapons[i].thrown != 0)) {
         var weapon = weapons[i];
         var wPos = weapon.body.position;
         var pPos = this.body.position
@@ -207,7 +209,7 @@ class Player {
     var x = pos.x + (this.r + this.weapon.w * 1.1) * Math.cos(this.angle);
     var y = pos.y + (this.r + this.weapon.w * 1.1) * Math.sin(this.angle);
     this.weapon.getUnequipped(x, y, this.angle, engine);
-    this.weapon.throw(this.body.velocity, force, this.angle, engine);
+    this.weapon.throw(this.experimental ? { x: 0, y: 0 } : this.body.velocity, force, this.angle, engine);
     this.weapon = null;
     // Prevents picking up a weapon immediately after throwing it
     this.cooldown = 0;

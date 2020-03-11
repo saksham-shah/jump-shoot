@@ -3,13 +3,16 @@ var Matter = require('matter-js');
 // Wrapper class for a Matter.js body
 // Used by players to shoot at each other, can be equipped and thrown
 class Weapon {
-  constructor(x, y, w, h, engine, experimental) {
+  constructor(x, y, w, h, engine, experimental, id = '') {
     this.w = w;
     this.h = h;
+    this.id = 'weapon' + id;
+
     // Arbitrary numbers
     this.options = {
       density: 0.05,
-      friction: 0.5
+      friction: 0.5,
+      label: this.id
       // frictionAir: experimental ? 0.2 : 0.01
     }
     this.body = Matter.Bodies.rectangle(x, y, w, h, this.options);
@@ -19,10 +22,20 @@ class Weapon {
 
     // Whether the weapon is currently equipped by a player
     this.equipped = false;
+
+    // Whether the weapon was just thrown
+    this.thrown = 0;
+
     // Controls weapon fire rate
     this.cooldown = 0;
 
     this.particles = [];
+  }
+
+  update() {
+    if (this.thrown > 0) {
+      this.thrown--;
+    }
   }
 
   coolGun() {
@@ -56,6 +69,8 @@ class Weapon {
       x: speed * this.body.mass * Math.cos(angle),
       y: speed * this.body.mass * Math.sin(angle)
     });
+
+    this.thrown = -1;
   }
 
   removeFromWorld(engine) {

@@ -72,11 +72,24 @@ class Game {
           this.collidePlayer(playerA, pair.bodyB, normal);
           // playerA.canJump = true;
           // playerA.jumpNormal = normal;
+        } else if (pair.bodyB.label.substring(0, 6) == 'weapon') {
+          for (var weapon of this.weapons) {
+            if (weapon.id == pair.bodyB.label && weapon.thrown < 0) {
+              weapon.thrown = 30;
+            }
+          }
         }
+
         if (playerB) {
           this.collidePlayer(playerB, pair.bodyA, { x: -normal.x, y: -normal.y });
           // playerB.canJump = true;
           // playerB.jumpNormal = { x: -normal.x, y: -normal.y };
+        } else if (pair.bodyA.label.substring(0, 6) == 'weapon') {
+          for (var weapon of this.weapons) {
+            if (weapon.id == pair.bodyA.label && weapon.thrown < 0) {
+              weapon.thrown = 30;
+            }
+          }
         }
       }
     }
@@ -125,12 +138,9 @@ class Game {
     this.weaponSpawn = [
       [BasicGun, 1],
       [MachineGun, 1],
-      [Sniper, 1]
+      [Sniper, 1],
+      [Shotgun, 1]
     ]
-
-    if (this.experimental) {
-      this.weaponSpawn.push([Shotgun, 1]);
-    }
 
     this.weaponSpawnTotal = 0;
     for (var w of this.weaponSpawn) {
@@ -326,6 +336,8 @@ class Game {
         this.weapons[i].removeFromWorld(this.engine);
         this.weapons.splice(i, 1);
         i--;
+      } else {
+        this.weapons[i].update();
       }
     }
 

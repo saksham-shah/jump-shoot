@@ -14,7 +14,7 @@ class Shotgun extends Weapon {
       this.cooldown = this.fireRate;
       var bullets = [];
 
-      var numEitherSide = 3;
+      var numEitherSide = 4;
       var angleRange = Math.PI / 4;
       angle -= angleRange / 2;
       for (var i = 0; i < 1 + 2 * numEitherSide; i++) {

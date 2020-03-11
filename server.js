@@ -43,12 +43,10 @@ lobbies.push(new Lobby('Public 2', true));
 lobbies.push(new Lobby('Public 3', true));
 lobbies.push(new Lobby('Experimental 1', true, true, `New experimental features:
 
-Players don't bounce as much
-New shotgun weapon`));
+Throwing weapons actually does something (maybe)`));
 lobbies.push(new Lobby('Experimental 2', true, true, `New experimental features:
 
-Players don't bounce as much
-New shotgun weapon`));
+Throwing weapons actually does something (maybe)`));
 
 // Client connects
 io.sockets.on('connection', newConnection);
