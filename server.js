@@ -43,10 +43,10 @@ lobbies.push(new Lobby('Public 2', true));
 lobbies.push(new Lobby('Public 3', true));
 lobbies.push(new Lobby('Experimental 1', true, true, `New experimental features:
 
-Throwing weapons actually does something (maybe)`));
+Just some balancing`));
 lobbies.push(new Lobby('Experimental 2', true, true, `New experimental features:
 
-Throwing weapons actually does something (maybe)`));
+Just some balancing`));
 
 // Client connects
 io.sockets.on('connection', newConnection);

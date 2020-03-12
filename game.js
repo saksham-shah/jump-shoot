@@ -39,6 +39,7 @@ class Game {
 
     this.weaponCounter = 180;
     this.nextWeaponX = null;
+    this.weaponID = 0;
 
     this.storedObjects = {};
 
@@ -76,6 +77,7 @@ class Game {
           for (var weapon of this.weapons) {
             if (weapon.id == pair.bodyB.label && weapon.thrown < 0) {
               weapon.thrown = 30;
+              console.log(weapon.id);
             }
           }
         }
@@ -88,6 +90,8 @@ class Game {
           for (var weapon of this.weapons) {
             if (weapon.id == pair.bodyA.label && weapon.thrown < 0) {
               weapon.thrown = 30;
+              console.log(weapon.id);
+
             }
           }
         }
@@ -233,10 +237,11 @@ class Game {
     var chosenWeaponClass = this.weaponSpawn[counter][0];
 
     // var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
-    var weapon = new chosenWeaponClass(this.nextWeaponX, -50, this.engine, this.experimental);
+    var weapon = new chosenWeaponClass(this.nextWeaponX, -50, this.engine, this.experimental, this.weaponID);
     this.weapons.push(weapon);
 
     this.nextWeaponX = null;
+    this.weaponID++;
   }
 
   // The following three functions process user inputs (key and mouse presses, mouse movements)

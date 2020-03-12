@@ -3,9 +3,11 @@ var Bullet = require('../bullet.js');
 
 // Machine gun
 class MachineGun extends Weapon {
-  constructor(x, y, engine, experimental) {
-    super(x, y, 15, 15, engine, experimental);
+  constructor(x, y, engine, experimental, id) {
+    super(x, y, 15, 15, engine, experimental, id);
     this.fireRate = 3;
+
+    this.experimental = experimental;
   }
 
   shoot(x, y, angle, playerID) {
@@ -13,7 +15,7 @@ class MachineGun extends Weapon {
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
       angle += Math.random() * Math.PI / 8 - Math.PI / 16;
-      var bullet = new Bullet(x, y, 1, 15, angle, 0.75, playerID);
+      var bullet = new Bullet(x, y, 1, 15, angle, this.experimental ? 0.6 : 0.75, playerID);
 
       // Fire particle effect
       this.particles.push({

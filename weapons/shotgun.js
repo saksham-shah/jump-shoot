@@ -3,9 +3,11 @@ var Bullet = require('../bullet.js');
 
 // Basic test gun
 class Shotgun extends Weapon {
-  constructor(x, y, engine, experimental) {
-    super(x, y, 20, 15, engine, experimental);
+  constructor(x, y, engine, experimental, id) {
+    super(x, y, 20, 15, engine, experimental, id);
     this.fireRate = 60;
+
+    this.experimental = experimental;
   }
 
   shoot(x, y, angle, playerID) {
@@ -14,11 +16,11 @@ class Shotgun extends Weapon {
       this.cooldown = this.fireRate;
       var bullets = [];
 
-      var numEitherSide = 4;
+      var numEitherSide = this.experimental ? 3 : 4;
       var angleRange = Math.PI / 4;
       angle -= angleRange / 2;
       for (var i = 0; i < 1 + 2 * numEitherSide; i++) {
-        bullets.push(new Bullet(x, y, 1, 20, angle, 0.5, playerID));
+        bullets.push(new Bullet(x, y, 1, 20, angle, this.experimental ? 0.6 : 0.5, playerID));
         angle += angleRange / 2 / numEitherSide;
       }
 

@@ -124,7 +124,8 @@ class Player {
 
     // Throw equipped weapon
     if (this.controls.throw && this.weapon && this.cooldown >= 40) {
-      this.throwWeapon(this.experimental ? 0.08 : 0.04, engine);
+      this.weapon.thrown = -1;
+      this.throwWeapon(0.04, engine);
     }
 
     // Activate shield
@@ -149,7 +150,7 @@ class Player {
   // Finds and returns nearby weapons (player must be nearly touching the weapons to pick up)
   checkForWeapons(weapons) {
     for (var i = 0; i < weapons.length; i++) {
-      if (!weapons[i].equipped && !(this.experimental && weapons[i].thrown != 0)) {
+      if (!weapons[i].equipped && weapons[i].thrown == 0) {
         var weapon = weapons[i];
         var wPos = weapon.body.position;
         var pPos = this.body.position

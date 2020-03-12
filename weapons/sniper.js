@@ -3,16 +3,18 @@ var Bullet = require('../bullet.js');
 
 // Sniper gun
 class Sniper extends Weapon {
-  constructor(x, y, engine, experimental) {
-    super(x, y, 30, 10, engine, experimental);
+  constructor(x, y, engine, experimental, id) {
+    super(x, y, 30, 10, engine, experimental, id);
     this.fireRate = 90;
+
+    this.experimental = experimental;
   }
 
   shoot(x, y, angle, playerID) {
     // Only fire if gun is cooled down
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
-      var bullet = new Bullet(x, y, 5, 40, angle, 2, playerID);
+      var bullet = new Bullet(x, y, 5, 40, angle, this.experimental ? 2.5 : 2, playerID);
 
       // Fire particle effect
       this.particles.push({

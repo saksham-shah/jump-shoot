@@ -69,8 +69,6 @@ class Weapon {
       x: speed * this.body.mass * Math.cos(angle),
       y: speed * this.body.mass * Math.sin(angle)
     });
-
-    this.thrown = -1;
   }
 
   removeFromWorld(engine) {
