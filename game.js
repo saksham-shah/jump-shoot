@@ -77,7 +77,6 @@ class Game {
           for (var weapon of this.weapons) {
             if (weapon.id == pair.bodyB.label && weapon.thrown < 0) {
               weapon.thrown = 30;
-              console.log(weapon.id);
             }
           }
         }
@@ -90,8 +89,6 @@ class Game {
           for (var weapon of this.weapons) {
             if (weapon.id == pair.bodyA.label && weapon.thrown < 0) {
               weapon.thrown = 30;
-              console.log(weapon.id);
-
             }
           }
         }
