@@ -43,7 +43,7 @@ class Shotgun extends Weapon {
       return {
         shot: true,
         angleChange: 1,
-        recoil: 2400,
+        recoil: 4000,
         bullets: bullets
       }
     }

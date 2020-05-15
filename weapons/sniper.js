@@ -35,7 +35,7 @@ class Sniper extends Weapon {
       return {
         shot: true,
         angleChange: 0.8,
-        recoil: 3000,
+        recoil: 5000,
         bullets: [bullet]
       }
     }

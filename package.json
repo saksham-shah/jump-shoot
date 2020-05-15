@@ -15,11 +15,10 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "matter-js": "^0.14.2",
     "planck-js": "^0.3.13",
     "socket.io": "^2.2.0"
   },
   "engines": {
-    "node": "10.16.0"
+    "node": "12.16.1"
   }
 }

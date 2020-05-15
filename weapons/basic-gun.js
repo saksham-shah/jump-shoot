@@ -33,7 +33,7 @@ class BasicGun extends Weapon {
       return {
         shot: true,
         angleChange: 0.4,
-        recoil: 60,
+        recoil: 100,
         bullets: [bullet]
       }
     }
