@@ -39,7 +39,7 @@ class Lobby {
   removePlayer(socketid) {
     if (this.game) {
       // Remove the player from an ongoing game
-      this.game.removePlayer(socketid);
+      this.game.queueRemovePlayer(socketid);
     }
     this.players.delete(socketid);
   }

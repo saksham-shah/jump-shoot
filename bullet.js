@@ -1,4 +1,6 @@
-var Matter = require('matter-js');
+const pl = require('planck-js');
+const vec = pl.Vec2;
+const MASSDECAY = 0.933;
 
 class Bullet {
   constructor(x, y, r, vel, angle, damage, originPlayer) {
@@ -21,23 +23,101 @@ class Bullet {
     this.timeAlive = 0;
   }
 
-  update(bodies, engine) {
+  update(players, world) {
     // Ensures that the bullet only moves a maximum of 5 pixels at a time
     // Prevents fast bullets from going through objects without skipping them
     this.timeAlive ++;
     var distanceMoved = 0;
-    var step = this.vel / Math.ceil(this.vel / 5)
+    var step = this.vel / Math.ceil(this.vel / 0.333)
     // Keeps moving until it collides
     while (distanceMoved < this.vel && !collide) {
       this.x += step * Math.cos(this.angle);
       this.y += step * Math.sin(this.angle);
       distanceMoved += step;
-      var collide = this.checkCollisions(bodies, engine)
+      var collide = this.checkCollisions(players, world)
     }
     return collide;
   }
 
-  checkCollisions(bodies, engine) {
+  checkCollisions(players, world) {
+    for (let player of players.values()) {
+      // Collide with shield
+      if (player.shield) {
+        var pos = player.body.getPosition();
+        var angle = player.angle;
+        var shieldX = pos.x + (player.r + 0.5) * Math.cos(angle);
+        var shieldY = pos.y + (player.r + 0.5) * Math.sin(angle);
+        if (collideWithRect(this.x, this.y, shieldX, shieldY, 0.5, player.shieldWidth, angle)) {
+          this.angle += 2 * angle - 2 * this.angle - Math.PI;
+          this.vel *= 1.25
+          player.shieldWidth += 0.17;
+          this.reflected = true;
+          this.colour = [255, 155, 0];
+          this.originPlayer = player.id;
+
+          this.particles.push({
+            x: this.x,
+            y: this.y,
+            vel: 0.2,
+            velErr: 0.1,
+            angle: this.angle,
+            angleErr: Math.PI * 0.25,
+            gravity: 0,
+            r: 0.2,
+            life: 15,
+            lifeErr: 3,
+            col: this.colour,
+            num: 10
+          });
+
+          return false;
+        }
+      }
+    }
+
+    for (let body = world.getBodyList(); body; body = body.getNext()) {
+      let data = body.getUserData();
+      if (this.reflected || this.timeAlive > 10 || !data || data.type != 'player' || data.label != this.originPlayer) {
+        for (let fixture = body.getFixtureList(); fixture; fixture = fixture.getNext()) {
+          if (fixture.testPoint(vec(this.x, this.y))) {
+            let force = 4000 * this.damage;
+
+            if (this.reflected) {
+              force *= 2;
+            }
+
+            let fx = force * Math.cos(this.angle);
+            let fy = force * Math.sin(this.angle);
+
+            body.applyForce(vec(fx, fy), vec(this.x, this.y));
+
+            if (data && data.type == 'player') {
+              var player = data.obj;
+              var damage = this.damage;
+              if (this.reflected) {
+                damage += 2;
+                if (player.weapon) {
+                  player.throwWeapon(0, world);
+                }
+              }
+
+              player.lastShot.timeAgo = 0;
+              player.lastShot.player = this.originPlayer;
+
+
+              var newDensity = fixture.getDensity() * Math.pow(MASSDECAY, damage);
+              fixture.setDensity(newDensity);
+              body.resetMassData();
+            }
+
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+
     for (var i = 0; i < bodies.length; i++) {
       var body = bodies[i];
 
@@ -165,7 +245,7 @@ class Bullet {
         }
 
         // If bullet doesn't bounce and is away from the screen, it can simply be removed
-        return (this.x < -200 || this.x > width + 200 || this.y < -200 || this.y > height + 200)
+        return (this.x < -10 || this.x > width + 10 || this.y < -10 || this.y > height + 10)
       }
       return false;
     } else {

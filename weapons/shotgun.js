@@ -4,7 +4,7 @@ var Bullet = require('../bullet.js');
 // Basic test gun
 class Shotgun extends Weapon {
   constructor(x, y, engine, experimental, id) {
-    super(x, y, 20, 15, engine, experimental, id);
+    super(x, y, 1.33, 1, engine, experimental, id);
     this.fireRate = 60;
 
     this.experimental = experimental;
@@ -20,7 +20,7 @@ class Shotgun extends Weapon {
       var angleRange = Math.PI / 4;
       angle -= angleRange / 2;
       for (var i = 0; i < 1 + 2 * numEitherSide; i++) {
-        bullets.push(new Bullet(x, y, 1, 20, angle, this.experimental ? 0.6 : 0.5, playerID));
+        bullets.push(new Bullet(x, y, 0.067, 1.33, angle, this.experimental ? 0.6 : 0.5, playerID));
         angle += angleRange / 2 / numEitherSide;
       }
 
@@ -28,12 +28,12 @@ class Shotgun extends Weapon {
       this.particles.push({
         x: x + this.w * Math.cos(angle),
         y: y + this.h * Math.sin(angle),
-        vel: 3,
-        velErr: 1.5,
+        vel: 0.2,
+        velErr: 0.1,
         angle: angle,
         angleErr: Math.PI * 0.25,
         gravity: 0,
-        r: 3,
+        r: 0.2,
         life: 15,
         lifeErr: 3,
         col: [255, 255, 0], //yellow
@@ -43,7 +43,7 @@ class Shotgun extends Weapon {
       return {
         shot: true,
         angleChange: 1,
-        recoil: 0.4,
+        recoil: 2400,
         bullets: bullets
       }
     }
@@ -53,7 +53,7 @@ class Shotgun extends Weapon {
   }
 
   toObject() {
-    var pos = this.body.position;
+    var pos = this.body.getPosition();
     return {
       type: 'weapon',
       weapon: 'shotgun',
@@ -61,7 +61,7 @@ class Shotgun extends Weapon {
       y: pos.y,
       w: this.w,
       h: this.h,
-      angle: this.body.angle,
+      angle: this.body.getAngle(),
       colour: [100],
       hide: this.equipped
     }

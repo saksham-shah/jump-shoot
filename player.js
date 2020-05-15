@@ -1,38 +1,37 @@
-var Matter = require('matter-js');
+const pl = require('planck-js');
+const vec = pl.Vec2;
 
-// Wrapper class for a Matter.js body
+// Wrapper class for a planck.js body
 // Handles player actions based on controls
 class Player {
-  constructor(x, y, id, colour, engine, experimental) {
+  constructor(x, y, id, colour, world, experimental) {
     this.id = id;
     this.colour = colour;
 
     this.experimental = experimental;
 
-    this.r = 15;
-    // Arbitrary numbers
-    var options = {
-      restitution: 0.6,
+    this.r = 1;
+
+    this.body = world.createBody({
+      type: 'dynamic',
+      position: vec(x, y),
+      allowSleep: false,
+      bullet: true,
+      userData: {
+        label: this.id,
+        type: 'player',
+        obj: this
+      }
+    });
+
+    this.body.createFixture({
+      shape: pl.Circle(this.r),
       friction: 0.5,
-      frictionAir: 0.02,
-      density: 0.03,
-      label: this.id // Used to identify players in collision events
-    }
-    this.massDecay = 0.933
-    this.body = Matter.Bodies.circle(x, y, this.r, options);
-    // External data is currently only used for bullet-shield collisions
-    this.body.externalData = {
-      type: 'player',
-      obj: this
-    }
+      restitution: 0.4,
+      density: 1
+    })
 
-    // Add the body to the physics world
-    Matter.World.add(engine.world, this.body);
-
-    // Whether the player can currently jump (e.g. if they are on a platform)
-    this.canJump = false;
-    // The direction they would move if they were to jump at this moment
-    this.jumpNormal = {x: 0, y: 0};
+    this.contacts = [];
 
     // Holds status of all key presses
     this.controls = {
@@ -57,7 +56,7 @@ class Player {
     // Prevents weapon from instantly being reequiped when thrown
     this.cooldown = 0;
 
-    this.shieldWidth = 40;
+    this.shieldWidth = 3;
 
     this.lastShot = {
       timeAgo: 0,
@@ -65,17 +64,28 @@ class Player {
     }
 
     this.particles = [];
+    this.lastCollisionParticle = 0;
   }
 
   // Aim at the mouse position
   mouseUpdate(mPos) {
-    var pos = this.body.position;
+    var pos = this.body.getPosition();
     var dx = mPos.x - pos.x;
     var dy = mPos.y - pos.y;
     this.mouseAngle = Math.atan2(dy, dx);
   }
 
-  update(weapons, engine) {
+  update(weapons, world) {
+    // Apply friction
+    let friction = 0.99;
+    if (this.contacts.length > 0) {
+      friction = 0.95;
+    }
+
+    let vel = this.body.getLinearVelocity();
+    let newVel = vec(vel.x * friction, vel.y * friction);
+    this.body.setLinearVelocity(newVel);
+
     if (this.weapon) {
       // Cool weapon gun so it can shoot
       this.weapon.coolGun();
@@ -83,6 +93,8 @@ class Player {
     this.cooldown++;
 
     this.lastShot.timeAgo++;
+
+    this.lastCollisionParticle --;
 
     // Point the gun towards its target
     // mouseVel is used to make the movement smooth and natural
@@ -118,29 +130,29 @@ class Player {
       var w = this.checkForWeapons(weapons);
       if (w) {
         // Equip weapon if there is one nearby
-        this.equipWeapon(w, engine);
+        this.equipWeapon(w, world);
       }
     }
 
     // Throw equipped weapon
     if (this.controls.throw && this.weapon && this.cooldown >= 40) {
-      this.weapon.thrown = -1;
-      this.throwWeapon(0.04, engine);
+      //this.weapon.thrown = -1;
+      this.throwWeapon(2000, world);
     }
 
     // Activate shield
     if (this.controls.shield && this.weapon == null && this.cooldown >= 10) {
       this.shield = true;
-      this.shieldWidth -= 0.2
+      this.shieldWidth -= 0.015
     } else {
       this.shield = false;
-      this.shieldWidth += 0.05;
+      this.shieldWidth += 0.00375;
     }
     // Limit the shield's size to a maximum and minimum
-    if (this.shieldWidth < 10) {
-      this.shieldWidth = 10;
-    } else if (this.shieldWidth > 40) {
-      this.shieldWidth = 40;
+    if (this.shieldWidth < 0.67) {
+      this.shieldWidth = 0.67;
+    } else if (this.shieldWidth > 3) {
+      this.shieldWidth = 3;
     }
 
     // Return bullets if shot, otherwise null
@@ -152,11 +164,11 @@ class Player {
     for (var i = 0; i < weapons.length; i++) {
       if (!weapons[i].equipped && weapons[i].thrown == 0) {
         var weapon = weapons[i];
-        var wPos = weapon.body.position;
-        var pPos = this.body.position
+        var wPos = weapon.body.getPosition();
+        var pPos = this.body.getPosition();
         // Max distance from a weapon while still touching it is the player's radius + the weapon's diagonal
         // Buffer of 10 pixels added
-        var maxD = Math.sqrt(Math.pow(weapon.w * 0.5, 2) + Math.pow(weapon.h * 0.5, 2)) + this.r + 10;
+        var maxD = Math.sqrt(Math.pow(weapon.w * 0.5, 2) + Math.pow(weapon.h * 0.5, 2)) + this.r + 0.67;
         var actualD = Math.sqrt(Math.pow(pPos.x - wPos.x, 2) + Math.pow(pPos.y - wPos.y, 2));
         // Return the weapon if close enough
         if (actualD < maxD) {
@@ -168,9 +180,9 @@ class Player {
   }
 
   // Equip a weapon
-  equipWeapon(weapon, engine) {
+  equipWeapon(weapon, world) {
     this.weapon = weapon;
-    this.weapon.getEquipped(engine);
+    this.weapon.getEquipped(world);
     // Can't throw the weapon immediately after equipping it
     // Prevents accidental throwing if the throw key is pressed when equipping
     this.cooldown = 0;
@@ -180,7 +192,8 @@ class Player {
   shoot() {
     // Only runs if a weapon is equipped
     if (this.weapon) {
-      var result = this.weapon.shoot(this.body.position.x, this.body.position.y, this.angle, this.id);
+      let pos = this.body.getPosition();
+      var result = this.weapon.shoot(pos.x, pos.y, this.angle, this.id);
       // If a shot was actually fired
       if (result.shot) {
         // Apply recoil to the gun - direction of recoil is always upwards
@@ -191,10 +204,9 @@ class Player {
         }
         // Apply recoil to the player
         var recoilAngle = this.angle + Math.PI;
-        Matter.Body.applyForce(this.body, this.body.position, {
-          x: result.recoil * Math.cos(recoilAngle),
-          y: result.recoil * Math.sin(recoilAngle)
-        });
+        let fx = result.recoil * Math.cos(recoilAngle);
+        let fy = result.recoil * Math.sin(recoilAngle);
+        this.body.applyForceToCenter(vec(fx, fy));
         // Return the bullets so they are added to the game
         return result.bullets;
       }
@@ -203,14 +215,14 @@ class Player {
   }
 
   // Throw the currently equipped weapon
-  throwWeapon(force, engine) {
-    var pos = this.body.position;
+  throwWeapon(force, world) {
+    var pos = this.body.getPosition();
     var angle = this.angle;
     // Weapon starts slightly away from the player to avoid collision with the player
     var x = pos.x + (this.r + this.weapon.w * 1.1) * Math.cos(this.angle);
     var y = pos.y + (this.r + this.weapon.w * 1.1) * Math.sin(this.angle);
-    this.weapon.getUnequipped(x, y, this.angle, engine);
-    this.weapon.throw(this.experimental ? { x: 0, y: 0 } : this.body.velocity, force, this.angle, engine);
+    this.weapon.getUnequipped(x, y, this.angle, world);
+    this.weapon.throw(this.experimental ? vec(0, 0) : this.body.getLinearVelocity(), force, this.angle, world);
     this.weapon = null;
     // Prevents picking up a weapon immediately after throwing it
     this.cooldown = 0;
@@ -218,14 +230,14 @@ class Player {
 
   // Checks if the player is out of the game boundaries
   isOutOfBounds(b) {
-    var pos = this.body.position;
+    var pos = this.body.getPosition();
     if (b.top) {
-      if (pos.y < b.top) {
+      if (pos.y > b.top) {
         return true;
       }
     }
     if (b.bottom) { // Used most often
-      if (pos.y > b.bottom) {
+      if (pos.y < b.bottom) {
         return true;
       }
     }
@@ -244,68 +256,64 @@ class Player {
 
   // Moves player by applying forces based on which controls are pressed
   updateControls() {
-    var body = this.body;
+    let mass = this.body.getMass();
     // Move the player left and right
     if (this.controls.left) {
-      Matter.Body.applyForce(body, body.position, {
-        x: -0.001 * body.mass,
-        y: 0
-      })
+      this.body.applyForceToCenter(vec(-60 * mass, 0));
     }
+
     if (this.controls.right) {
-      Matter.Body.applyForce(body, body.position, {
-        x: 0.001 * body.mass,
-        y: 0
-      });
+      this.body.applyForceToCenter(vec(60 * mass, 0));
     }
+
     if (this.controls.up) {
-      if (this.canJump) { // Only jump if the player is colliding with an object
-        var n = this.jumpNormal;
-        var nAng = Math.atan2(n.y, n.x);
-        // Can only jump at certain angles
-        // E.g. can't jump if you are touching a platform from below
-        if (nAng >= Math.PI * 5/6 || nAng <= Math.PI / 6) {
-          // Calculate the magnitude and angle of current velocity
-          var v = body.velocity;
-          var vMag = Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
-          var vAng = Math.atan2(v.y, v.x);
+      let jumped = false;
+      for (let contact of this.contacts) {
+        let data = contact.body.getUserData();
+        if (!jumped && (!data || !data.nojump)) {
+          var n = contact.normal;
+          var nAng = Math.atan2(n.y, n.x);
+          // Can only jump at certain angles
+          // E.g. can't jump if you are touching a platform from below
+          if (nAng >= Math.PI * 5/6 || nAng <= Math.PI / 6) {
+            // Calculate the magnitude and angle of current velocity
+            var v = this.body.getLinearVelocity();
+            var vMag = Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
+            var vAng = Math.atan2(v.y, v.x);
 
-          // Resolve velocity into components parallel and perperdicular to the normal of the collision
-          // Parallel to the normal of the collision is the direction of the jump
-          // Parallel velocity will be set to 8 (arbitrary)
-          // Perperdicular velocity will be unchanged
-          var angle = vAng - nAng;
-          var parallelV = 8;
-          var perpV = vMag * Math.sin(angle);
+            // Resolve velocity into components parallel and perperdicular to the normal of the collision
+            // Parallel to the normal of the collision is the direction of the jump
+            // Parallel velocity will be set to 8 (arbitrary)
+            // Perperdicular velocity will be unchanged
+            var angle = vAng - nAng;
+            var parallelV = -30;
+            var perpV = vMag * Math.sin(angle);
 
-          // Calculate the magnitude and angle of the new velocity post-jump
-          var newVMag = Math.sqrt(Math.pow(parallelV, 2) + Math.pow(perpV, 2));
-          var newVAng = Math.atan2(perpV, parallelV) + nAng;
+            // Calculate the magnitude and angle of the new velocity post-jump
+            var newVMag = Math.sqrt(Math.pow(parallelV, 2) + Math.pow(perpV, 2));
+            var newVAng = Math.atan2(perpV, parallelV) + nAng;
 
-          // Resolve new velocity into x and y components (as that is how they are stored in Matter.js)
-          var vx = newVMag * Math.cos(newVAng);
-          var vy = newVMag * Math.sin(newVAng);
+            // Resolve new velocity into x and y components (as that is how they are stored in Matter.js)
+            var vx = newVMag * Math.cos(newVAng);
+            var vy = newVMag * Math.sin(newVAng);
 
-          // Jumps will always make the player go upwards
-          if (vy > -6) {
-            vy = -6;
+            // Jumps will always make the player go upwards
+            if (vy < 22.5) {
+              vy = 22.5;
+            }
+
+            this.body.setLinearVelocity(vec(vx, vy));
+            jumped = true;
           }
-
-          Matter.Body.setVelocity(body, { x: vx, y: vy });
         }
       }
+
       // Also makes the player fall slower
-      Matter.Body.applyForce(body, body.position, {
-        x: 0,
-        y: -0.0005 * body.mass
-      });
+      this.body.applyForceToCenter(vec(0, 30 * mass));
     }
     // Makes the player fall faster
     if (this.controls.down) {
-      Matter.Body.applyForce(body, body.position, {
-        x: 0,
-        y: 0.0005 * body.mass
-      });
+      this.body.applyForceToCenter(vec(0, -30 * mass));
     }
     // Experimental bouncy feature - really isn't needed but I can't get myself to remove it
     // if (this.controls.bouncy) {
@@ -315,16 +323,17 @@ class Player {
     // }
   }
 
-  removeFromWorld(engine) {
-    Matter.World.remove(engine.world, this.body);
+  removeFromWorld(world) {
     // Must throw weapon before being removed
     if (this.weapon) {
-      this.throwWeapon(0, engine);
+      this.throwWeapon(0, world);
     }
+
+    world.destroyBody(this.body);
   }
 
   toObject(users) {
-    var pos = this.body.position;
+    var pos = this.body.getPosition();
     var weaponToObj = null;
     // Also add equipped weapon to the data being sent
     if (this.weapon) {

@@ -371,7 +371,7 @@ function keyReleased() {
 // Convert a client-side mouse position into a position in the game map
 function mouseToGamePos() {
   var x = (mouseX - gameSize.x) / gameSize.z;
-  var y = (mouseY - gameSize.y) / gameSize.z;
+  var y = gameSize.h - (mouseY - gameSize.y) / gameSize.z;
   return {
     x: x,
     y: y

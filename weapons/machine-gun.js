@@ -4,7 +4,7 @@ var Bullet = require('../bullet.js');
 // Machine gun
 class MachineGun extends Weapon {
   constructor(x, y, engine, experimental, id) {
-    super(x, y, 15, 15, engine, experimental, id);
+    super(x, y, 1, 1, engine, experimental, id);
     this.fireRate = 3;
 
     this.experimental = experimental;
@@ -15,18 +15,18 @@ class MachineGun extends Weapon {
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
       angle += Math.random() * Math.PI / 8 - Math.PI / 16;
-      var bullet = new Bullet(x, y, 1, 15, angle, this.experimental ? 0.6 : 0.75, playerID);
+      var bullet = new Bullet(x, y, 0.067, 1, angle, this.experimental ? 0.6 : 0.75, playerID);
 
       // Fire particle effect
       this.particles.push({
         x: x + this.w * Math.cos(angle),
         y: y + this.h * Math.sin(angle),
-        vel: 3,
-        velErr: 1.5,
+        vel: 0.2,
+        velErr: 0.1,
         angle: angle,
         angleErr: Math.PI * 0.25,
         gravity: 0,
-        r: 3,
+        r: 0.2,
         life: 15,
         lifeErr: 3,
         col: [255, 255, 0], //yellow
@@ -36,7 +36,7 @@ class MachineGun extends Weapon {
       return {
         shot: true,
         angleChange: 0.4,
-        recoil: 0.05,
+        recoil: 500,
         bullets: [bullet]
       }
     }
@@ -46,7 +46,7 @@ class MachineGun extends Weapon {
   }
 
   toObject() {
-    var pos = this.body.position;
+    var pos = this.body.getPosition();
     return {
       type: 'weapon',
       weapon: 'machine gun',
@@ -54,7 +54,7 @@ class MachineGun extends Weapon {
       y: pos.y,
       w: this.w,
       h: this.h,
-      angle: this.body.angle,
+      angle: this.body.getAngle(),
       colour: [100],
       hide: this.equipped
     }

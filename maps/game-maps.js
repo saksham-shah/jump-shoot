@@ -1,9 +1,13 @@
-var Matter = require('matter-js');
+const pl = require('planck-js');
+const vec = pl.Vec2;
 var MapUtils = require('./map-utils.js');
 
 var BasicGun = require('../weapons/basic-gun.js');
 var MachineGun = require('../weapons/machine-gun.js');
 var Sniper = require('../weapons/sniper.js');
+
+var Platform = require('../platforms/platform.js');
+
 
 var createMapFuncs = [];
 
@@ -39,17 +43,24 @@ function turnAndShoot(game) {
 }
 
 function superBasic(game) {
-  game.width = 800;
-  game.height = 540;
+  game.width = 54;
+  game.height = 36;
 
-  var ground = MapUtils.staticPlatform(game.width * 0.5, game.height - 50, game.width - 100, 20, game.engine, {}, 'blue');
+  // var ground = MapUtils.staticPlatform(game.width * 0.5, game.height - 50, game.width - 100, 20, game.engine, {}, 'blue');
+  // game.static.push(ground);
+
+  var ground = new Platform(27, 3, 47, 1.33, game.world, { colour: 'blue' });
   game.static.push(ground);
+
+  var platform = new Platform(27, 32, 1.33, 20, game.world, { type: 'dynamic', density: 4000, restitution: 1, nojump: true, colour: 'purple' });
+  game.dynamic.push(platform);
+  game.world.createJoint(pl.RevoluteJoint({}, platform.body, ground.body, vec(27, 24)))
 
   // var pendulum = MapUtils.pivotPlatform(game.width * 0.5, 60, 20, 300, { density: 100, frictionAir: 0, restitution: 1, label: 'nojump' }, game.engine, 0, 120);
   // game.dynamic.push(pendulum);
-  var pendulum = MapUtils.rectPlatform(game.width * 0.5, 60, 20, 300, game.engine, { density: 100, frictionAir: 0, restitution: 1, label: 'nojump' }, 'purple');
-  game.dynamic.push(pendulum);
-  MapUtils.addPivot(pendulum.body, game.engine, 0, 120);
+  // var pendulum = MapUtils.rectPlatform(game.width * 0.5, 60, 20, 300, game.engine, { density: 100, frictionAir: 0, restitution: 1, label: 'nojump' }, 'purple');
+  // game.dynamic.push(pendulum);
+  // MapUtils.addPivot(pendulum.body, game.engine, 0, 120);
 
   // Weapons
   game.weaponSpawn = [
@@ -64,7 +75,7 @@ function superBasic(game) {
   // }
 
   // Spawn points
-  game.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }];
+  game.spawns = [{ x: 24, y: 23 }, { x: 30, y: 23 }, { x: 18, y: 23 }, { x: 36, y: 23 }];
 }
 
 function sixPlatforms(game) {
@@ -247,11 +258,11 @@ function debugMap(game) {
   game.spawns = [{ x: 350, y: 200 }, { x: 450, y: 200 }, { x: 250, y: 200 }, { x: 550, y: 200 }];
 }
 
-createMapFuncs.push(turnAndShoot);
+// createMapFuncs.push(turnAndShoot);
 createMapFuncs.push(superBasic);
-createMapFuncs.push(sixPlatforms);
-createMapFuncs.push(lifts);
-createMapFuncs.push(rotations)
+// createMapFuncs.push(sixPlatforms);
+// createMapFuncs.push(lifts);
+// createMapFuncs.push(rotations)
 // createMapFuncs.push(debugMap);
 
 module.exports = createMapFuncs;

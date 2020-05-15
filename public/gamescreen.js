@@ -85,6 +85,9 @@ class GameScreen {
     translate(gameSize.x, gameSize.y);
     // Zoom in/out depending on the scale
     scale(gameSize.z);
+    translate(0, gameSize.h * 0.5);
+    scale(1, -1);
+    translate(0, - gameSize.h * 0.5);
 
     for (var i = 0; i < this.platforms.length; i++) {
       drawObject(this.platforms[i]);
@@ -124,12 +127,17 @@ class GameScreen {
       noStroke();
 
       // Draw the triangle
-      translate(this.nextWeaponX, 30);
+      push();
+      translate(0, gameSize.h * 0.5);
+      scale(1, -1);
+      translate(0, -gameSize.h * 0.5);
+      translate(this.nextWeaponX, 2);
       beginShape();
       vertex(0, 0);
-      vertex(20, -30);
-      vertex(-20, -30);
+      vertex(1.33, -2);
+      vertex(-1.33, -2);
       endShape(CLOSE);
+      pop();
     }
 
     pop();
@@ -249,7 +257,7 @@ function drawPlayer(obj) {
   rotate(obj.angle); // Rotate to draw the gun in the right place
   fill(obj.colour);
   stroke(0);
-  strokeWeight(1);
+  strokeWeight(1 / 15);
   ellipse(0, 0, obj.r * 2); // Draw player circle
   line(0, 0, obj.r, 0); // Draw direction the player is aiming
   pop();
@@ -270,11 +278,11 @@ function drawPlayerWeapon(obj) {
     if (obj.shield) { // Draw player's shield
         fill(200);
         noStroke();
-        rect(obj.r + 7, 0, 7, obj.shieldWidth);
+        rect(obj.r + 0.5, 0, 0.5, obj.shieldWidth);
     } else if (obj.id == myid) {
       fill(200, 50);
       noStroke();
-      rect(obj.r + 7, 0, 7, obj.shieldWidth);
+      rect(obj.r + 0.5, 0, 0.5, obj.shieldWidth);
     }
   }
   pop();
@@ -284,14 +292,15 @@ function drawPlayerWeapon(obj) {
 function drawNameTag(obj) {
   push();
   translate(obj.x, obj.y);
+  scale(1, -1)
   fill(255);
   noStroke();
   textAlign(CENTER);
-  textSize(12);
+  textSize(0.8);
   if (obj.id == myid) {
     textStyle(BOLD);
   }
-  text(obj.name, 0, obj.r + 15);
+  text(obj.name, 0, obj.r + 1);
 
   // Draw circle around local player at the start of the game
   if ( gameTime < 180 && obj.id == myid) {
@@ -307,16 +316,16 @@ function drawNameTag(obj) {
   if (obj.id == lastWinner) {
     fill(255, 150, 0);
     stroke(255, 255, 0);
-    strokeWeight(1);
+    strokeWeight(1 / 15);
     var r = obj.r;
     beginShape();
-    vertex(-r, -r - 5);
-    vertex(-r, -r - 15);
-    vertex(-r * 0.5, -r - 10);
-    vertex(0, -r - 15);
-    vertex(r * 0.5, -r - 10);
-    vertex(r, -r - 15);
-    vertex(r, -r - 5);
+    vertex(-r, -r - 0.33);
+    vertex(-r, -r - 1);
+    vertex(-r * 0.5, -r - 0.67);
+    vertex(0, -r - 1);
+    vertex(r * 0.5, -r - 0.67);
+    vertex(r, -r - 1);
+    vertex(r, -r - 0.33);
     endShape(CLOSE);
   }
 
@@ -344,7 +353,7 @@ function drawOffScreenPlayer(obj) {
     colour.push(50);
     fill(colour);
     stroke(0, 50);
-    strokeWeight(1);
+    strokeWeight(1 / 15);
     ellipse(x, y, obj.r * 2);
   }
 }
@@ -358,7 +367,9 @@ function drawObject(obj) {
       // rotate(obj.angle);
       fill(platformColours[obj.colour].fill);
       stroke(platformColours[obj.colour].edge);
-      strokeWeight(platformColours[obj.colour].weight || 1);
+      strokeWeight(platformColours[obj.colour].weight || 1 / 15);
+      translate(obj.x, obj.y);
+      rotate(obj.angle);
       beginShape();
       for (var v of obj.vertices) {
         vertex(v.x, v.y);
@@ -371,7 +382,7 @@ function drawObject(obj) {
       rotate(obj.angle);
       fill(obj.colour);
       stroke(0);
-      strokeWeight(1);
+      strokeWeight(1 / 15);
       rect(0, 0, obj.w, obj.h);
       break;
     case 'bullet': // Long thin rectangle to show it is a fast bullet
@@ -389,12 +400,12 @@ var platformColours = {
   default: {
     fill: 200,
     edge: 150,
-    weight: 1
+    weight: 1 / 15
   },
   spike: {
     fill: 25,
     edge: 75,
-    weight: 3
+    weight: 0.2
   },
   red: {
     fill: [200, 0, 0],
