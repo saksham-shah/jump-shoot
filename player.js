@@ -77,7 +77,7 @@ class Player {
 
   update(weapons, world) {
     // Apply friction
-    let friction = 0.99;
+    let friction = 0.98;
     if (this.contacts.length > 0) {
       friction = 0.95;
     }
@@ -197,7 +197,7 @@ class Player {
       // If a shot was actually fired
       if (result.shot) {
         // Apply recoil to the gun - direction of recoil is always upwards
-        if (Math.abs(this.angle) < Math.PI * 0.5) {
+        if (Math.abs(this.angle) > Math.PI * 0.5) {
           this.angleVel -= result.angleChange;
         } else {
           this.angleVel += result.angleChange;
@@ -259,11 +259,11 @@ class Player {
     let mass = this.body.getMass();
     // Move the player left and right
     if (this.controls.left) {
-      this.body.applyForceToCenter(vec(-60 * mass, 0));
+      this.body.applyForceToCenter(vec(-75 * mass, 0));
     }
 
     if (this.controls.right) {
-      this.body.applyForceToCenter(vec(60 * mass, 0));
+      this.body.applyForceToCenter(vec(75 * mass, 0));
     }
 
     if (this.controls.up) {
@@ -285,8 +285,9 @@ class Player {
             // Parallel to the normal of the collision is the direction of the jump
             // Parallel velocity will be set to 8 (arbitrary)
             // Perperdicular velocity will be unchanged
+            var jumpForce = 28;
             var angle = vAng - nAng;
-            var parallelV = -30;
+            var parallelV = -jumpForce;
             var perpV = vMag * Math.sin(angle);
 
             // Calculate the magnitude and angle of the new velocity post-jump
@@ -298,8 +299,8 @@ class Player {
             var vy = newVMag * Math.sin(newVAng);
 
             // Jumps will always make the player go upwards
-            if (vy < 22.5) {
-              vy = 22.5;
+            if (vy < jumpForce * 0.75) {
+              vy = jumpForce * 0.75;
             }
 
             this.body.setLinearVelocity(vec(vx, vy));

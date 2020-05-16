@@ -144,7 +144,7 @@ class Game {
     var currentColour = 0;
     // Add each player to the game
     for (var user of this.users.keys()) {
-      var player = new Player(this.spawns[currentSpawn].x, this.spawns[currentSpawn].y, user, this.colours[currentColour], this.world, this.experimental);
+      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, this.colours[currentColour], this.world, this.experimental);
       this.players.set(player.id, player);
 
       // Colours cycle around
