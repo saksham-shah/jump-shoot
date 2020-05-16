@@ -28,21 +28,32 @@ class Bullet {
     // Prevents fast bullets from going through objects without skipping them
     this.timeAlive ++;
     var distanceMoved = 0;
-    var step = this.vel / Math.ceil(this.vel / 0.333)
+    var step = this.vel / Math.ceil(this.vel / 0.333);
+    var collide = false;
+    let count = 0;
     // Keeps moving until it collides
     while (distanceMoved < this.vel && !collide) {
+      count++;
+      if (count % 100 == 0) {
+        console.log(`Moved bullet: ${count}`);
+      }
       this.x += step * Math.cos(this.angle);
       this.y += step * Math.sin(this.angle);
       distanceMoved += step;
-      var collide = this.checkCollisions(players, world)
+      collide = this.checkCollisions(players, world)
     }
     return collide;
   }
 
   checkCollisions(players, world) {
+    let shieldCount = 0;
     for (let player of players.values()) {
+      shieldCount++;
+      if (shieldCount % 100 == 0) {
+        console.log(`Checked shield: ${shieldCount}`);
+      }
       // Collide with shield
-      if (player.shield) {
+      if (player.shield && !this.reflected) {
         var pos = player.body.getPosition();
         var angle = player.angle;
         var shieldX = pos.x + (player.r + 0.5) * Math.cos(angle);
@@ -74,11 +85,16 @@ class Bullet {
         }
       }
     }
-
+    
+    let fixCount = 0;
     for (let body = world.getBodyList(); body; body = body.getNext()) {
       let data = body.getUserData();
       if (this.reflected || this.timeAlive > 10 || !data || data.type != 'player' || data.label != this.originPlayer) {
         for (let fixture = body.getFixtureList(); fixture; fixture = fixture.getNext()) {
+          fixCount += 1;
+          if (fixCount % 100 == 0) {
+            console.log(`Checking fixture: ${fixCount}`);
+          }
           if (fixture.testPoint(vec(this.x, this.y))) {
             let force = 4000 * this.damage;
 

@@ -296,11 +296,13 @@ function drawNameTag(obj) {
   fill(255);
   noStroke();
   textAlign(CENTER);
-  textSize(0.8);
+  scale(1 / 15);
+  textSize(12);
   if (obj.id == myid) {
     textStyle(BOLD);
   }
-  text(obj.name, 0, obj.r + 1);
+  text(obj.name, 0, 15 * obj.r + 15);
+  scale(15);
 
   // Draw circle around local player at the start of the game
   if ( gameTime < 180 && obj.id == myid) {
