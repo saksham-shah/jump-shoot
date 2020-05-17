@@ -10,6 +10,7 @@ class Platform {
     if (!options.type) options.type = 'static';
     if (!options.density) options.density = 1;
     if (!options.restitution) options.restitution = 0;
+    if (options.staticFriction == undefined) options.staticFriction = true;
 
     // Sometimes it is just adding a fixture to an existing body
     if (options.body) {
@@ -24,7 +25,8 @@ class Platform {
         userData: {
           type: 'platform',
           nojump: options.nojump,
-          spike: options.spike
+          spike: options.spike,
+          friction: options.staticFriction
         }
       });
 

@@ -32,6 +32,7 @@ class Player {
     })
 
     this.contacts = [];
+    this.staticFriction = 0;
 
     // Holds status of all key presses
     this.controls = {
@@ -78,7 +79,7 @@ class Player {
   update(weapons, world) {
     // Apply friction
     let friction = 0.98;
-    if (this.contacts.length > 0) {
+    if (this.staticFriction > 0) {
       friction = 0.95;
     }
 

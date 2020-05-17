@@ -88,6 +88,9 @@ class Game {
         for (let i = player.contacts.length - 1; i >= 0; i--) {
           if (bodyB == player.contacts[i].body) {
             collisionParticles(player, bodyA.getPosition(), player.contacts[i].normal);
+            if (dataB && dataB.friction) {
+              player.staticFriction--;
+            }
             player.contacts.splice(i, 1);
           }
         }
@@ -97,6 +100,9 @@ class Game {
         let player = dataB.obj;
         for (let i = player.contacts.length - 1; i >= 0; i--) {
           if (bodyA == player.contacts[i].body) {
+            if (dataA && dataA.friction) {
+              player.staticFriction--;
+            }
             collisionParticles(player, bodyB.getPosition(), player.contacts[i].normal);
             player.contacts.splice(i, 1);
           }
@@ -192,9 +198,15 @@ class Game {
     player.contacts.push(thisContact);
 
     let data = other.getUserData();
-    // Spikes kill players
-    if (data && data.spike) {
-      this.queueRemovePlayer(player.id)
+    if (data) {
+      // Spikes kill players
+      if (data.spike) {
+        this.queueRemovePlayer(player.id)
+      }
+
+      if (data.friction) {
+        player.staticFriction++;
+      }
     }
   }
 
@@ -277,16 +289,16 @@ class Game {
       var deathY = player.body.getPosition().y;
       if (deathY < 0) {
         deathY = 0;
-        direction = -1;
       } else if (deathY > this.height) {
         deathY = this.height;
+        direction = -1;
       }
       this.pendingParticles.push({
         x: deathX,
         y: deathY,
         vel: 0.33,
         velErr: 0.033,
-        angle: -Math.PI * 0.5 * direction,
+        angle: Math.PI * 0.5 * direction,
         angleErr: Math.PI * 0.125 * 0.5,
         gravity: -0.013,
         r: 0.33,
