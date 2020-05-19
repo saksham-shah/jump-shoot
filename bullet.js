@@ -88,46 +88,46 @@ class Bullet {
     
     let fixCount = 0;
     for (let body = world.getBodyList(); body; body = body.getNext()) {
-      let data = body.getUserData();
-      if (this.reflected || this.timeAlive > 10 || !data || data.type != 'player' || data.label != this.originPlayer) {
-        for (let fixture = body.getFixtureList(); fixture; fixture = fixture.getNext()) {
-          fixCount += 1;
-          if (fixCount % 100 == 0) {
-            console.log(`Checking fixture: ${fixCount}`);
-          }
-          if (fixture.testPoint(vec(this.x, this.y))) {
-            let force = 4000 * this.damage;
+      // let data = body.getUserData();
+      for (let fixture = body.getFixtureList(); fixture; fixture = fixture.getNext()) {
+        let data = fixture.getUserData();
+        fixCount += 1;
+        if (fixCount % 100 == 0) {
+          console.log(`Checking fixture: ${fixCount}`);
+        }
+        if ((this.reflected || this.timeAlive > 10 || !data || data.type != 'player' || data.label != this.originPlayer)
+         && fixture.testPoint(vec(this.x, this.y))) {
+          let force = 4000 * this.damage;
 
+          if (this.reflected) {
+            force *= 2;
+          }
+
+          let fx = force * Math.cos(this.angle);
+          let fy = force * Math.sin(this.angle);
+
+          body.applyForce(vec(fx, fy), vec(this.x, this.y));
+
+          if (data && data.type == 'player') {
+            var player = data.obj;
+            var damage = this.damage;
             if (this.reflected) {
-              force *= 2;
-            }
-
-            let fx = force * Math.cos(this.angle);
-            let fy = force * Math.sin(this.angle);
-
-            body.applyForce(vec(fx, fy), vec(this.x, this.y));
-
-            if (data && data.type == 'player') {
-              var player = data.obj;
-              var damage = this.damage;
-              if (this.reflected) {
-                damage += 2;
-                if (player.weapon) {
-                  player.throwWeapon(0, world);
-                }
+              damage += 2;
+              if (player.weapon) {
+                player.throwWeapon(0, world);
               }
-
-              player.lastShot.timeAgo = 0;
-              player.lastShot.player = this.originPlayer;
-
-
-              var newDensity = fixture.getDensity() * Math.pow(MASSDECAY, damage);
-              fixture.setDensity(newDensity);
-              body.resetMassData();
             }
 
-            return true;
+            player.lastShot.timeAgo = 0;
+            player.lastShot.player = this.originPlayer;
+
+
+            var newDensity = fixture.getDensity() * Math.pow(MASSDECAY, damage);
+            fixture.setDensity(newDensity);
+            body.resetMassData();
           }
+
+          return true;
         }
       }
     }

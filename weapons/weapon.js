@@ -13,12 +13,7 @@ class Weapon {
       type: 'dynamic',
       position: vec(x, y),
       allowSleep: false,
-      bullet: true,
-      userData: {
-        label: this.id,
-        type: 'weapon',
-        obj: this
-      }
+      bullet: true
     };
 
     this.body = world.createBody(this.bodyDef);
@@ -26,7 +21,12 @@ class Weapon {
     this.fixtureDef = {
       shape: pl.Box(w * 0.5, h * 0.5),
       density: 1.67,
-      friction: 2
+      friction: 2,
+      userData: {
+        label: this.id,
+        type: 'weapon',
+        obj: this
+      }
     };
 
     this.body.createFixture(this.fixtureDef);

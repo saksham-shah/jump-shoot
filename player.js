@@ -16,19 +16,19 @@ class Player {
       type: 'dynamic',
       position: vec(x, y),
       allowSleep: false,
-      bullet: true,
-      userData: {
-        label: this.id,
-        type: 'player',
-        obj: this
-      }
+      bullet: true
     });
 
     this.body.createFixture({
       shape: pl.Circle(this.r),
       friction: 0.5,
       restitution: 0.4,
-      density: 1
+      density: 1,
+      userData: {
+        label: this.id,
+        type: 'player',
+        obj: this
+      }
     })
 
     this.contacts = [];
@@ -270,7 +270,7 @@ class Player {
     if (this.controls.up) {
       let jumped = false;
       for (let contact of this.contacts) {
-        let data = contact.body.getUserData();
+        let data = contact.fixture.getUserData();
         if (!jumped && (!data || !data.nojump)) {
           var n = contact.normal;
           var nAng = Math.atan2(n.y, n.x);
@@ -286,7 +286,7 @@ class Player {
             // Parallel to the normal of the collision is the direction of the jump
             // Parallel velocity will be set to 8 (arbitrary)
             // Perperdicular velocity will be unchanged
-            var jumpForce = 28;
+            var jumpForce = 30;
             var angle = vAng - nAng;
             var parallelV = -jumpForce;
             var perpV = vMag * Math.sin(angle);

@@ -21,13 +21,7 @@ class Platform {
       this.body = world.createBody({
         type: options.type,
         position: vec(x, y),
-        allowSleep: false,
-        userData: {
-          type: 'platform',
-          nojump: options.nojump,
-          spike: options.spike,
-          friction: options.staticFriction
-        }
+        allowSleep: false
       });
 
       x = 0;
@@ -39,7 +33,13 @@ class Platform {
       shape: pl.Box(w * 0.5, h * 0.5, vec(x, y)),
       density: options.density,
       restitution: options.restitution,
-      friction: 0.2
+      friction: 0.2,
+      userData: {
+        type: 'platform',
+        nojump: options.nojump,
+        spike: options.spike,
+        friction: options.staticFriction
+      }
     });
 
     // Colours

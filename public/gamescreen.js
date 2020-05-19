@@ -406,8 +406,8 @@ var platformColours = {
   },
   spike: {
     fill: 25,
-    edge: 75,
-    weight: 0.2
+    edge: 75
+    // weight: 0.2
   },
   red: {
     fill: [200, 0, 0],
@@ -436,5 +436,9 @@ var platformColours = {
   purple: {
     fill: [200, 0, 200],
     edge: [150, 0, 150]
+  },
+  grey: {
+    fill: 150,
+    edge: 100
   }
 };

@@ -63,31 +63,34 @@ class Game {
 
     this.world.on('begin-contact', contact => {
       let normal = contact.getWorldManifold().normal;
-      let bodyA = contact.getFixtureA().getBody();
-      let bodyB = contact.getFixtureB().getBody();
-      let dataA = bodyA.getUserData();
-      let dataB = bodyB.getUserData();
-
+      // let bodyA = contact.getFixtureA().getBody();
+      // let bodyB = contact.getFixtureB().getBody();
+      let fixA = contact.getFixtureA();
+      let fixB = contact.getFixtureB();
+      let dataA = fixA.getUserData();
+      let dataB = fixB.getUserData();
       if (dataA && dataA.type == 'player') {
-        this.collidePlayer(dataA.obj, bodyB, { x: normal.x, y: normal.y });
+        this.collidePlayer(dataA.obj, fixB, { x: normal.x, y: normal.y });
       }
 
       if (dataB && dataB.type == 'player') {
-        this.collidePlayer(dataB.obj, bodyA, { x: -normal.x, y: -normal.y });
+        this.collidePlayer(dataB.obj, fixA, { x: -normal.x, y: -normal.y });
       }
     });
 
     this.world.on('end-contact', contact => {
-      let bodyA = contact.getFixtureA().getBody();
-      let bodyB = contact.getFixtureB().getBody();
-      let dataA = bodyA.getUserData();
-      let dataB = bodyB.getUserData();
+      // let bodyA = contact.getFixtureA().getBody();
+      // let bodyB = contact.getFixtureB().getBody();
+      let fixA = contact.getFixtureA();
+      let fixB = contact.getFixtureB();
+      let dataA = fixA.getUserData();
+      let dataB = fixB.getUserData();
 
       if (dataA && dataA.type == 'player') {
         let player = dataA.obj;
         for (let i = player.contacts.length - 1; i >= 0; i--) {
-          if (bodyB == player.contacts[i].body) {
-            collisionParticles(player, bodyA.getPosition(), player.contacts[i].normal);
+          if (fixB == player.contacts[i].fixture) {
+            collisionParticles(player, fixA.getBody().getPosition(), player.contacts[i].normal);
             if (dataB && dataB.friction) {
               player.staticFriction--;
             }
@@ -99,11 +102,11 @@ class Game {
       if (dataB && dataB.type == 'player') {
         let player = dataB.obj;
         for (let i = player.contacts.length - 1; i >= 0; i--) {
-          if (bodyA == player.contacts[i].body) {
+          if (fixA == player.contacts[i].fixture) {
             if (dataA && dataA.friction) {
               player.staticFriction--;
             }
-            collisionParticles(player, bodyB.getPosition(), player.contacts[i].normal);
+            collisionParticles(player, fixB.getBody().getPosition(), player.contacts[i].normal);
             player.contacts.splice(i, 1);
           }
         }
@@ -191,7 +194,7 @@ class Game {
 
   collidePlayer(player, other, normal) {
     let thisContact = {
-      body: other,
+      fixture: other,
       normal: normal
     }
 
@@ -455,7 +458,7 @@ class Game {
 
 // Generate particles in the direction of the normal of a player collision
 function collisionParticles(player, pos, normal) {
-  var angle = Math.atan2(normal.y, normal.x);
+  var angle = -Math.atan2(normal.y, normal.x);
   var v = player.body.getLinearVelocity();
   var vMagSq = Math.pow(v.x, 2) + Math.pow(v.y, 2);
   if (vMagSq < 100) {

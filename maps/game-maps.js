@@ -207,6 +207,10 @@ function rotations(game) {
       type: 'kinematic',
       position: vec(40, 27),
       angularVelocity: -0.12
+      // userData: {
+      //   type: 'platform',
+      //   friction: true
+      // }
   });
 
   let platform, path;
@@ -280,6 +284,94 @@ function rotations(game) {
   // game.spawns = [{ x: 100, y: 350 }, { x: 1100, y: 350 }, { x: 200, y: 350 }, { x: 1000, y: 350 }];
 }
 
+function doubleSided(game) {
+  game.width = 54;
+  game.height = 36;
+
+  var body, platform;
+
+  var ground = new Platform(27, 15, 8, 1.33, game.world, { colour: 'grey' });
+  game.static.push(ground);
+
+  body = game.world.createBody({
+    type: 'dynamic',
+    position: vec(37, 8),
+    allowSleep: false
+  });
+  body.setAngularDamping(0.2);
+  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(37, 8.05)));
+  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
+  game.dynamic.push(platform);
+  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
+  game.dynamic.push(platform);
+
+  body = game.world.createBody({
+    type: 'dynamic',
+    position: vec(17, 8),
+    allowSleep: false
+  });
+  body.setAngularDamping(0.2);
+  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(17, 8.05)));
+  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
+  game.dynamic.push(platform);
+  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
+  game.dynamic.push(platform);
+
+  body = game.world.createBody({
+    type: 'dynamic',
+    position: vec(47, 8),
+    allowSleep: false
+  });
+  body.setAngularDamping(0.2);
+  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(47, 8.05)));
+  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
+  game.dynamic.push(platform);
+  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
+  game.dynamic.push(platform);
+
+  body = game.world.createBody({
+    type: 'dynamic',
+    position: vec(7, 8),
+    allowSleep: false
+  });
+  body.setAngularDamping(0.2);
+  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(7, 8.05)));
+  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
+  game.dynamic.push(platform);
+  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
+  game.dynamic.push(platform);
+
+  body = game.world.createBody({
+    type: 'dynamic',
+    position: vec(12, 22),
+    allowSleep: false
+  });
+  body.setAngularDamping(0.2);
+  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(12, 22.05)));
+  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
+  game.dynamic.push(platform);
+  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
+  game.dynamic.push(platform);
+
+  body = game.world.createBody({
+    type: 'dynamic',
+    position: vec(42, 22),
+    allowSleep: false
+  });
+  body.setAngularDamping(0.2);
+  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(42, 22.05)));
+  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
+  game.dynamic.push(platform);
+  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
+  game.dynamic.push(platform);
+
+  ground = new Platform(27, 29, 4, 1.33, game.world, { colour: 'grey' });
+  game.static.push(ground);
+
+  // Spawn points
+  game.spawns = [{ x: 17, y: 12 }, { x: 37, y: 12 }, { x: 7, y: 12 }, { x: 47, y: 12 }, { x: 12, y: 26 }, { x: 42, y: 26 }];
+}
+
 function debugMap(game) {
   game.width = 800;
   game.height = 540;
@@ -320,7 +412,8 @@ createMapFuncs.push(turnAndShoot);
 createMapFuncs.push(superBasic);
 createMapFuncs.push(sixPlatforms);
 createMapFuncs.push(lifts);
-createMapFuncs.push(rotations)
+createMapFuncs.push(rotations);
+createMapFuncs.push(doubleSided);
 // createMapFuncs.push(debugMap);
 
 module.exports = createMapFuncs;
