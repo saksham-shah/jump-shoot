@@ -137,7 +137,7 @@ class Player {
 
     // Throw equipped weapon
     if (this.controls.throw && this.weapon && this.cooldown >= 40) {
-      //this.weapon.thrown = -1;
+      this.weapon.thrown = -1;
       this.throwWeapon(2000, world);
     }
 

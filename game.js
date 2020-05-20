@@ -69,12 +69,24 @@ class Game {
       let fixB = contact.getFixtureB();
       let dataA = fixA.getUserData();
       let dataB = fixB.getUserData();
-      if (dataA && dataA.type == 'player') {
-        this.collidePlayer(dataA.obj, fixB, { x: normal.x, y: normal.y });
+      if (dataA) {
+        if (dataA.type == 'player') {
+          this.collidePlayer(dataA.obj, fixB, { x: normal.x, y: normal.y });
+        } else if (dataA.type == 'weapon') {
+          if (dataA.obj.thrown < 0) {
+            dataA.obj.thrown = 30;
+          }
+        }
       }
 
-      if (dataB && dataB.type == 'player') {
-        this.collidePlayer(dataB.obj, fixA, { x: -normal.x, y: -normal.y });
+      if (dataB) {
+        if (dataB.type == 'player') {
+          this.collidePlayer(dataB.obj, fixA, { x: -normal.x, y: -normal.y });
+        } else if (dataB.type == 'weapon') {
+          if (dataB.obj.thrown < 0) {
+            dataB.obj.thrown = 30;
+          }
+        }
       }
     });
 

@@ -128,7 +128,7 @@ function sixPlatforms(game) {
   // }
 
   // Spawn points
-  game.spawns = [{ x: 14, y: 16 }, { x: 40, y: 16 }, { x: 7, y: 23 }, { x: 47, y: 23 }, { x: 28, y: 27 }, { x: 28, y: 10 }];
+  game.spawns = [{ x: 14, y: 16 }, { x: 40, y: 16 }, { x: 7, y: 23 }, { x: 47, y: 23 }, { x: 27, y: 27 }, { x: 27, y: 10 }];
   // game.spawns = [{ x: 200, y: 300 }, { x: 600, y: 300 }, { x: 100, y: 200 }, { x: 700, y: 200 }, { x: 400, y: 100 }, { x: 400, y: 400 }];
 }
 
@@ -299,9 +299,9 @@ function doubleSided(game) {
     });
     body.setAngularDamping(0.2);
     game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(x, y + 0.0)));
-    var platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'orange' });
+    var platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 10, colour: 'orange' });
     game.dynamic.push(platform);
-    platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
+    platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 10, spike: true, colour: 'spike' });
     game.dynamic.push(platform);
   }
 
@@ -309,12 +309,12 @@ function doubleSided(game) {
   createSwivel(17, 15);
   createSwivel(47, 15);
   createSwivel(7, 15);
-  createSwivel(27, 29);
+  createSwivel(27, 28);
 
-  ground = new Platform(0, 23.5, 1, 3, game.world, { colour: 'yellow' });
-  game.static.push(ground);
-  ground = new Platform(54, 23.5, 1, 3, game.world, { colour: 'yellow' });
-  game.static.push(ground);
+  // ground = new Platform(0, 23.5, 1, 3, game.world, { colour: 'yellow' });
+  // game.static.push(ground);
+  // ground = new Platform(54, 23.5, 1, 3, game.world, { colour: 'yellow' });
+  // game.static.push(ground);
   ground = new Platform(2, 22, 4, 1.33, game.world, { colour: 'yellow' });
   game.static.push(ground);
   ground = new Platform(52, 22, 4, 1.33, game.world, { colour: 'yellow' });
