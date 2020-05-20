@@ -288,88 +288,41 @@ function doubleSided(game) {
   game.width = 54;
   game.height = 36;
 
-  var body, platform;
-
-  var ground = new Platform(27, 15, 8, 1.33, game.world, { colour: 'grey' });
+  var ground = new Platform(27, 8, 8, 1.33, game.world, { colour: 'red' });
   game.static.push(ground);
 
-  body = game.world.createBody({
-    type: 'dynamic',
-    position: vec(37, 8),
-    allowSleep: false
-  });
-  body.setAngularDamping(0.2);
-  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(37, 8.05)));
-  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
-  game.dynamic.push(platform);
-  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
-  game.dynamic.push(platform);
+  function createSwivel(x, y) {
+    var body = game.world.createBody({
+      type: 'dynamic',
+      position: vec(x, y),
+      allowSleep: false
+    });
+    body.setAngularDamping(0.2);
+    game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(x, y + 0.0)));
+    var platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'orange' });
+    game.dynamic.push(platform);
+    platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
+    game.dynamic.push(platform);
+  }
 
-  body = game.world.createBody({
-    type: 'dynamic',
-    position: vec(17, 8),
-    allowSleep: false
-  });
-  body.setAngularDamping(0.2);
-  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(17, 8.05)));
-  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
-  game.dynamic.push(platform);
-  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
-  game.dynamic.push(platform);
+  createSwivel(37, 15);
+  createSwivel(17, 15);
+  createSwivel(47, 15);
+  createSwivel(7, 15);
+  createSwivel(27, 29);
 
-  body = game.world.createBody({
-    type: 'dynamic',
-    position: vec(47, 8),
-    allowSleep: false
-  });
-  body.setAngularDamping(0.2);
-  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(47, 8.05)));
-  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
-  game.dynamic.push(platform);
-  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
-  game.dynamic.push(platform);
-
-  body = game.world.createBody({
-    type: 'dynamic',
-    position: vec(7, 8),
-    allowSleep: false
-  });
-  body.setAngularDamping(0.2);
-  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(7, 8.05)));
-  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
-  game.dynamic.push(platform);
-  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
-  game.dynamic.push(platform);
-
-  body = game.world.createBody({
-    type: 'dynamic',
-    position: vec(12, 22),
-    allowSleep: false
-  });
-  body.setAngularDamping(0.2);
-  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(12, 22.05)));
-  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
-  game.dynamic.push(platform);
-  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
-  game.dynamic.push(platform);
-
-  body = game.world.createBody({
-    type: 'dynamic',
-    position: vec(42, 22),
-    allowSleep: false
-  });
-  body.setAngularDamping(0.2);
-  game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(42, 22.05)));
-  platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 2, colour: 'default' });
-  game.dynamic.push(platform);
-  platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 2, spike: true, colour: 'spike' });
-  game.dynamic.push(platform);
-
-  ground = new Platform(27, 29, 4, 1.33, game.world, { colour: 'grey' });
+  ground = new Platform(0, 23.5, 1, 3, game.world, { colour: 'yellow' });
+  game.static.push(ground);
+  ground = new Platform(54, 23.5, 1, 3, game.world, { colour: 'yellow' });
+  game.static.push(ground);
+  ground = new Platform(2, 22, 4, 1.33, game.world, { colour: 'yellow' });
+  game.static.push(ground);
+  ground = new Platform(52, 22, 4, 1.33, game.world, { colour: 'yellow' });
   game.static.push(ground);
 
   // Spawn points
-  game.spawns = [{ x: 17, y: 12 }, { x: 37, y: 12 }, { x: 7, y: 12 }, { x: 47, y: 12 }, { x: 12, y: 26 }, { x: 42, y: 26 }];
+  // game.spawns = [{ x: 17, y: 12 }, { x: 37, y: 12 }, { x: 7, y: 12 }, { x: 47, y: 12 }, { x: 12, y: 26 }, { x: 42, y: 26 }];
+  game.spawns = [{ x: 17, y: 19 }, { x: 37, y: 19 }, { x: 7, y: 19 }, { x: 47, y: 19 }];//, { x: 12, y: 26 }, { x: 42, y: 26 }];
 }
 
 function debugMap(game) {
