@@ -1,24 +1,35 @@
-var Matter = require('matter-js');
+const pl = require('planck-js');
+const vec = pl.Vec2;
 
-// Wrapper class for a Matter.js body
+// Wrapper class for a planck.js body
 // Used by players to shoot at each other, can be equipped and thrown
 class Weapon {
-  constructor(x, y, w, h, engine, experimental, id = '') {
+  constructor(x, y, w, h, world, experimental, id = '') {
     this.w = w;
     this.h = h;
-    this.id = 'weapon' + id;
+    this.id = id;
 
-    // Arbitrary numbers
-    this.options = {
-      density: 0.05,
-      friction: 0.5,
-      label: this.id
-      // frictionAir: experimental ? 0.2 : 0.01
-    }
-    this.body = Matter.Bodies.rectangle(x, y, w, h, this.options);
+    this.bodyDef = {
+      type: 'dynamic',
+      position: vec(x, y),
+      allowSleep: false,
+      bullet: true
+    };
 
-    // Add the body to the physics world
-    Matter.World.add(engine.world, this.body);
+    this.body = world.createBody(this.bodyDef);
+
+    this.fixtureDef = {
+      shape: pl.Box(w * 0.5, h * 0.5),
+      density: 1.67,
+      friction: 2,
+      userData: {
+        label: this.id,
+        type: 'weapon',
+        obj: this
+      }
+    };
+
+    this.body.createFixture(this.fixtureDef);
 
     // Whether the weapon is currently equipped by a player
     this.equipped = false;
@@ -45,40 +56,41 @@ class Weapon {
   }
 
   // Weapon becomes part of the player
-  getEquipped(engine) {
+  getEquipped(world) {
     this.equipped = true;
     // Remove weapon from physics engine as it is no longer a seperate entity
-    this.removeFromWorld(engine);
+    this.removeFromWorld(world);
   }
 
   // Weapon becomes a seperate entity again
-  getUnequipped(x, y, angle, engine) {
+  getUnequipped(x, y, angle, world) {
     this.equipped = false;
-    var options = this.options;
-    options.angle = angle;
-    this.body = Matter.Bodies.rectangle(x, y, this.w, this.h, options);
-    // Add weapon back to physics engine as it is now a seperate entity again
-    Matter.World.add(engine.world, this.body);
+    var bodyDef = this.bodyDef;
+    bodyDef.position = vec(x, y);
+    bodyDef.angle = angle;
+
+    this.body = world.createBody(bodyDef);
+    this.body.createFixture(this.fixtureDef);
   }
 
-  throw(vel, speed, angle, engine) {
+  throw(vel, speed, angle, world) {
     // Initial velocity is the same as the player's current velocity
-    Matter.Body.setVelocity(this.body, vel);
+    this.body.setLinearVelocity(vel);
     // Apply a large force towards the specified angle
-    Matter.Body.applyForce(this.body, this.body.position, {
-      x: speed * this.body.mass * Math.cos(angle),
-      y: speed * this.body.mass * Math.sin(angle)
-    });
+    let mass = this.body.getMass();
+    let fx = speed * mass * Math.cos(angle);
+    let fy = speed * mass * Math.sin(angle);
+    this.body.applyForceToCenter(vec(fx, fy));
   }
 
-  removeFromWorld(engine) {
-    Matter.World.remove(engine.world, this.body);
+  removeFromWorld(world) {
+    world.destroyBody(this.body);
   }
 
   // Weapon disappears if off screen
-  isOffScreen(height) {
-    var pos = this.body.position;
-    return (pos.y > height + 200);
+  isOffScreen() {
+    var pos = this.body.getPosition();
+    return (pos.y < -13.3);
   }
 }
 

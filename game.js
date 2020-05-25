@@ -1,4 +1,6 @@
-var Matter = require('matter-js');
+const pl = require('planck-js');
+const vec = pl.Vec2;
+const STEP = 1 / 60;
 
 var Player = require('./player.js');
 // var BasicGun = require('./weapons/basic-gun.js');
@@ -23,6 +25,7 @@ class Game {
     this.experimental = experimental;
 
     this.pendingParticles = [];
+    this.playersToRemove = [];
   }
 
   // Initialise the physics engine and other variables needed in the game
@@ -33,13 +36,15 @@ class Game {
     this.dynamic = [];
     this.paths = [];
 
-    this.width = 800;
-    this.height = 540;
+    this.width = 54;
+    this.height = 36;
     this.bulletBounce = null;
 
     this.weaponCounter = 180;
     this.nextWeaponX = null;
     this.weaponID = 0;
+
+    this.time = 0;
 
     this.storedObjects = {};
 
@@ -52,82 +57,74 @@ class Game {
       [255, 255, 0] // yellow
     ];
 
-    // Create an engine
-    this.engine = Matter.Engine.create({
-      // Trying to prevent fast objects from phasing through platforms
-      // constraintIterations: 20,
-      positionIterations: 20,
-      velocityIterations: 20
+    this.world = pl.World({
+      gravity: vec(0, -60)
     });
 
-    // Check if a player is colliding
-    function collisionGoing(event) {
-      var pairs = event.pairs;
-      for (var i = 0; i < pairs.length; i++) {
-        var pair = pairs[i];
-        var normal = pair.collision.normal;
-        var playerA = this.players.get(pair.bodyA.label);
-        var playerB = this.players.get(pair.bodyB.label);
-        // If a player is colliding with a non-player, they can jump
-        if (playerA) {
-          this.collidePlayer(playerA, pair.bodyB, normal);
-          // playerA.canJump = true;
-          // playerA.jumpNormal = normal;
-        } else if (pair.bodyB.label.substring(0, 6) == 'weapon') {
-          for (var weapon of this.weapons) {
-            if (weapon.id == pair.bodyB.label && weapon.thrown < 0) {
-              weapon.thrown = 30;
-            }
-          }
-        }
-
-        if (playerB) {
-          this.collidePlayer(playerB, pair.bodyA, { x: -normal.x, y: -normal.y });
-          // playerB.canJump = true;
-          // playerB.jumpNormal = { x: -normal.x, y: -normal.y };
-        } else if (pair.bodyA.label.substring(0, 6) == 'weapon') {
-          for (var weapon of this.weapons) {
-            if (weapon.id == pair.bodyA.label && weapon.thrown < 0) {
-              weapon.thrown = 30;
-            }
+    this.world.on('begin-contact', contact => {
+      let normal = contact.getWorldManifold().normal;
+      // let bodyA = contact.getFixtureA().getBody();
+      // let bodyB = contact.getFixtureB().getBody();
+      let fixA = contact.getFixtureA();
+      let fixB = contact.getFixtureB();
+      let dataA = fixA.getUserData();
+      let dataB = fixB.getUserData();
+      if (dataA) {
+        if (dataA.type == 'player') {
+          this.collidePlayer(dataA.obj, fixB, { x: normal.x, y: normal.y });
+        } else if (dataA.type == 'weapon') {
+          if (dataA.obj.thrown < 0) {
+            dataA.obj.thrown = 30;
           }
         }
       }
-    }
 
-    // Check if a player has stopped colliding
-    function collisionStop(event) {
-      var pairs = event.pairs;
-      for (var i = 0; i < pairs.length; i++) {
-        var pair = pairs[i];
-        var normal = pair.collision.normal;
-        var normalAngle = Math.atan2(normal.y, normal.x);
-        var playerA = this.players.get(pair.bodyA.label);
-        var playerB = this.players.get(pair.bodyB.label);
-        // Once a player stops colliding, they can't jump
-        // Also creates particle effects
-        if (playerA) {
-          collisionParticles(playerA, pair.bodyA.position, normalAngle);
-          playerA.canJump = false;
-        }
-        if (playerB) {
-          normalAngle += Math.PI;
-          collisionParticles(playerB, pair.bodyB.position, normalAngle);
-          playerB.canJump = false;
+      if (dataB) {
+        if (dataB.type == 'player') {
+          this.collidePlayer(dataB.obj, fixA, { x: -normal.x, y: -normal.y });
+        } else if (dataB.type == 'weapon') {
+          if (dataB.obj.thrown < 0) {
+            dataB.obj.thrown = 30;
+          }
         }
       }
-    }
+    });
 
-    // Allow the functions above to access the list of players in the game
-    // var boundCollisionGoing = collisionGoing.bind({"players": this.players});
-    // var boundCollisionStop = collisionStop.bind({"players": this.players});
-    var boundCollisionGoing = collisionGoing.bind(this);
-    var boundCollisionStop = collisionStop.bind(this);
+    this.world.on('end-contact', contact => {
+      // let bodyA = contact.getFixtureA().getBody();
+      // let bodyB = contact.getFixtureB().getBody();
+      let fixA = contact.getFixtureA();
+      let fixB = contact.getFixtureB();
+      let dataA = fixA.getUserData();
+      let dataB = fixB.getUserData();
 
-    // Attach the functions to the matter.js engine
-    Matter.Events.on(this.engine, 'collisionStart', boundCollisionGoing);
-    Matter.Events.on(this.engine, 'collisionActive', boundCollisionGoing);
-    Matter.Events.on(this.engine, 'collisionEnd', boundCollisionStop);
+      if (dataA && dataA.type == 'player') {
+        let player = dataA.obj;
+        for (let i = player.contacts.length - 1; i >= 0; i--) {
+          if (fixB == player.contacts[i].fixture) {
+            collisionParticles(player, fixA.getBody().getPosition(), player.contacts[i].normal);
+            if (dataB && dataB.friction) {
+              player.staticFriction--;
+            }
+            player.contacts.splice(i, 1);
+          }
+        }
+      }
+
+      if (dataB && dataB.type == 'player') {
+        let player = dataB.obj;
+        for (let i = player.contacts.length - 1; i >= 0; i--) {
+          if (fixA == player.contacts[i].fixture) {
+            if (dataA && dataA.friction) {
+              player.staticFriction--;
+            }
+            collisionParticles(player, fixB.getBody().getPosition(), player.contacts[i].normal);
+            player.contacts.splice(i, 1);
+          }
+        }
+      }
+    });
+
   }
 
   // Create the game map
@@ -155,10 +152,10 @@ class Game {
     if (!this.deathBounds) {
       // Game boundary
       this.deathBounds = {
-        top: -400,
-        bottom: this.height + 50,
-        left: -600,
-        right: this.width + 600
+        top: this.height + 27,
+        bottom: -3,
+        left: -40,
+        right: this.width + 40
       }
     }
   }
@@ -168,7 +165,7 @@ class Game {
     var currentColour = 0;
     // Add each player to the game
     for (var user of this.users.keys()) {
-      var player = new Player(this.spawns[currentSpawn].x, this.spawns[currentSpawn].y, user, this.colours[currentColour], this.engine, this.experimental);
+      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, this.colours[currentColour], this.world, this.experimental);
       this.players.set(player.id, player);
 
       // Colours cycle around
@@ -208,16 +205,23 @@ class Game {
   }
 
   collidePlayer(player, other, normal) {
-    if (other.label != 'nojump') {
-      player.canJump = true;
-      player.jumpNormal = normal;
-    } else {
-      player.canJump = false;
+    let thisContact = {
+      fixture: other,
+      normal: normal
     }
 
-    // Spikes kill players
-    if (other.label == 'spike') {
-      this.removePlayer(player.id)
+    player.contacts.push(thisContact);
+
+    let data = other.getUserData();
+    if (data) {
+      // Spikes kill players
+      if (data.spike) {
+        this.queueRemovePlayer(player.id)
+      }
+
+      if (data.friction) {
+        player.staticFriction++;
+      }
     }
   }
 
@@ -233,8 +237,9 @@ class Game {
     }
     var chosenWeaponClass = this.weaponSpawn[counter][0];
 
+
     // var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
-    var weapon = new chosenWeaponClass(this.nextWeaponX, -50, this.engine, this.experimental, this.weaponID);
+    var weapon = new chosenWeaponClass(this.nextWeaponX, this.height + 3, this.world, this.experimental, this.weaponID);
     this.weapons.push(weapon);
 
     this.nextWeaponX = null;
@@ -264,11 +269,15 @@ class Game {
     }
   }
 
+  queueRemovePlayer(playerid) {
+    this.playersToRemove.push(playerid);
+  }
+
   removePlayer(playerid) {
     var player = this.players.get(playerid);
     if (player) {
       // Remove player from the physics engine
-      player.removeFromWorld(this.engine);
+      player.removeFromWorld(this.world);
       this.players.delete(playerid);
       if (!this.winner) {
         // Declare a winner if only one is remaining
@@ -284,30 +293,30 @@ class Game {
       }
 
       // Death particles
-      var buffer = 20;
+      var buffer = 1.33;
       var direction = 1;
-      var deathX = player.body.position.x;
+      var deathX = player.body.getPosition().x;
       if (deathX < buffer) {
         deathX = buffer;
       } else if (deathX > this.width - buffer) {
         deathX = this.width - buffer;
       }
-      var deathY = player.body.position.y;
+      var deathY = player.body.getPosition().y;
       if (deathY < 0) {
         deathY = 0;
-        direction = -1;
       } else if (deathY > this.height) {
         deathY = this.height;
+        direction = -1;
       }
       this.pendingParticles.push({
         x: deathX,
         y: deathY,
-        vel: 5,
-        velErr: 0.5,
-        angle: -Math.PI * 0.5 * direction,
+        vel: 0.33,
+        velErr: 0.033,
+        angle: Math.PI * 0.5 * direction,
         angleErr: Math.PI * 0.125 * 0.5,
-        gravity: 0.2,
-        r: 5,
+        gravity: -0.013,
+        r: 0.33,
         life: 35,
         lifeErr: 5,
         col: player.colour,
@@ -317,8 +326,12 @@ class Game {
   }
 
   update(users) {
+    for (let playerid of this.playersToRemove) {
+      this.removePlayer(playerid);
+    }
+
     for (var [playerid, player] of this.players.entries()) {
-      var bullets = player.update(this.weapons, this.engine);
+      var bullets = player.update(this.weapons, this.world);
       if (bullets) {
         // Add new bullets shot by the player
         for (var b of bullets) {
@@ -335,7 +348,7 @@ class Game {
     for (var i = 0; i < this.weapons.length; i++) {
       if (this.weapons[i].isOffScreen(this.height)) {
         // Remove weapons if they go off screen
-        this.weapons[i].removeFromWorld(this.engine);
+        this.weapons[i].removeFromWorld(this.world);
         this.weapons.splice(i, 1);
         i--;
       } else {
@@ -344,19 +357,19 @@ class Game {
     }
 
     for (var i = 0; i < this.bullets.length; i++) {
-      var collide = this.bullets[i].update(this.engine.world.bodies, this.engine);
+      var collide = this.bullets[i].update(this.players, this.world);
       if (this.bullets[i].isOffScreen(this.width, this.height, this.bulletBounce) || collide) {
         // Create bullet hit particle effect
         var b = this.bullets[i];
         this.pendingParticles.push({
           x: b.x,
           y: b.y,
-          vel: 3,
-          velErr: 1.5,
+          vel: 0.2,
+          velErr: 0.1,
           angle: b.angle,
           angleErr: Math.PI * 0.25,
           gravity: 0,
-          r: 3,
+          r: 0.2,
           life: 15,
           lifeErr: 3,
           col: b.colour,
@@ -374,7 +387,7 @@ class Game {
 
     // Decide where the next weapon will drop
     if (this.weaponCounter < 180 && this.nextWeaponX == null) {
-      this.nextWeaponX = Math.random() * (this.width - 300) + 150;
+      this.nextWeaponX = Math.random() * (this.width - 20) + 10;
     }
 
     // Add weapons into game periodically if there aren't many on screen
@@ -390,11 +403,12 @@ class Game {
     if (this.platformUpdate) this.platformUpdate(this.storedObjects);
 
     for (var path of this.paths) {
-      path.update(this.engine);
+      path.update(this.time);
     }
 
     // Run the physics engine
-    Matter.Engine.update(this.engine);
+    this.world.step(STEP);
+    this.time += STEP;
 
     // Send any data that clients need to accurately animate the game
     var entities = [];
@@ -455,24 +469,30 @@ class Game {
 }
 
 // Generate particles in the direction of the normal of a player collision
-function collisionParticles(player, pos, angle) {
-  var v = player.body.velocity;
+function collisionParticles(player, pos, normal) {
+  var angle = -Math.atan2(normal.y, normal.x);
+  var v = player.body.getLinearVelocity();
   var vMagSq = Math.pow(v.x, 2) + Math.pow(v.y, 2);
-  if (vMagSq < 3) {
+  if (vMagSq < 100) {
     // Don't create particles if the player wasn't moving very fast
     return;
   }
+  if (player.lastCollisionParticle > 0) {
+    return;
+  }
+  player.lastCollisionParticle = 60;
+
   var px = pos.x - player.r * Math.cos(angle);
   var py = pos.y - player.r * Math.sin(angle);
   player.particles.push({
     x: px,
     y: py,
-    vel: 3,
-    velErr: 1.5,
+    vel: 0.2,
+    velErr: 0.1,
     angle: angle,
     angleErr: Math.PI * 0.25,
     gravity: 0,
-    r: 3,
+    r: 0.2,
     life: 15,
     lifeErr: 3,
     col: player.colour,

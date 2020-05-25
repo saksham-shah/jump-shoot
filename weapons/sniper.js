@@ -4,7 +4,7 @@ var Bullet = require('../bullet.js');
 // Sniper gun
 class Sniper extends Weapon {
   constructor(x, y, engine, experimental, id) {
-    super(x, y, 30, 10, engine, experimental, id);
+    super(x, y, 2, 0.67, engine, experimental, id);
     this.fireRate = 90;
 
     this.experimental = experimental;
@@ -14,18 +14,18 @@ class Sniper extends Weapon {
     // Only fire if gun is cooled down
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
-      var bullet = new Bullet(x, y, 5, 40, angle, this.experimental ? 2.5 : 2, playerID);
+      var bullet = new Bullet(x, y, 0.33, 2.67, angle, this.experimental ? 2.5 : 2, playerID);
 
       // Fire particle effect
       this.particles.push({
         x: x + this.w * Math.cos(angle),
         y: y + this.h * Math.sin(angle),
-        vel: 3,
-        velErr: 1.5,
+        vel: 0.2,
+        velErr: 0.1,
         angle: angle,
         angleErr: Math.PI * 0.25,
         gravity: 0,
-        r: 3,
+        r: 0.2,
         life: 15,
         lifeErr: 3,
         col: [255, 255, 0], //yellow
@@ -35,7 +35,7 @@ class Sniper extends Weapon {
       return {
         shot: true,
         angleChange: 0.8,
-        recoil: 0.5,
+        recoil: 5000,
         bullets: [bullet]
       }
     }
@@ -45,7 +45,7 @@ class Sniper extends Weapon {
   }
 
   toObject() {
-    var pos = this.body.position;
+    var pos = this.body.getPosition();
     return {
       type: 'weapon',
       weapon: 'sniper',
@@ -53,7 +53,7 @@ class Sniper extends Weapon {
       y: pos.y,
       w: this.w,
       h: this.h,
-      angle: this.body.angle,
+      angle: this.body.getAngle(),
       colour: [100],
       hide: this.equipped
     }

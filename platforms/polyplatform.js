@@ -1,4 +1,4 @@
-var Matter = require('matter-js');
+// var Matter = require('matter-js');
 var Platform = require('./platform.js');
 
 // Wrapper class for a polygon Matter.js body
