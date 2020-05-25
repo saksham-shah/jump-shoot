@@ -17,6 +17,7 @@ class Bullet {
     this.colour = [255, 255, 0];
 
     this.particles = [];
+    this.sounds = [];
 
     this.wasOnScreen = false;
 
@@ -80,7 +81,7 @@ class Bullet {
             col: this.colour,
             num: 10
           });
-
+          this.sounds.push('shield');
           return false;
         }
       }

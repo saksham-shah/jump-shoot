@@ -594,9 +594,13 @@ function updateGame() {
         // }
         io.in(room).emit('game over', sendData);
       }
-      var particleExplosions = lobbies[i].getParticles();
-      if (particleExplosions.length > 0) {
-        io.in(room).emit('new particles', particleExplosions);
+      var { particles, sounds } = lobbies[i].getEffects();
+      if (particles.length > 0) {
+        io.in(room).emit('new particles', particles);
+      }
+
+      if (sounds.length > 0) {
+        io.in(room).emit('new sounds', sounds);
       }
     }
   }

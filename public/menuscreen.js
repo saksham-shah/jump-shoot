@@ -42,6 +42,16 @@ class MenuScreen {
       textSize: 20
     }, 'HELP', () => scr = hs, null, 'blue'));
 
+    this.buttons.push(new Button({
+      x: 0.5,
+      y: 0.85,
+      w: 100,
+      h: 50,
+      textSize: 15
+    }, 'CREDITS', () => {
+      popupMessage('Credits\n\nCreator: Saksham Shah\nMusic: Saksham Shah');
+    }, null, 'green'));
+
     this.buttons.push(new Button(backButtonOptions, 'RENAME', () => {
       playerName = "";
       scr = ss;

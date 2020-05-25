@@ -41,6 +41,7 @@ class Weapon {
     this.cooldown = 0;
 
     this.particles = [];
+    this.sounds = [];
   }
 
   update() {

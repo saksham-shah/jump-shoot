@@ -8,6 +8,7 @@ class Button {
     // What object the button operates on
     this.objOfClick = obj;
 
+    this.hovered = false;
     this.pressed = false;
 
     this.colour = colour;
@@ -35,14 +36,21 @@ class Button {
   // Check if the mouse has clicked the button
   updateState(offsetX, offsetY, options) {
     if (this.isHovered(offsetX, offsetY, options)) {
+      if (!this.hovered) {
+        this.hovered = true;
+        sounds.buttonhover.play();
+      }
+
       if (mouseIsPressed) {
         this.pressed = true;
       } else if (this.pressed) {
         this.click(this.objOfClick);
         this.pressed = false;
+        sounds.buttonclick.play();
       }
     } else {
       this.pressed = false;
+      this.hovered = false;
     }
   }
 

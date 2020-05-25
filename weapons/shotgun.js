@@ -39,6 +39,7 @@ class Shotgun extends Weapon {
         col: [255, 255, 0], //yellow
         num: 20
       });
+      this.sounds.push('shotgun');
 
       return {
         shot: true,

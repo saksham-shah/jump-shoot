@@ -29,6 +29,7 @@ class BasicGun extends Weapon {
         col: [255, 255, 0], //yellow
         num: 10
       });
+      this.sounds.push('pistol');
 
       return {
         shot: true,

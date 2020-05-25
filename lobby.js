@@ -129,11 +129,11 @@ class Lobby {
     return null;
   }
 
-  getParticles() {
+  getEffects() {
     if (this.game) {
-      return this.game.getParticles();
+      return this.game.getEffects();
     }
-    return [];
+    return { particles: [], sounds: [] };
   }
 }
 

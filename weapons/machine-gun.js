@@ -32,6 +32,7 @@ class MachineGun extends Weapon {
         col: [255, 255, 0], //yellow
         num: 3
       });
+      this.sounds.push('machinegun');
 
       return {
         shot: true,

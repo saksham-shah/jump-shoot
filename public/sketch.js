@@ -97,8 +97,9 @@ function setup() {
   ls = new LobbyScreen();
   cs = new ControlsScreen();
   hs = new HelpScreen();
+  los = new LoadingScreen();
 
-  scr = ss;
+  scr = los;
 
   chat = new Chat(5);
 
@@ -138,7 +139,11 @@ function setup() {
     inLobby = false;
     gs.resetGame();
 
-    scr = ss;
+    if (los.done) {
+      sounds.music.stop();
+    }
+
+    scr = los;
 
     // if (playerName != "") {
     //   var data = {
@@ -153,7 +158,7 @@ function setup() {
       playerName = localStorage.nickname;
       ss.nameTextBox.typedText = localStorage.nickname;
 
-      scr = ms;
+      // scr = ms;
     }
   })
 
@@ -188,6 +193,7 @@ function setup() {
     }
     scr = gs;
     timer.time = 0;
+    filter.toggle(false);
   })
 
   // Lobby is left
@@ -195,6 +201,7 @@ function setup() {
     inLobby = false;
     gs.resetGame();
     scr = ms;
+    filter.toggle(true);
   });
 
   // Name updated
@@ -234,6 +241,13 @@ function setup() {
       for (var i = 0; i < particles.length; i++) {
         gs.particleExplosion(particles[i]);
       }
+    }
+  })
+
+  // New sounds created
+  socket.on('new sounds', function(soundsToPlay) {
+    for (let soundName of soundsToPlay) {
+      sounds[soundName].play();
     }
   })
 

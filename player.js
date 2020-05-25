@@ -65,6 +65,7 @@ class Player {
     }
 
     this.particles = [];
+    this.sounds = [];
     this.lastCollisionParticle = 0;
   }
 

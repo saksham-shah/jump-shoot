@@ -31,6 +31,7 @@ class Sniper extends Weapon {
         col: [255, 255, 0], //yellow
         num: 20
       });
+      this.sounds.push('sniper');
 
       return {
         shot: true,

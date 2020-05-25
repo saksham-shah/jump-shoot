@@ -25,6 +25,7 @@ class Game {
     this.experimental = experimental;
 
     this.pendingParticles = [];
+    this.pendingSounds = [];
     this.playersToRemove = [];
   }
 
@@ -322,6 +323,7 @@ class Game {
         col: player.colour,
         num: 50
       });
+      this.pendingSounds.push('death');
     }
   }
 
@@ -379,6 +381,16 @@ class Game {
         if (collide || !this.bulletBounce) {
           // Remove bullets if they collide or if bullet bouncing is disabled
           // If bullets can bounce then they shouldn't be removed for going out of the map
+
+          // Add all remaining bullet particles and sounds to pendingParticles and pendingSounds
+          for (var j = 0; j < this.bullets[i].particles.length; j++) {
+            this.pendingParticles.push(this.bullets[i].particles[j]);
+          }
+    
+          for (var j = 0; j < this.bullets[i].sounds.length; j++) {
+            this.pendingSounds.push(this.bullets[i].sounds[j]);
+          }
+
           this.bullets.splice(i, 1);
           i--;
         }
@@ -435,14 +447,20 @@ class Game {
   }
 
   // Send any pending particle effects to the clients
-  getParticles() {
+  getEffects() {
     var particleExplosions = [];
+    var sounds = [];
 
     for (var i = 0; i < this.weapons.length; i++) {
       for (var j = 0; j < this.weapons[i].particles.length; j++) {
         particleExplosions.push(this.weapons[i].particles[j]);
       }
       this.weapons[i].particles = [];
+
+      for (var j = 0; j < this.weapons[i].sounds.length; j++) {
+        sounds.push(this.weapons[i].sounds[j]);
+      }
+      this.weapons[i].sounds = [];
     }
 
     for (var i = 0; i < this.bullets.length; i++) {
@@ -450,6 +468,11 @@ class Game {
         particleExplosions.push(this.bullets[i].particles[j]);
       }
       this.bullets[i].particles = [];
+
+      for (var j = 0; j < this.bullets[i].sounds.length; j++) {
+        sounds.push(this.bullets[i].sounds[j]);
+      }
+      this.bullets[i].sounds = [];
     }
 
     for (var player of this.players.values()) {
@@ -457,6 +480,11 @@ class Game {
         particleExplosions.push(player.particles[i]);
       }
       player.particles = [];
+
+      for (var i = 0; i < player.sounds.length; i++) {
+        sounds.push(player.sounds[i]);
+      }
+      player.sounds = [];
     }
 
     for (var i = 0; i < this.pendingParticles.length; i++) {
@@ -464,7 +492,12 @@ class Game {
     }
     this.pendingParticles = [];
 
-    return particleExplosions;
+    for (var i = 0; i < this.pendingSounds.length; i++) {
+      sounds.push(this.pendingSounds[i]);
+    }
+    this.pendingSounds = [];
+
+    return { particles: particleExplosions, sounds: sounds };
   }
 }
 
