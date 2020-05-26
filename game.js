@@ -72,7 +72,7 @@ class Game {
       let dataB = fixB.getUserData();
       if (dataA) {
         if (dataA.type == 'player') {
-          this.collidePlayer(dataA.obj, fixB, { x: normal.x, y: normal.y });
+          this.collidePlayer(dataA.obj, fixB, { x: -normal.x, y: -normal.y });
         } else if (dataA.type == 'weapon') {
           if (dataA.obj.thrown < 0) {
             dataA.obj.thrown = 30;
@@ -82,7 +82,7 @@ class Game {
 
       if (dataB) {
         if (dataB.type == 'player') {
-          this.collidePlayer(dataB.obj, fixA, { x: -normal.x, y: -normal.y });
+          this.collidePlayer(dataB.obj, fixA, { x: normal.x, y: normal.y });
         } else if (dataB.type == 'weapon') {
           if (dataB.obj.thrown < 0) {
             dataB.obj.thrown = 30;
@@ -103,7 +103,7 @@ class Game {
         let player = dataA.obj;
         for (let i = player.contacts.length - 1; i >= 0; i--) {
           if (fixB == player.contacts[i].fixture) {
-            collisionParticles(player, fixA.getBody().getPosition(), player.contacts[i].normal);
+            collisionParticles(player, player.contacts[i].normal);
             if (dataB && dataB.friction) {
               player.staticFriction--;
             }
@@ -119,7 +119,7 @@ class Game {
             if (dataA && dataA.friction) {
               player.staticFriction--;
             }
-            collisionParticles(player, fixB.getBody().getPosition(), player.contacts[i].normal);
+            collisionParticles(player, player.contacts[i].normal);
             player.contacts.splice(i, 1);
           }
         }
@@ -212,6 +212,8 @@ class Game {
     }
 
     player.contacts.push(thisContact);
+    collisionParticles(player, normal);
+    player.landed = true;
 
     let data = other.getUserData();
     if (data) {
@@ -501,19 +503,39 @@ class Game {
   }
 }
 
-// Generate particles in the direction of the normal of a player collision
-function collisionParticles(player, pos, normal) {
-  var angle = -Math.atan2(normal.y, normal.x);
+// Check if a collision is strong enough for particles to be created
+function isPowerfulLanding(player, normal) {
+  if (player.lastCollisionParticle > 0) return false;
+  if (!player.landed) return true;
+
+  var nAng = Math.atan2(normal.y, normal.x);
+  // Calculate the magnitude and angle of current velocity
   var v = player.body.getLinearVelocity();
-  var vMagSq = Math.pow(v.x, 2) + Math.pow(v.y, 2);
-  if (vMagSq < 100) {
-    // Don't create particles if the player wasn't moving very fast
-    return;
-  }
-  if (player.lastCollisionParticle > 0) {
-    return;
-  }
-  player.lastCollisionParticle = 60;
+  var vMag = Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
+  var vAng = Math.atan2(v.y, v.x);
+
+  // Work out the component of the velocity parallel to the normal
+  var angle = vAng - nAng;
+  var parallelV = vMag * Math.cos(angle);
+  return parallelV > 10;
+}
+
+// Generate particles in the direction of the normal of a player collision
+function collisionParticles(player, normal) {
+  if (!isPowerfulLanding(player, normal)) return;
+  var angle = Math.atan2(normal.y, normal.x);
+  // var v = player.body.getLinearVelocity();
+  // var vMagSq = Math.pow(v.x, 2) + Math.pow(v.y, 2);
+  // if ((vMagSq < 100 || player.lastCollisionParticle > 0) && player.landed) {
+  //   // Don't create particles if the player wasn't moving very fast
+  //   return;
+  // }
+  // if (player.lastCollisionParticle > 0) {
+  //   return;
+  // }
+  player.lastCollisionParticle = 3;
+
+  var pos = player.body.getPosition();
 
   var px = pos.x - player.r * Math.cos(angle);
   var py = pos.y - player.r * Math.sin(angle);
@@ -531,6 +553,7 @@ function collisionParticles(player, pos, normal) {
     col: player.colour,
     num: 10
   });
+  player.sounds.push('collision');
 }
 
 module.exports = Game;

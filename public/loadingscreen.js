@@ -29,6 +29,21 @@ let soundsToLoad = [
   }, {
     name: 'death',
     file: 'death.wav'
+  }, {
+    name: 'equip',
+    file: 'equip.mp3'
+  }, {
+    name: 'throw',
+    file: 'throw.wav'
+  }, {
+    name: 'collision',
+    file: 'collision.wav'
+  }, {
+    name: 'disarm',
+    file: 'disarm.wav'
+  }, {
+    name: 'message',
+    file: 'message.wav'
   }
 ];
 
@@ -41,7 +56,12 @@ let volumes = {
   sniper: 1,
   shotgun: 0.4,
   shield: 2,
-  death: 2
+  death: 2,
+  equip: 1,
+  throw: 2,
+  collision: 5,
+  disarm: 2,
+  message: 1
 }
 
 let filter;

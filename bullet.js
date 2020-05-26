@@ -116,6 +116,7 @@ class Bullet {
               damage += 2;
               if (player.weapon) {
                 player.throwWeapon(0, world);
+                player.sounds.push('disarm');
               }
             }
 

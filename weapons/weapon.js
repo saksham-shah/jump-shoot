@@ -61,6 +61,8 @@ class Weapon {
     this.equipped = true;
     // Remove weapon from physics engine as it is no longer a seperate entity
     this.removeFromWorld(world);
+
+    this.sounds.push('equip');
   }
 
   // Weapon becomes a seperate entity again
@@ -82,6 +84,10 @@ class Weapon {
     let fx = speed * mass * Math.cos(angle);
     let fy = speed * mass * Math.sin(angle);
     this.body.applyForceToCenter(vec(fx, fy));
+
+    if (speed != 0) {
+      this.sounds.push('throw');
+    }
   }
 
   removeFromWorld(world) {

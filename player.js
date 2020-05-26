@@ -67,6 +67,7 @@ class Player {
     this.particles = [];
     this.sounds = [];
     this.lastCollisionParticle = 0;
+    this.landed = false;
   }
 
   // Aim at the mouse position
@@ -277,7 +278,7 @@ class Player {
           var nAng = Math.atan2(n.y, n.x);
           // Can only jump at certain angles
           // E.g. can't jump if you are touching a platform from below
-          if (nAng >= Math.PI * 5/6 || nAng <= Math.PI / 6) {
+          if (nAng <= -Math.PI * 5/6 || nAng >= -Math.PI / 6) {
             // Calculate the magnitude and angle of current velocity
             var v = this.body.getLinearVelocity();
             var vMag = Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
@@ -289,7 +290,7 @@ class Player {
             // Perperdicular velocity will be unchanged
             var jumpForce = 30;
             var angle = vAng - nAng;
-            var parallelV = -jumpForce;
+            var parallelV = jumpForce;
             var perpV = vMag * Math.sin(angle);
 
             // Calculate the magnitude and angle of the new velocity post-jump
@@ -307,6 +308,8 @@ class Player {
 
             this.body.setLinearVelocity(vec(vx, vy));
             jumped = true;
+            // this.lastCollisionParticle = 0;
+            this.landed = false;
           }
         }
       }

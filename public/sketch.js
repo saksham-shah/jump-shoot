@@ -280,6 +280,9 @@ function setup() {
   // New message in the chat
   socket.on('chat message', function(data) {
     chat.newMessage(data.sender, data.message);
+    if (data.sender != SERVER) {
+      sounds.message.play();
+    }
   })
 
   // Rect mode changed to match the way rectangles are represented in matter.js
