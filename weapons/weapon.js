@@ -36,6 +36,7 @@ class Weapon {
 
     // Whether the weapon was just thrown
     this.thrown = 0;
+    this.throwHit = false;
 
     // Controls weapon fire rate
     this.cooldown = 0;

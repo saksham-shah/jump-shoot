@@ -42,6 +42,9 @@ let soundsToLoad = [
     name: 'disarm',
     file: 'disarm.wav'
   }, {
+    name: 'throwhit',
+    file: 'throwhit.wav'
+  }, {
     name: 'message',
     file: 'message.wav'
   }
@@ -59,8 +62,9 @@ let volumes = {
   death: 2,
   equip: 1,
   throw: 2,
-  collision: 5,
+  collision: 3,
   disarm: 2,
+  throwhit: 3,
   message: 1
 }
 

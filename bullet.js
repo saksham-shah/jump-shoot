@@ -1,6 +1,6 @@
 const pl = require('planck-js');
 const vec = pl.Vec2;
-const MASSDECAY = 0.933;
+// const MASSDECAY = 0.933;
 
 class Bullet {
   constructor(x, y, r, vel, angle, damage, originPlayer) {
@@ -123,10 +123,10 @@ class Bullet {
             player.lastShot.timeAgo = 0;
             player.lastShot.player = this.originPlayer;
 
-
-            var newDensity = fixture.getDensity() * Math.pow(MASSDECAY, damage);
-            fixture.setDensity(newDensity);
-            body.resetMassData();
+            player.damage(damage);
+            // var newDensity = fixture.getDensity() * Math.pow(MASSDECAY, damage);
+            // fixture.setDensity(newDensity);
+            // body.resetMassData();
           }
 
           return true;

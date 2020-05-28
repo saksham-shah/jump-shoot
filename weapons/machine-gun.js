@@ -15,7 +15,7 @@ class MachineGun extends Weapon {
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
       angle += Math.random() * Math.PI / 8 - Math.PI / 16;
-      var bullet = new Bullet(x, y, 0.067, 1, angle, this.experimental ? 0.6 : 0.75, playerID);
+      var bullet = new Bullet(x, y, 0.067, 1, angle, 0.6, playerID);
 
       // Fire particle effect
       this.particles.push({

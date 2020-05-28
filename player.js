@@ -1,5 +1,6 @@
 const pl = require('planck-js');
 const vec = pl.Vec2;
+const MASSDECAY = 0.933;
 
 // Wrapper class for a planck.js body
 // Handles player actions based on controls
@@ -19,7 +20,7 @@ class Player {
       bullet: true
     });
 
-    this.body.createFixture({
+    this.fixture = this.body.createFixture({
       shape: pl.Circle(this.r),
       friction: 0.5,
       restitution: 0.4,
@@ -45,6 +46,9 @@ class Player {
       throw: false,
       shield: false,
       bouncy: false
+    }
+    this.previousControls = {
+      throw: false
     }
 
     // Control gun aiming
@@ -138,10 +142,12 @@ class Player {
     }
 
     // Throw equipped weapon
-    if (this.controls.throw && this.weapon && this.cooldown >= 40) {
+    if (this.controls.throw && this.weapon && !this.previousControls.throw) {
       this.weapon.thrown = -1;
-      this.throwWeapon(2000, world);
+      this.weapon.throwHit = false;
+      this.throwWeapon(this.experimental ? 5000 : 2000, world);
     }
+    this.previousControls.throw = this.controls.throw;
 
     // Activate shield
     if (this.controls.shield && this.weapon == null && this.cooldown >= 10) {
@@ -188,7 +194,7 @@ class Player {
     this.weapon.getEquipped(world);
     // Can't throw the weapon immediately after equipping it
     // Prevents accidental throwing if the throw key is pressed when equipping
-    this.cooldown = 0;
+    // this.cooldown = 0;
   }
 
   // Fire a weapon
@@ -327,6 +333,12 @@ class Player {
     // } else {
     //   this.body.restitution = 1;
     // }
+  }
+
+  damage(dmg) {
+    var newDensity = this.fixture.getDensity() * Math.pow(MASSDECAY, dmg);
+    this.fixture.setDensity(newDensity);
+    this.body.resetMassData();
   }
 
   removeFromWorld(world) {

@@ -16,11 +16,11 @@ class Shotgun extends Weapon {
       this.cooldown = this.fireRate;
       var bullets = [];
 
-      var numEitherSide = this.experimental ? 3 : 4;
+      var numEitherSide = 3;
       var angleRange = Math.PI / 4;
       angle -= angleRange / 2;
       for (var i = 0; i < 1 + 2 * numEitherSide; i++) {
-        bullets.push(new Bullet(x, y, 0.067, 1.33, angle, this.experimental ? 0.6 : 0.5, playerID));
+        bullets.push(new Bullet(x, y, 0.067, 1.33, angle, 0.6, playerID));
         angle += angleRange / 2 / numEitherSide;
       }
 

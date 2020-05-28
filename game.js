@@ -225,6 +225,14 @@ class Game {
       if (data.friction) {
         player.staticFriction++;
       }
+
+      if (this.experimental && data.type == 'weapon') {
+        if (data.obj.thrown != 0 && !data.obj.throwHit) {
+          data.obj.throwHit = true;
+          player.damage(1);
+          player.sounds.push('throwhit');
+        }
+      }
     }
   }
 

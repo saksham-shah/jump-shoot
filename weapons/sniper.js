@@ -14,7 +14,7 @@ class Sniper extends Weapon {
     // Only fire if gun is cooled down
     if (this.cooldown <= 0) {
       this.cooldown = this.fireRate;
-      var bullet = new Bullet(x, y, 0.33, 2.67, angle, this.experimental ? 2.5 : 2, playerID);
+      var bullet = new Bullet(x, y, 0.33, 2.67, angle, 2.5, playerID);
 
       // Fire particle effect
       this.particles.push({
