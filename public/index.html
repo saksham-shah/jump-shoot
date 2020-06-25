@@ -1,42 +1,41 @@
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Jump & Shoot - The Game</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/addons/p5.sound.min.js"></script>
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.min.js"></script> -->
+    <head>
+        <meta charset="UTF-8">
+        <title>Jump & Shoot - The Game</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/addons/p5.sound.min.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.min.js"></script> -->
 
-  <script language="javascript" type="text/javascript" src="sketch.js"></script>
+        <script src="p5ui.min.js"></script>
 
-  <script language="javascript" type="text/javascript" src="drawutils.js"></script>
-  <script language="javascript" type="text/javascript" src="oldbutton.js"></script>
-  <script language="javascript" type="text/javascript" src="button.js"></script>
+        <script src="sketch.js"></script>
+        <script src="addstyles.js"></script>
 
-  <script language="javascript" type="text/javascript" src="particle.js"></script>
+        <script src="screens/loadscreen.js"></script>
+        <script src="screens/menuscreen.js"></script>
+        <script src="screens/lobbyscreen.js"></script>
+        <script src="screens/gamescreen.js"></script>
 
-  <script language="javascript" type="text/javascript" src="startscreen.js"></script>
-  <script language="javascript" type="text/javascript" src="gamescreen.js"></script>
-  <script language="javascript" type="text/javascript" src="menuscreen.js"></script>
-  <script language="javascript" type="text/javascript" src="lobbyscreen.js"></script>
-  <script language="javascript" type="text/javascript" src="controlsscreen.js"></script>
-  <script language="javascript" type="text/javascript" src="helpscreen.js"></script>
-  <script language="javascript" type="text/javascript" src="loadingscreen.js"></script>
+        <script src="overlays/passwordoverlay.js"></script>
+        <script src="overlays/controlsoverlay.js"></script>
+        <script src="overlays/pauseoverlay.js"></script>
+        <script src="overlays/settingsoverlay.js"></script>
+        <script src="overlays/alertoverlay.js"></script>
+        <script src="overlays/nameoverlay.js"></script>
 
-  <script language="javascript" type="text/javascript" src="chat.js"></script>
+        <script language="javascript" type="text/javascript" src="particle.js"></script>
 
-  <script language="javascript" type="text/javascript" src="popup.js"></script>
+        <style>
 
-  <style>
+        body {margin:0; padding:0;} /* remove top and left whitespace */
+        canvas {display:block;}    /* remove scrollbars */
+        canvas:focus {outline:0;} /* remove blue outline around canvas */
 
-  body {margin:0; padding:0;} /* remove top and left whitespace */
-  canvas {display:block;}    /* remove scrollbars */
-  canvas:focus {outline:0;} /* remove blue outline around canvas */
+        </style>
 
-  </style>
+    </head>
 
-</head>
-
-<body oncontextmenu="return false;">
-</body>
+    <body oncontextmenu="return false;">
+    </body>
 </html>
