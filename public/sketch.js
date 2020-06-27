@@ -29,7 +29,7 @@ function chatMessage(sender, message) {
 }
 
 let outdated = false;
-let currentVersion = 'ui';
+let currentVersion = 'ui2';
 
 function setup() {
     createCanvas(windowWidth, windowHeight);

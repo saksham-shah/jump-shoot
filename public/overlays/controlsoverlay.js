@@ -135,7 +135,7 @@ function addControlsOverlay() {
         }
     })
     .on('mouseUp', e => {
-        if (buttonClicked) return;
+        if (buttonClicked || !controlClicked) return;
         let text = "Mouse " + e.button;
         controls[controlClicked] = text;
         controlKeys[controlClicked] = specialKeyNames[text] ? specialKeyNames[text] : text.toUpperCase();
