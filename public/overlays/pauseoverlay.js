@@ -99,6 +99,8 @@ function addPauseOverlay() {
         },
         maxLength: 100,
         style: 'game',
+        onFocus: () => typing = true,
+        onBlur: () => typing = false,
         label: 'pause chat input',
         tooltip: () => {
             if (!getElement('pause chat input').focused) return 'Press enter to start typing';

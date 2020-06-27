@@ -33,12 +33,28 @@ function addMenuScreen() {
         onClick: () => openOverlay('lobbies')
     })
     .addButton({
-        position: { x: 450, y: 450 },
+        position: { x: 350, y: 437.5 },
         width: 150,
         height: 75,
         textSize: 25,
         text: 'SETTINGS',
         onClick: () => openOverlay('settings')
+    })
+    .addButton({
+        position: { x: 550, y: 437.5 },
+        width: 150,
+        height: 75,
+        textSize: 25,
+        text: 'HELP',
+        onClick: () => openOverlay('help')
+    })
+    .addButton({
+        position: { x: 450, y: 545 },
+        width: 150,
+        height: 40,
+        textSize: 20,
+        text: 'CREDITS',
+        onClick: () => openOverlay('credits')
     })
     .addButton({
         position: { x: 775, y: 585 },

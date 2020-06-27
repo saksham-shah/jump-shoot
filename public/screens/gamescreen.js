@@ -171,39 +171,39 @@ let gs = {
         }
     
         pop();
-    
-        // Draw rectangles around the game screen so all players have equal vision
-        fill(60);
-        noStroke();
-        rect(baseWidth * 0.5, gameSize.y * 0.5, baseWidth, gameSize.y);
-        rect(baseWidth * 0.5, baseHeight - gameSize.y * 0.5, baseWidth, gameSize.y);
-        rect(gameSize.x * 0.5, baseHeight * 0.5, gameSize.x, baseHeight);
-        rect(baseWidth - gameSize.x * 0.5, baseHeight * 0.5, gameSize.x, baseHeight);
-    
+
         // Draw the border of the game screen
         noFill();
         stroke(200);
         strokeWeight(4);
         // Thicker border is bullet bounce is active
-        // if (this.bulletBounce) {
-        //     stroke(255);
-        //     let weight = 2 + (Math.sin((gameTime / 60 - 0.5) * Math.PI) + 1) * 3;
-        //     strokeWeight(weight);
-        // }
-        rect(baseWidth * 0.5, baseHeight * 0.5, gameSize.w * gameSize.z, gameSize.h * gameSize.z)
-
         if (this.bulletBounce) {
-            // stroke(255);
-            // strokeWeight(4);
-            let size = 2 + (Math.sin((gameTime / 60 - 0.5) * Math.PI) + 1) * 2;
-            fill(255);
-            noStroke();
-
-            rect(baseWidth * 0.5, size * 0.5, baseWidth, size);
-            rect(baseWidth * 0.5, baseHeight - size * 0.5, baseWidth, size);
-            rect(size * 0.5, baseHeight * 0.5, size, baseHeight);
-            rect(baseWidth - size * 0.5, baseHeight * 0.5, size, baseHeight);
+            let sin = Math.sin((gameTime / 60 - 0.5) * Math.PI);
+            stroke(200 + (sin + 1) * 27.5);
+            strokeWeight(4 + (sin + 1) * 5);
         }
+        rect(baseWidth * 0.5, baseHeight * 0.5, gameSize.w * gameSize.z, gameSize.h * gameSize.z);
+    
+        // Draw rectangles around the game screen so all players have equal vision
+        fill(60);
+        noStroke();
+        rect(baseWidth * 0.5, gameSize.y * 0.5, baseWidth, gameSize.y + 1);
+        rect(baseWidth * 0.5, baseHeight - gameSize.y * 0.5, baseWidth, gameSize.y + 1);
+        rect(gameSize.x * 0.5, baseHeight * 0.5, gameSize.x + 1, baseHeight);
+        rect(baseWidth - gameSize.x * 0.5, baseHeight * 0.5, gameSize.x + 1, baseHeight);
+
+        // if (this.bulletBounce) {
+        //     // stroke(255);
+        //     // strokeWeight(4);
+        //     let size = 2 + (Math.sin((gameTime / 60 - 0.5) * Math.PI) + 1) * 2;
+        //     fill(255);
+        //     noStroke();
+
+        //     rect(baseWidth * 0.5, size * 0.5, baseWidth, size);
+        //     rect(baseWidth * 0.5, baseHeight - size * 0.5, baseWidth, size);
+        //     rect(size * 0.5, baseHeight * 0.5, size, baseHeight);
+        //     rect(baseWidth - size * 0.5, baseHeight * 0.5, size, baseHeight);
+        // }
     
         // Draw the lobby name in the top left
         // drawText(lobbyName, {
@@ -292,7 +292,7 @@ let gs = {
 }
 
 function addGameScreen() {
-    let showY = 30;
+    let showY = 20;
     let hideY = -5;
     let y = hideY;
     let onScreen = false;
@@ -304,8 +304,8 @@ function addGameScreen() {
             var data = mouseToGamePos();
             socket.emit('update', data);
 
-            // Calculate ping every 5000ms (5 seconds)
-            if (Date.now() - pingSent > 5000) {
+            // Calculate ping every 2000ms (2 seconds)
+            if (Date.now() - pingSent > 2000) {
                 // Update the last time that a ping was sent
                 pingSent = Date.now();
                 socket.emit('pingCheck');
@@ -321,14 +321,15 @@ function addGameScreen() {
 
             fill(255);
             noStroke();
-            textSize(25);
+            textSize(15);
             textAlign(CENTER);
 
             text("Press ESC to open menu", 450, y);
 
-            let mousePos = getScreen('game').mousePos;
+            // let mousePos = getScreen('game').mousePos;
 
-            if (onScreen && mousePos.y < 50) {
+            // if (onScreen && mousePos.y < 50) {
+            if (timer.time > 0 && timer.maxTime > 0) {
                 if (y < showY) y += 7
             } else {
                 if (y > hideY) y -= 7
