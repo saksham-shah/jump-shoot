@@ -337,7 +337,7 @@ class Game {
     }
   }
 
-  update(users) {
+  update() {
     for (let playerid of this.playersToRemove) {
       this.removePlayer(playerid);
     }
@@ -450,7 +450,7 @@ class Game {
     }
 
     for (var player of this.players.values()) {
-      players.push(player.toObject(users));
+      players.push(player.toObject());
     }
 
     return { entities, players, nextWeaponX: this.nextWeaponX };

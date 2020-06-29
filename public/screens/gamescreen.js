@@ -31,6 +31,7 @@ let timer = {
 }
 
 let scoreboard = [];
+let playersMap = new Map();
 
 // Sets the timer up
 function setTimer(time, text) {
@@ -39,7 +40,8 @@ function setTimer(time, text) {
     timer.text = text;
 }
 
-var lastWinner = null;
+let lastWinner = null;
+let gameover = false;
 
 let chatHidden = false;
 let typing = false;
@@ -60,6 +62,7 @@ let gs = {
         this.platforms = platforms;
         this.bulletBounce = bulletBounce;
         gameTime = 0;
+        gameover = false;
         chatHidden = false;
         getElement('game chat output').hide(false);
     },
@@ -174,6 +177,7 @@ let gs = {
 
         // Draw the border of the game screen
         noFill();
+        if (gameover) fill(0, 100);
         stroke(200);
         strokeWeight(4);
         // Thicker border is bullet bounce is active
@@ -220,65 +224,106 @@ let gs = {
         // text(lobbyName, 25, 25);
         // pop();
     
-    
-        if (timer.time > 0 && timer.maxTime > 0) {
-            timer.time--;
-        
-            // Draw the timer
-            push();
-            var progress = 1 - (timer.time / timer.maxTime);
-        
-            // var { x, y, w } = getPosSize({
-            //     type: 'circle',
-            //     x: 0.5,
-            //     y: 0.2,
-            //     w: 50
-            // });
-        
+        if (gameover) {
             fill(255);
             noStroke();
-            translate(450, 120);
+            textSize(150);
             textAlign(CENTER);
-            textSize(25);
-            if (timer.text) {
-                text(timer.text, 0, -65);
+            if (lastWinner) {
+                text('WINS', 450, 275);
+
+                let name = playersMap.get(lastWinner).name;
+                let tSize = Math.min(100, 500 / 0.54 / name.length);
+                textSize(tSize);
+                text(name, 450, 125);
+            } else {
+                text('DRAW', 450, 275);
             }
-            rotate(-HALF_PI);
-            arc(0, 0, 75, 75, 0, progress * TWO_PI, PIE);
-            pop();
-        
-            // fill(255);
-            // noStroke();
-            // translate(width * 0.5, 100);
-            // textAlign(CENTER);
-            // textSize(15);
-            // var timerR = 50;
-            // if (timer.text) {
-            //   text(timer.text, 0, -timerR * 0.5 - 15);
-            // }
-            // rotate(-HALF_PI);
-            // arc(0, 0, timerR, timerR, 0, progress * TWO_PI, PIE);
-            // pop();
+
+            textSize(30);
+            let len = Math.min(5, scoreboard.length);
+            // Puts the hyphen exactly in the middle of the screen
+            let x = 425.7;
+
+            textAlign(RIGHT);
+            let y = 350;
+            for (let i = 0; i < len; i++) {
+                text(playersMap.get(scoreboard[i].id).name, x, y);
+                y += 40;
+            }
+
+            textAlign(LEFT);
+            y = 350;
+            for (let i = 0; i < len; i++) {
+                text(` - ${playersMap.get(scoreboard[i].id).score}`, x, y);
+                y += 40;
+            }
+
+            if (scoreboard.length > 5) {
+                textSize(25);
+                textAlign(CENTER);
+                text(`and ${scoreboard.length - 5} more`, x, y);
+            }
         }
     
-        if ((timer.time > 0 && timer.maxTime > 0) || (keyIsDown(76) && !typing)) {
-            // Draw the scoreboard
-            push()
-            var txt = '';
-            for (var i = 0; i < scoreboard.length; i++) {
-                txt += `${scoreboard[i].name}: ${scoreboard[i].score}`;
-                if (i < scoreboard.length - 1) {
-                txt += '\n';
-                }
-            }
+        // if (timer.time > 0 && timer.maxTime > 0) {
+        //     timer.time--;
         
-            fill(255);
-            noStroke();
-            textAlign(CENTER, CENTER);
-            textSize(40);
-            text(txt, 450, 300);
-            pop();
-        }
+        //     // Draw the timer
+        //     push();
+        //     var progress = 1 - (timer.time / timer.maxTime);
+        
+        //     // var { x, y, w } = getPosSize({
+        //     //     type: 'circle',
+        //     //     x: 0.5,
+        //     //     y: 0.2,
+        //     //     w: 50
+        //     // });
+        
+        //     fill(255);
+        //     noStroke();
+        //     translate(450, 120);
+        //     textAlign(CENTER);
+        //     textSize(25);
+        //     if (timer.text) {
+        //         text(timer.text, 0, -65);
+        //     }
+        //     rotate(-HALF_PI);
+        //     arc(0, 0, 75, 75, 0, progress * TWO_PI, PIE);
+        //     pop();
+        
+        //     // fill(255);
+        //     // noStroke();
+        //     // translate(width * 0.5, 100);
+        //     // textAlign(CENTER);
+        //     // textSize(15);
+        //     // var timerR = 50;
+        //     // if (timer.text) {
+        //     //   text(timer.text, 0, -timerR * 0.5 - 15);
+        //     // }
+        //     // rotate(-HALF_PI);
+        //     // arc(0, 0, timerR, timerR, 0, progress * TWO_PI, PIE);
+        //     // pop();
+        // }
+    
+        // if ((timer.time > 0 && timer.maxTime > 0) || (keyIsDown(76) && !typing)) {
+        //     // Draw the scoreboard
+        //     push()
+        //     var txt = '';
+        //     for (var i = 0; i < scoreboard.length; i++) {
+        //         txt += `${scoreboard[i].name}: ${scoreboard[i].score}`;
+        //         if (i < scoreboard.length - 1) {
+        //         txt += '\n';
+        //         }
+        //     }
+        
+        //     fill(255);
+        //     noStroke();
+        //     textAlign(CENTER, CENTER);
+        //     textSize(40);
+        //     text(txt, 450, 300);
+        //     pop();
+        // }
     
         // Show the ping time if 'P' is pressed
         if (keyIsDown(9) && !typing) {
@@ -329,7 +374,7 @@ function addGameScreen() {
             // let mousePos = getScreen('game').mousePos;
 
             // if (onScreen && mousePos.y < 50) {
-            if (timer.time > 0 && timer.maxTime > 0) {
+            if (gameover) {
                 if (y < showY) y += 7
             } else {
                 if (y > hideY) y -= 7
@@ -351,6 +396,7 @@ function addGameScreen() {
             } else {
                 onScreen = true;
                 paused = false;
+                socket.emit('status change', { key: 'paused', value: false });
                 // filter.toggle(true);
                 setFilter(true);
             }
@@ -362,6 +408,7 @@ function addGameScreen() {
 
         } else if (e.key == 'Escape') {
             paused = true;
+            socket.emit('status change', { key: 'paused', value: true });
             openOverlay('pause');
         }
 
@@ -410,8 +457,8 @@ function addGameScreen() {
         },
         clickToFocus: false,
         maxLength: 100,
-        onFocus: () => typing = true,
-        onBlur: () => typing = false,
+        onFocus: () => setTyping(true),
+        onBlur: () => setTyping(false),
         label: 'game chat input'
     })
     .addChatbox({
@@ -424,6 +471,11 @@ function addGameScreen() {
 }
 
 screens.push(addGameScreen);
+
+function setTyping(value) {
+    typing = value;
+    socket.emit('status change', { key: 'typing', value });
+}
 
 // Convert a client-side mouse position into a position in the game map
 function mouseToGamePos() {
@@ -472,6 +524,7 @@ function drawPlayerWeapon(obj) {
 
 // Draws the names of all players below them, as well as a crown on the previous winner
 function drawNameTag(obj) {
+    let player = playersMap.get(obj.id);
     push();
     translate(obj.x, obj.y);
     scale(1, -1)
@@ -485,7 +538,8 @@ function drawNameTag(obj) {
         textSize(14);
         translate(0, 2);
     }
-    text(obj.name, 0, 15 * obj.r + 15);
+    // let name = playersMap.get(obj.id).name;
+    text(player.name, 0, 15 * obj.r + 15);
     scale(15);
 
     // Draw circle around local player at the start of the game
@@ -513,6 +567,25 @@ function drawNameTag(obj) {
         vertex(r, -r - 1);
         vertex(r, -r - 0.33);
         endShape(CLOSE);
+    }
+
+    if (player.typing || player.paused) {
+        translate(0, -0.75 - obj.r);
+        noStroke();
+
+        if (obj.id == lastWinner) translate(0, -1)
+
+        if (player.typing) {
+            fill(255);
+            for (let i = -1; i < 2; i++) {
+                let size = Math.sin(frameCount / 20 - i * Math.PI / 3) + 1;
+                ellipse(i * 0.75, 0, 0.3 * size);
+            }
+        } else {
+            fill(255, 127.5 * (Math.sin(frameCount / 10) + 1));
+            rect(-0.3, 0, 0.3, 0.75);
+            rect(0.3, 0, 0.3, 0.75);
+        }
     }
 
     pop();

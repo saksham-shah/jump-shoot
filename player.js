@@ -350,14 +350,14 @@ class Player {
     world.destroyBody(this.body);
   }
 
-  toObject(users) {
+  toObject() {
     var pos = this.body.getPosition();
     var weaponToObj = null;
     // Also add equipped weapon to the data being sent
     if (this.weapon) {
       weaponToObj = this.weapon.toObject();
     }
-    var name = users.get(this.id).name;
+    // var name = users.get(this.id).name;
     return {
       type: 'player',
       id: this.id,
@@ -367,7 +367,7 @@ class Player {
       angle: this.angle,
       shield: this.shield,
       shieldWidth: this.shieldWidth,
-      name: name,
+      // name: name,
       colour: this.colour,
       weapon: weaponToObj
     }

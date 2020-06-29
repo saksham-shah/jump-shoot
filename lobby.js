@@ -14,15 +14,19 @@ class Lobby {
     this.players = new Map();
     this.gameCountdown = -1;
     this.game = null;
+
+    this.scoreOrder = [];
   }
 
-  addPlayer(socketid) {
-    this.players.set(socketid, { score: 0, timeLeft: 10800 });
+  addPlayer(socketid, name) {
+    this.players.set(socketid, { name, score: 0, timeLeft: 10800, typing: false, paused: false });
+    this.scoreOrder.push(socketid);
     // Send data to the client
     var data = {
       name: this.name,
       myid: socketid,
-      scoreboard: this.players
+      // scoreboard: this.players,
+      players: this.playersArray()
     }
     // Send game data so newly connected players can watch the ongoing game
     if (this.game) {
@@ -42,6 +46,13 @@ class Lobby {
       this.game.queueRemovePlayer(socketid);
     }
     this.players.delete(socketid);
+
+    for (let i = 0; i < this.scoreOrder.length; i++) {
+      if (this.scoreOrder[i] == socketid) {
+        this.scoreOrder.splice(i, 1);
+        return;
+      }
+    }
   }
 
   newGame() {
@@ -77,8 +88,13 @@ class Lobby {
     }
   }
 
+  statusChange(playerid, change) {
+    var player = this.players.get(playerid);
+    player[change.key] = change.value;
+  }
+
   // Update the game state
-  update(users) {
+  update() {
 
     if (this.game) {
       if (!this.game.inGame && this.gameCountdown < 0) {
@@ -87,14 +103,30 @@ class Lobby {
         var winnerObj = this.players.get(winner);
         if (winnerObj) {
           winnerObj.score++;
+
+          // Reorder scoreboard
+          let i = this.scoreOrder.length - 1;
+          while (i >= 0) {
+            if (this.scoreOrder[i] == winner) {
+              this.scoreOrder.splice(i, 1);
+              do {
+                i--;
+              } while (i >= 0 && this.players.get(this.scoreOrder[i]).score < this.players.get(winner).score);
+
+              this.scoreOrder.splice(i + 1, 0, winner);
+              i = 0;
+            }
+            i--;
+          }
         }
 
-        // Next game starts in 1 second
-        this.gameCountdown = 60;
+        // Next game starts in 90 frames
+        this.gameCountdown = 90;
         return {
           type: 'endGame',
           winner: winner,
-          scoresMap: this.players
+          // scoresMap: this.players,
+          players: this.playersArray()
         }
       } else if (this.gameCountdown == 0) {
         // If a game ended and the 'next game' countdown is over
@@ -103,7 +135,7 @@ class Lobby {
       } else {
         // Otherwise, the game is ongoing as usual
         this.gameCountdown--;
-        var { entities, players, nextWeaponX } = this.game.update(users);
+        var { entities, players, nextWeaponX } = this.game.update();
 
         // Increment idle time of all alive players
         for (var playerid of this.game.players.keys()) {
@@ -127,6 +159,21 @@ class Lobby {
       return data;
     }
     return null;
+  }
+
+  playersArray() {
+    let array = [];
+    for (let id of this.scoreOrder) {
+      let player = this.players.get(id);
+      array.push({
+        id,
+        name: player.name,
+        score: player.score,
+        typing: player.typing,
+        paused: player.paused
+      });
+    }
+    return array;
   }
 
   getEffects() {

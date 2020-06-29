@@ -105,7 +105,7 @@ function setup() {
     socket.on('joined lobby', function(data) {
         lobbyName = data.name;
         // scoreboard = data.scoreboard;
-        updatePlayers(data.scoreboard);
+        updatePlayers(data.players);
         lastWinner = null;
         // Send messages in the chat to tell the player they have joined a lobby
         // chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
@@ -186,10 +186,13 @@ function setup() {
     // Game ended
     socket.on('game over', function(data) {
         setTimer(60, "Next game");
+        gameover = true;
         // scoreboard = data.scoreboard;
-        updatePlayers(data.scoreboard);
+        updatePlayers(data.players);
         if (data.winnerId) {
             lastWinner = data.winnerId;
+        } else {
+            lastWinner = null;
         }
         // chat.newMessage(SERVER, "Game over");
         // Check if there is a single winner
@@ -201,13 +204,23 @@ function setup() {
     });
 
     // New player in lobby
-    socket.on('player joined', function(name) {
-        chatMessage(SERVER, name + " joined the lobby");
+    socket.on('player joined', function(player) {
+        chatMessage(SERVER, player.name + " joined the lobby");
+        scoreboard.push({ id: player.id, name: player.name, score: 0 });
+        updatePlayers(scoreboard);
     });
 
     // Player left the lobby
-    socket.on('player left', function(name) {
-        chatMessage(SERVER, name + " left the lobby");
+    socket.on('player left', function(id) {
+        for (let i = 0; i < scoreboard.length; i++) {
+            let player = scoreboard[i];
+            if (player.id == id) {
+                scoreboard.splice(i, 1);
+                chatMessage(SERVER, player.name + " left the lobby");
+                updatePlayers(scoreboard);
+                return;
+            }
+        }
     });
 
     // New message in the chat
@@ -218,6 +231,13 @@ function setup() {
         }
     });
 
+    // A player has changed status (e.g. they started typing)
+    socket.on('status change', function(change) {
+        let player = playersMap.get(change.playerid);
+        if (player) {
+            player[change.key] = change.value;
+        }
+    })
 }
 
 function draw() {

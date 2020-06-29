@@ -226,6 +226,23 @@ function newConnection(socket) {
     }
   })
 
+  socket.on('status change', function(change) {
+    if (!change) {
+      return;
+    }
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    if (lobby) {
+      lobby.statusChange(socket.id, change);
+      
+      // Notify the other players of the change
+      io.in(lobby.name).emit('status change', {
+        playerid: socket.id,
+        key: change.key,
+        value: change.value
+      });
+    }
+  })
+
   // Player types in a chat message
   // Also processes any chat commands - probably the most important event
   socket.on('chat message', function(message) {
@@ -398,8 +415,8 @@ function joinLobby(socket, lobbyname) {
   var lobby = getLobbyFromName(lobbyname);
   if (lobby) {
     // If the lobby exists, add the player to it
-    var sendData = lobby.addPlayer(socket.id);
-    sendData.scoreboard = getScoreboard(sendData.scoreboard);
+    var sendData = lobby.addPlayer(socket.id, userData.name);
+    // sendData.scoreboard = getScoreboard(sendData.scoreboard);
     // Send player any data about the lobby
     socket.emit('joined lobby', sendData);
     // Add client to socket room
@@ -409,7 +426,8 @@ function joinLobby(socket, lobbyname) {
     userData.lobbyname = lobby.name;
     users.set(socket.id, userData);
     // Notify players in the lobby
-    socket.broadcast.to(lobby.name).emit('player joined', users.get(socket.id).name);
+    socket.broadcast.to(lobby.name).emit('player joined', { id: socket.id, name: userData.name });
+    // socket.broadcast.to(lobby.name).emit('player joined', users.get(socket.id).name);
     io.emit('lobbies updated', getLobbies());
     return true;
   }
@@ -464,7 +482,8 @@ function leaveLobby(socket) {
       }
     }
     // Notify players in the lobby
-    socket.broadcast.to(lobby.name).emit('player left', users.get(socket.id).name);
+    socket.broadcast.to(lobby.name).emit('player left', socket.id);
+    // socket.broadcast.to(lobby.name).emit('player left', users.get(socket.id).name);
     io.emit('lobbies updated', getLobbies());
     return true;
   }
@@ -562,7 +581,7 @@ setInterval(updateGame, 1000 / 60);
 function updateGame() {
   for (var i = 0; i < lobbies.length; i++) {
     var room = lobbies[i].name;
-    var data = lobbies[i].update(users);
+    var data = lobbies[i].update();
 
     for (var [playerid, player] of lobbies[i].players.entries()) {
       if (player.timeLeft == 600) {
@@ -580,7 +599,8 @@ function updateGame() {
       } else {
         // Send the winner to the players (if there is one) as well as the scoreboard
         var sendData = {
-          scoreboard: getScoreboard(data.scoresMap)
+          // scoreboard: getScoreboard(data.scoresMap),
+          players: data.players
         };
         if (data.winner) {
           sendData.winner = users.get(data.winner).name;
