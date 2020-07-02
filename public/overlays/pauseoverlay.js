@@ -1,13 +1,21 @@
 let playerTable;
 
 function updatePlayers(players) {
-    scoreboard = players;
+    if (players != undefined) {
+        scoreboard = players;
+    }
+
     playerTable.clear();
-    for (let player of players) {
+    for (let player of scoreboard) {
+        let name = player.name;
+        if (player.id == myid) {
+            name = '[YOU] ' + name;
+        }
+        
         playerTable.addItem({
-            name: player.name,
+            name: name,
             score: player.score,
-            streak: '',
+            streak: player.streak,
             ping: ''
         });
 

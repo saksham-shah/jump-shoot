@@ -1,4 +1,15 @@
 function addMenuScreen() {
+    let alertOrder = ['shield control'];
+    let alertCounter = -1;
+
+    let latestAlert = localStorage.getItem('alert');
+
+    for (let i = alertOrder.length - 1; i >= 0; i--) {
+        if (latestAlert == alertOrder[i]) {
+            alertCounter = i;
+        }
+    }
+
     addScreen('menu', {
         draw: () => {
             fill(200);
@@ -17,11 +28,17 @@ function addMenuScreen() {
             text(playerName, 775, 555 + 20 / 3);
         },
         update: () => {
-            if (outdated) {
-                localStorage.setItem('version', currentVersion);
-                outdated = false;
-                openOverlay('alert', 'Controls changed', 'The control for the shield has been changed from the right mouse button to the left mouse button. Feel free to change it back in Settings.', true);
+
+            if (alertCounter != alertOrder.length - 1) {
+                alertCounter++;
+                openOverlay('alert', alertOrder[alertCounter]);
             }
+
+            // if (outdated) {
+            //     localStorage.setItem('version', currentVersion);
+            //     outdated = false;
+            //     openOverlay('alert', 'Controls changed', 'The control for the shield has been changed from the right mouse button to the left mouse button. Feel free to change it back in Settings.', true);
+            // }
         }
     })
     .addButton({

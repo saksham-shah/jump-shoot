@@ -1,6 +1,4 @@
 function addNameOverlay() {
-    let invalid = false;
-
     addOverlay('name', {
         width: 400,
         height: 125,
@@ -41,7 +39,7 @@ function addNameOverlay() {
             }
 
             socket.emit('pick name', name);
-            closeOverlay();
+            // closeOverlay();
         },
         label: 'name change button'
     })
@@ -53,7 +51,7 @@ function addNameOverlay() {
         onSubmit: txt => {
             getElement('name change button').click();
         },
-        maxLength: 12,
+        maxLength: 20,
         allowEmptySubmit: true,
         blurOnSubmit: false,
         clearOnSubmit: false,

@@ -498,11 +498,12 @@ function updateName(socket, name) {
         sendServerMessage(socket.id, 'You cannot change your name while in a lobby');
         return false;
     }
-    // Validate the name (max character length is 12)
-    var validName = lettersOnly(name, 12);
+    // Validate the name (max character length is 20)
+    var validName = validateName(name, 20);
     if (validName.length == 0) {
         // Name is invalid
-        sendServerMessage(socket.id, 'Invalid name');
+        // sendServerMessage(socket.id, 'Invalid name');
+        socket.emit('name invalid');
         return false;
     }
     // Update user data to also save name
@@ -529,11 +530,11 @@ function updateName(socket, name) {
 //   return true;
 // }
 
-// Filters out non-alphabet characters (keeps spaces)
-function lettersOnly(word, maxChars) {
+// Filters out non-alphanumeric characters (keeps spaces)
+function validateName(word, maxChars) {
   var output = "";
-  // A regular expression that matches with all upper and lower case alphabet letters
-  var lettersRegex = /^[a-zA-Z]+$/;
+  // A regular expression that matches with all upper and lower case alphabet letters and numbers
+  var lettersRegex = /^[a-zA-Z0-9]+$/;
   for (var i = 0; i < word.length; i++) {
     var letter = word[i];
     // Can't begin the text with a space
@@ -598,21 +599,22 @@ function updateGame() {
         io.in(room).emit('update', data);
       } else {
         // Send the winner to the players (if there is one) as well as the scoreboard
-        var sendData = {
-          // scoreboard: getScoreboard(data.scoresMap),
-          players: data.players
-        };
-        if (data.winner) {
-          sendData.winner = users.get(data.winner).name;
-          sendData.winnerId = data.winner
-        }
+        // var sendData = {
+        //   // scoreboard: getScoreboard(data.scoresMap),
+        //   players: data.players,
+        //   streak: data.streak
+        // };
+        // if (data.winner) {
+        //   sendData.winner = users.get(data.winner).name;
+        //   sendData.winnerId = data.winner
+        // }
         // for (var [id, scoreObj] of data.scoresMap) {
         //   sendData.scoreboard.push({
         //     name: users.get(id).name,
         //     score: scoreObj.score
         //   });
         // }
-        io.in(room).emit('game over', sendData);
+        io.in(room).emit('game over', data);
       }
       var { particles, sounds } = lobbies[i].getEffects();
       if (particles.length > 0) {

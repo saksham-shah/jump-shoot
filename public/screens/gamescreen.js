@@ -33,15 +33,16 @@ let timer = {
 let scoreboard = [];
 let playersMap = new Map();
 
+let lastWinner = null;
+let gameover = false;
+let streak = 0;
+
 // Sets the timer up
 function setTimer(time, text) {
     timer.maxTime = time;
     timer.time = time;
     timer.text = text;
 }
-
-let lastWinner = null;
-let gameover = false;
 
 let chatHidden = false;
 let typing = false;
@@ -236,6 +237,34 @@ let gs = {
                 let tSize = Math.min(100, 500 / 0.54 / name.length);
                 textSize(tSize);
                 text(name, 450, 125);
+                
+                // Win streak
+                if (streak >= 2) {
+                    push();
+                    translate(450 + 0.5 * textWidth(name), 125 - tSize * 2/3 - 10);
+                    rotate(0.3);
+
+                    // Different effects based on how high the win streak is
+                    if (streak >= 3) {
+                        textSize(27.5 + 2.5 * Math.sin(gameTime / 7.5));
+                    } else {
+                        textSize(27.5);
+                    }
+
+                    if (streak >= 5) {
+                        fill(255, 255 * Math.sin(gameTime / 5), 0);
+                    } else {
+                        fill(255, 255, 0);
+                    }
+
+                    if (streak >= 10) {
+                        rotate(0.2 * Math.sin(gameTime / 10));
+                    }
+
+                    text(`${streak}x streak!`, 0, 0);    
+                    pop();
+                }
+
             } else {
                 text('DRAW', 450, 275);
             }
@@ -415,7 +444,7 @@ function addGameScreen() {
         if (!typing) {
             for (let key in controls) {
                 // If found control matching the key/button pressed, emit a press event to the server
-                if (e.code == controls[key]) {
+                if (e.which == controls[key]) {
                     socket.emit('press', key);
                 }
             }
@@ -424,7 +453,7 @@ function addGameScreen() {
     .on('keyUp', e => {
         for (let key in controls) {
             // If found control matching the key/button pressed, emit a press event to the server
-            if (e.code == controls[key]) {
+            if (e.which == controls[key]) {
                 socket.emit('release', key);
             }
         }

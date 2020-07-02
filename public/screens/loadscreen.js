@@ -80,9 +80,10 @@ const volumes = {
 
 let soundsLoaded = 0;
 
+let invalid = false;
+
 function addLoadScreen() {
     let loading = false;
-    let invalid = false;
     let clicked = false;
 
     function loadAssets() {
@@ -202,7 +203,7 @@ function addLoadScreen() {
         onSubmit: txt => {
             getElement('loading button start').click();
         },
-        maxLength: 12,
+        maxLength: 20,
         allowEmptySubmit: true,
         blurOnSubmit: false,
         clearOnSubmit: false,

@@ -1,5 +1,13 @@
+let alerts = {
+    'shield control': {
+        title: 'Controls changed',
+        text: 'The control for the shield has been changed from the right mouse button to the left mouse button. Feel free to change it back in Settings.'
+    }
+};
+
 function addAlertOverlay() {
     let title = '';
+    let thisId = null;
     let lines = [];
     let centre = false;
     let titleSize = 25;
@@ -9,10 +17,16 @@ function addAlertOverlay() {
         width: 400,
         height: 200,
         text: 'Important!',
-        onDisplay: (titleText, text, centred) => {
-            title = titleText;
-            lines = wrapText(text, tSize, 350);
+        onDisplay: (id, centred = true) => {
+            thisId = id
+            title = alerts[id].title;
+            lines = wrapText(alerts[id].text, tSize, 350);
             centre = centred;
+        },
+        changeScreen: leaving => {
+            if (leaving) {
+                localStorage.setItem('alert', thisId);
+            }
         },
         draw: () => {
             noStroke();

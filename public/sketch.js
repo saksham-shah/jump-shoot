@@ -29,7 +29,7 @@ function chatMessage(sender, message) {
 }
 
 let outdated = false;
-let currentVersion = 'ui2';
+let currentVersion = 'ui';
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -37,14 +37,17 @@ function setup() {
     let lastVersion = localStorage.getItem('version');
     if (lastVersion != currentVersion) {
         // localStorage.setItem('version', currentVersion);
-        outdated = true;
+        // outdated = true;
 
         localStorage.setItem('controls', JSON.stringify(controls));
-        localStorage.setItem('controlKeys', JSON.stringify(controlKeys));
-        localStorage.setItem('settings', JSON.stringify(settings));
-        localStorage.setItem('name', playerName);
+        localStorage.setItem('version', currentVersion);
+        // localStorage.setItem('controlKeys', JSON.stringify(controlKeys));
+        // localStorage.setItem('settings', JSON.stringify(settings));
+        // localStorage.setItem('name', playerName);
 
-    } else if (!(localStorage.getItem('controls') && localStorage.getItem('controlKeys') && localStorage.getItem('settings') && localStorage.getItem('name'))) {
+    }
+    
+    if (!(localStorage.getItem('controls') && localStorage.getItem('controlKeys') && localStorage.getItem('settings') && localStorage.getItem('name'))) {
         localStorage.setItem('controls', JSON.stringify(controls));
         localStorage.setItem('controlKeys', JSON.stringify(controlKeys));
         localStorage.setItem('settings', JSON.stringify(settings));
@@ -105,8 +108,16 @@ function setup() {
     socket.on('joined lobby', function(data) {
         lobbyName = data.name;
         // scoreboard = data.scoreboard;
+
+        getElement('game chat output').clear();
+        getElement('pause chat output').clear();
+
+        playersMap = new Map();
+        gameover = false;
         updatePlayers(data.players);
-        lastWinner = null;
+        lastWinner = data.lastWinner;
+        streak = data.streak;
+
         // Send messages in the chat to tell the player they have joined a lobby
         // chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
         chatMessage(SERVER, "Welcome to the lobby '" + data.name + "'")
@@ -134,16 +145,18 @@ function setup() {
         // scr = ms;
         closeAllOverlays();
         setScreen('menu');
-
-        getElement('game chat output').clear();
-        getElement('pause chat output').clear();
     });
 
     // Name updated
     socket.on('name updated', function(name) {
         playerName = name;
         localStorage.setItem('name', name);
+        invalid = false;
+        closeAllOverlays();
     });
+
+    // Entered name is invalid
+    socket.on('name invalid', () => invalid = true);
 
     // Next frame of the game
     socket.on('update', function(data) {
@@ -189,25 +202,30 @@ function setup() {
         gameover = true;
         // scoreboard = data.scoreboard;
         updatePlayers(data.players);
-        if (data.winnerId) {
-            lastWinner = data.winnerId;
-        } else {
+        streak = data.streak;
+
+        // Check if there is a winner
+        if (data.winner) {
+            lastWinner = data.winner;
+            chatMessage(SERVER, "Winner: " + playersMap.get(data.winner).name);
+        } else { // If no winner, it's a draw
             lastWinner = null;
+            chatMessage(SERVER, "Winner: NONE - it's a draw");
         }
         // chat.newMessage(SERVER, "Game over");
         // Check if there is a single winner
-        if (data.winner) {
-            chatMessage(SERVER, "Winner: " + data.winner);
-        } else { // If no winner, it's a draw
-            chatMessage(SERVER, "Winner: NONE - it's a draw");
-        }
+        // if (data.winner) {
+        //     chatMessage(SERVER, "Winner: " + data.winner);
+        // } else { // If no winner, it's a draw
+        //     chatMessage(SERVER, "Winner: NONE - it's a draw");
+        // }
     });
 
     // New player in lobby
     socket.on('player joined', function(player) {
         chatMessage(SERVER, player.name + " joined the lobby");
-        scoreboard.push({ id: player.id, name: player.name, score: 0 });
-        updatePlayers(scoreboard);
+        scoreboard.push({ id: player.id, name: player.name, score: 0, streak: 0, ping: 0, typing: false, paused: false });
+        updatePlayers();
     });
 
     // Player left the lobby
@@ -217,7 +235,7 @@ function setup() {
             if (player.id == id) {
                 scoreboard.splice(i, 1);
                 chatMessage(SERVER, player.name + " left the lobby");
-                updatePlayers(scoreboard);
+                updatePlayers();
                 return;
             }
         }

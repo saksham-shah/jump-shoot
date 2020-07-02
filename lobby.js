@@ -15,18 +15,22 @@ class Lobby {
     this.gameCountdown = -1;
     this.game = null;
 
+    this.currentStreak = 0;
+    this.lastWinner = null;
     this.scoreOrder = [];
   }
 
   addPlayer(socketid, name) {
-    this.players.set(socketid, { name, score: 0, timeLeft: 10800, typing: false, paused: false });
+    this.players.set(socketid, { name, score: 0, streak: 0, ping: 0, timeLeft: 10800, typing: false, paused: false });
     this.scoreOrder.push(socketid);
     // Send data to the client
     var data = {
       name: this.name,
       myid: socketid,
       // scoreboard: this.players,
-      players: this.playersArray()
+      players: this.playersArray(),
+      lastWinner: this.lastWinner,
+      streak: this.currentStreak
     }
     // Send game data so newly connected players can watch the ongoing game
     if (this.game) {
@@ -111,14 +115,26 @@ class Lobby {
               this.scoreOrder.splice(i, 1);
               do {
                 i--;
-              } while (i >= 0 && this.players.get(this.scoreOrder[i]).score < this.players.get(winner).score);
+              } while (i >= 0 && this.players.get(this.scoreOrder[i]).score < winnerObj.score);
 
               this.scoreOrder.splice(i + 1, 0, winner);
               i = 0;
             }
             i--;
           }
+
+          if (winner == this.lastWinner) {
+            this.currentStreak++;
+          } else {
+            this.currentStreak = 1;
+          }
+
+          if (winnerObj.streak < this.currentStreak) winnerObj.streak = this.currentStreak;
+        } else {
+          this.currentStreak = 0;
         }
+
+        this.lastWinner = winner;
 
         // Next game starts in 90 frames
         this.gameCountdown = 90;
@@ -126,7 +142,8 @@ class Lobby {
           type: 'endGame',
           winner: winner,
           // scoresMap: this.players,
-          players: this.playersArray()
+          players: this.playersArray(),
+          streak: this.currentStreak
         }
       } else if (this.gameCountdown == 0) {
         // If a game ended and the 'next game' countdown is over
@@ -169,6 +186,8 @@ class Lobby {
         id,
         name: player.name,
         score: player.score,
+        streak: player.streak,
+        ping: player.ping,
         typing: player.typing,
         paused: player.paused
       });

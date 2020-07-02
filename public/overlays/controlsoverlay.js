@@ -1,8 +1,18 @@
+// let controls = {
+//     up: "KeyW", // W
+//     down: "KeyS", // S
+//     left: "KeyA", // A
+//     right: "KeyD", // D
+//     shoot: "Mouse 0", // LMB
+//     throw: "Mouse 2", // RMB
+//     shield: "Mouse 0", // LMB
+// }
+
 let controls = {
-    up: "KeyW", // W
-    down: "KeyS", // S
-    left: "KeyA", // A
-    right: "KeyD", // D
+    up: 87, // W
+    down: 83, // S
+    left: 65, // A
+    right: 68, // D
     shoot: "Mouse 0", // LMB
     throw: "Mouse 2", // RMB
     shield: "Mouse 0", // LMB
@@ -127,7 +137,7 @@ function addControlsOverlay() {
     })
     .on('keyDown', e => {
         if (controlClicked) {
-            controls[controlClicked] = e.code;
+            controls[controlClicked] = e.which;
             controlKeys[controlClicked] = specialKeyNames[e.key] ? specialKeyNames[e.key] : e.key.toUpperCase();
             controlClicked = null;
             localStorage.setItem('controls', JSON.stringify(controls));
