@@ -56,8 +56,13 @@ function setup() {
     } else {
         controls = JSON.parse(localStorage.getItem('controls'));
         controlKeys = JSON.parse(localStorage.getItem('controlKeys'));
-        settings = JSON.parse(localStorage.getItem('settings'));
         playerName = localStorage.getItem('name');
+
+        let tempSettings = JSON.parse(localStorage.getItem('settings'));
+        for (let key in settings) {
+            if (tempSettings[key] == undefined) tempSettings[key] = settings[key];
+        }
+        settings = tempSettings;
     }
 
     createUI(baseWidth, baseHeight, buffer);
@@ -69,6 +74,10 @@ function setup() {
     addStyles();
 
     setupUI();
+
+    setCursors({
+        game: 'assets/cursors/game.cur'
+    });
 
     setScreen('loading');
 
@@ -98,6 +107,8 @@ function setup() {
     socket.on('pongCheck', () => {
         // Difference between the response time and the time the ping message was sent
         pingTime = Date.now() - pingSent;
+
+        socket.emit('status change', { key: 'ping', value: pingTime });
     });
 
     socket.on('lobbies updated', function(lobbies) {

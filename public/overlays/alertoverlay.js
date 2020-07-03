@@ -2,6 +2,10 @@ let alerts = {
     'shield control': {
         title: 'Controls changed',
         text: 'The control for the shield has been changed from the right mouse button to the left mouse button. Feel free to change it back in Settings.'
+    },
+    'crosshair': {
+        title: 'Crosshair',
+        text: 'A crosshair has been added to the game! You can turn it off in Settings.'
     }
 };
 

@@ -245,10 +245,25 @@ function newConnection(socket) {
 
   // Player types in a chat message
   // Also processes any chat commands - probably the most important event
+  // Note from the future: Not anymore
   socket.on('chat message', function(message) {
     if (!message) {
       return;
     }
+
+    // Send the message to all players in the lobby
+    var lobby = getLobbyFromSocket(socket.id);
+    if (lobby) {
+      var data = {
+        sender: users.get(socket.id).name,
+        message: message
+      }
+      io.in(lobby.name).emit('chat message', data);
+    }
+    return;
+
+    // Chat commands have now been removed
+
     var command = Command.getCommand(message);
     if (command) {
       switch (command.operator) {

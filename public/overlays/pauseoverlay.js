@@ -13,10 +13,22 @@ function updatePlayers(players) {
         }
         
         playerTable.addItem({
+            id: player.id,
             name: name,
             score: player.score,
             streak: player.streak,
-            ping: ''
+            ping: player => {
+                let ping = playersMap.get(player.id).ping;
+                if (ping == 0) {
+                    return '';
+                }
+                
+                if (ping > 999) {
+                    return '>999ms';
+                }
+
+                return ping + 'ms';
+            }
         });
 
         playersMap.set(player.id, player);

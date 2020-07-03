@@ -9,6 +9,7 @@ function addNameOverlay() {
             nameTextbox.cursorPos = playerName.length;
             nameTextbox.selectionStart = playerName.length;
             nameTextbox.clipText();
+            nameTextbox.focus();
             invalid = false;
         },
         draw: () => {

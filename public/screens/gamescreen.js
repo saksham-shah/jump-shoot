@@ -245,19 +245,19 @@ let gs = {
                     rotate(0.3);
 
                     // Different effects based on how high the win streak is
-                    if (streak >= 3) {
+                    // if (streak >= 3) {
                         textSize(27.5 + 2.5 * Math.sin(gameTime / 7.5));
-                    } else {
-                        textSize(27.5);
-                    }
+                    // } else {
+                    //     textSize(27.5);
+                    // }
 
-                    if (streak >= 5) {
+                    if (streak >= 3) {
                         fill(255, 255 * Math.sin(gameTime / 5), 0);
                     } else {
                         fill(255, 255, 0);
                     }
 
-                    if (streak >= 10) {
+                    if (streak >= 5) {
                         rotate(0.2 * Math.sin(gameTime / 10));
                     }
 
@@ -353,6 +353,13 @@ let gs = {
         //     text(txt, 450, 300);
         //     pop();
         // }
+
+        // Calculate ping every 2000ms (2 seconds)
+        if (Date.now() - pingSent > 2000) {
+            // Update the last time that a ping was sent
+            pingSent = Date.now();
+            socket.emit('pingCheck');
+        }
     
         // Show the ping time if 'P' is pressed
         if (keyIsDown(9) && !typing) {
@@ -373,17 +380,20 @@ function addGameScreen() {
 
     addScreen('game', {
         style: 'game',
+        getCursorState: () => {
+            if (settings.crosshair && !typing) return 'game';
+        },
         update: () => {
             // Send the mouse position to the server to aim weapons
             var data = mouseToGamePos();
             socket.emit('update', data);
 
-            // Calculate ping every 2000ms (2 seconds)
-            if (Date.now() - pingSent > 2000) {
-                // Update the last time that a ping was sent
-                pingSent = Date.now();
-                socket.emit('pingCheck');
-            }
+            // // Calculate ping every 2000ms (2 seconds)
+            // if (Date.now() - pingSent > 2000) {
+            //     // Update the last time that a ping was sent
+            //     pingSent = Date.now();
+            //     socket.emit('pingCheck');
+            // }
 
             if (chatHidden == (lastMessage < 240 || typing)) {
                 chatHidden = !chatHidden;
@@ -565,7 +575,7 @@ function drawNameTag(obj) {
     if (obj.id == myid) {
         // textStyle(BOLD);
         textSize(14);
-        translate(0, 2);
+        translate(0, 2/3);
     }
     // let name = playersMap.get(obj.id).name;
     text(player.name, 0, 15 * obj.r + 15);

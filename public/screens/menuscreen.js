@@ -1,5 +1,5 @@
 function addMenuScreen() {
-    let alertOrder = ['shield control'];
+    let alertOrder = ['shield control', 'crosshair'];
     let alertCounter = -1;
 
     let latestAlert = localStorage.getItem('alert');

@@ -1,7 +1,8 @@
 let settings = {
     music: 50,
     sound: 50,
-    particles: true
+    particles: true,
+    crosshair: true
 }
 
 function addSettingsOverlay() {
@@ -55,6 +56,7 @@ function addSettingsOverlay() {
                 case 'Graphics':
                     textAlign(LEFT);
                     text('Particles', tabWidth + 50, 100 + 20 / 3);
+                    text('Crosshair', tabWidth + 50, 150 + 20 / 3);
                     break; 
             }
         }
@@ -104,6 +106,16 @@ function addSettingsOverlay() {
         },
         hidden: true,
         label: 'settings graphics particles',
+    })
+    .addCheckbox({
+        position: { x: 350, y: 150 },
+        size: 20,
+        value: settings.crosshair,
+        onClick: v => {
+            settings.crosshair = v;
+        },
+        hidden: true,
+        label: 'settings graphics crosshair',
     });
 
     let x = tabWidth * 0.5;
@@ -146,6 +158,7 @@ function addSettingsOverlay() {
     tabs['Audio'].push(getElement('settings audio sound'));
     tabs['Audio'].push(getElement('settings audio music'));
     tabs['Graphics'].push(getElement('settings graphics particles'));
+    tabs['Graphics'].push(getElement('settings graphics crosshair'));
 }
 
 screens.push(addSettingsOverlay);
