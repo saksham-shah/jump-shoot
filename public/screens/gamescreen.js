@@ -231,17 +231,17 @@ let gs = {
             textSize(150);
             textAlign(CENTER);
             if (lastWinner) {
-                text('WINS', 450, 275);
+                text('WINS', 450, 300);
 
                 let name = playersMap.get(lastWinner).name;
                 let tSize = Math.min(100, 500 / 0.54 / name.length);
                 textSize(tSize);
-                text(name, 450, 125);
+                text(name, 450, 150);
                 
                 // Win streak
                 if (streak >= 2) {
                     push();
-                    translate(450 + 0.5 * textWidth(name), 125 - tSize * 2/3 - 10);
+                    translate(450 + Math.max(0.5 * textWidth(name), 250), 140 - tSize * 2/3);
                     rotate(0.3);
 
                     // Different effects based on how high the win streak is
@@ -261,37 +261,51 @@ let gs = {
                         rotate(0.2 * Math.sin(gameTime / 10));
                     }
 
+                    if (streak >= 10) {
+                        let angle = -gameTime / 5;
+                        translate(10 * Math.cos(angle), 10 * Math.sin(angle));
+                    }
+
                     text(`${streak}x streak!`, 0, 0);    
                     pop();
                 }
 
             } else {
-                text('DRAW', 450, 275);
+                text('DRAW', 450, 300);
             }
+        }
 
+        // Scoreboard
+        if (gameover || keyIsDown(9)) {
             textSize(30);
+            fill(255);
+            noStroke();
             let len = Math.min(5, scoreboard.length);
             // Puts the hyphen exactly in the middle of the screen
             let x = 425.7;
+            // Puts the leaderboard exactly in the middle of the screen
+            let y = gameover ? 375 : 330 - len * 20;
+            let tempY;
 
             textAlign(RIGHT);
-            let y = 350;
+            // y = 375;
+            tempY = y;
             for (let i = 0; i < len; i++) {
-                text(playersMap.get(scoreboard[i].id).name, x, y);
-                y += 40;
+                text(playersMap.get(scoreboard[i].id).name, x, tempY);
+                tempY += 40;
             }
 
             textAlign(LEFT);
-            y = 350;
+            tempY = y;
             for (let i = 0; i < len; i++) {
-                text(` - ${playersMap.get(scoreboard[i].id).score}`, x, y);
-                y += 40;
+                text(` - ${playersMap.get(scoreboard[i].id).score}`, x, tempY);
+                tempY += 40;
             }
 
             if (scoreboard.length > 5) {
                 textSize(25);
                 textAlign(CENTER);
-                text(`and ${scoreboard.length - 5} more`, x, y);
+                text(`and ${scoreboard.length - 5} more`, 450, tempY);
             }
         }
     
@@ -362,7 +376,7 @@ let gs = {
         }
     
         // Show the ping time if 'P' is pressed
-        if (keyIsDown(9) && !typing) {
+        if (keyIsDown(9)) {
             textAlign(LEFT);
             textSize(24);
             fill(255);
@@ -413,7 +427,7 @@ function addGameScreen() {
             // let mousePos = getScreen('game').mousePos;
 
             // if (onScreen && mousePos.y < 50) {
-            if (gameover) {
+            if (gameover || keyIsDown(9)) {
                 if (y < showY) y += 7
             } else {
                 if (y > hideY) y -= 7
