@@ -252,7 +252,7 @@ let gs = {
                     // }
 
                     if (streak >= 3) {
-                        fill(255, 255 * Math.sin(gameTime / 5), 0);
+                        fill(255, 127.5 * (Math.sin(gameTime / 5) + 1), 0);
                     } else {
                         fill(255, 255, 0);
                     }
@@ -622,13 +622,38 @@ function drawNameTag(obj) {
         endShape(CLOSE);
     }
 
-    if (player.typing || player.paused) {
+    if (player.ping > 999 || player.typing || player.paused) {
         translate(0, -0.75 - obj.r);
         noStroke();
 
         if (obj.id == lastWinner) translate(0, -1)
 
-        if (player.typing) {
+        if (player.ping > 999) {
+            noFill();
+            strokeWeight(0.2);
+            let framePosition = frameCount % 60;
+            if (framePosition >= 50) {
+                stroke(255, 127.5 * (Math.sin((framePosition - 50) / 10 * Math.PI + Math.PI / 2) + 1));
+            } else {
+                stroke(255);
+            }
+
+            for (let i = 0; i < 3; i++) {
+                if (framePosition < 30) {
+                    if (framePosition < i * 10) {
+                        noStroke();
+                    } else if (framePosition < 10 + i * 10) {
+                        let rel = framePosition - i * 10;
+                        stroke(255, 127.5 * (Math.sin(rel / 10 * Math.PI - Math.PI / 2) + 1));
+                    } else {
+                        stroke(255);
+                    }
+                }
+
+                let r = 0.5 + i * 0.75;
+                arc(0, 0.5, r, r, - Math.PI * 3 / 4, - Math.PI / 4);
+            }
+        } else if (player.typing) {
             fill(255);
             for (let i = -1; i < 2; i++) {
                 let size = Math.sin(frameCount / 20 - i * Math.PI / 3) + 1;

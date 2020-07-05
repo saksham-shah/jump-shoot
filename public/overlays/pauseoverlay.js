@@ -1,5 +1,18 @@
 let playerTable;
 
+function getPlayerPing(player) {
+    let ping = playersMap.get(player.id).ping;
+    if (ping == 0) {
+        return '';
+    }
+    
+    if (ping > 999) {
+        return '>999ms';
+    }
+
+    return ping + 'ms';
+}
+
 function updatePlayers(players) {
     if (players != undefined) {
         scoreboard = players;
@@ -17,18 +30,7 @@ function updatePlayers(players) {
             name: name,
             score: player.score,
             streak: player.streak,
-            ping: player => {
-                let ping = playersMap.get(player.id).ping;
-                if (ping == 0) {
-                    return '';
-                }
-                
-                if (ping > 999) {
-                    return '>999ms';
-                }
-
-                return ping + 'ms';
-            }
+            ping: getPlayerPing
         });
 
         playersMap.set(player.id, player);
