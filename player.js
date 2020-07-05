@@ -145,7 +145,7 @@ class Player {
     if (this.controls.throw && this.weapon && !this.previousControls.throw) {
       this.weapon.thrown = -1;
       this.weapon.throwHit = false;
-      this.throwWeapon(this.experimental ? 5000 : 2000, world);
+      this.throwWeapon(5000, world);
     }
     this.previousControls.throw = this.controls.throw;
 
@@ -231,7 +231,7 @@ class Player {
     var x = pos.x + (this.r + this.weapon.w * 1.1) * Math.cos(this.angle);
     var y = pos.y + (this.r + this.weapon.w * 1.1) * Math.sin(this.angle);
     this.weapon.getUnequipped(x, y, this.angle, world);
-    this.weapon.throw(this.experimental ? vec(0, 0) : this.body.getLinearVelocity(), force, this.angle, world);
+    this.weapon.throw(vec(0, 0), force, this.angle, world);
     this.weapon = null;
     // Prevents picking up a weapon immediately after throwing it
     this.cooldown = 0;

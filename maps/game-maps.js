@@ -200,12 +200,12 @@ function lifts(game) {
 }
 
 function rotations(game) {
-  game.width = 80;
+  game.width = 81;
   game.height = 54;
 
   body = game.world.createBody({
       type: 'kinematic',
-      position: vec(40, 27),
+      position: vec(40.5, 27),
       angularVelocity: -0.12
       // userData: {
       //   type: 'platform',
@@ -233,7 +233,7 @@ function rotations(game) {
   platform = new Platform(0, 0, 13.3, 1.33, game.world, { colour: 'purple' });
   game.dynamic.push(platform);
 
-  path = new Path(platform.body, 70, 7, 70, 47, 15);
+  path = new Path(platform.body, 71, 7, 70, 47, 15);
   game.paths.push(path);
 
   // var platform, path, compound, partA, partB, partC, partD;

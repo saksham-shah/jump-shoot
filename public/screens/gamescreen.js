@@ -631,7 +631,7 @@ function drawNameTag(obj) {
         if (player.ping > 999) {
             noFill();
             strokeWeight(0.2);
-            let framePosition = frameCount % 60;
+            let framePosition = gameTime % 60;
             if (framePosition >= 50) {
                 stroke(255, 127.5 * (Math.sin((framePosition - 50) / 10 * Math.PI + Math.PI / 2) + 1));
             } else {
@@ -656,11 +656,11 @@ function drawNameTag(obj) {
         } else if (player.typing) {
             fill(255);
             for (let i = -1; i < 2; i++) {
-                let size = Math.sin(frameCount / 20 - i * Math.PI / 3) + 1;
+                let size = Math.sin(gameTime / 20 - i * Math.PI / 3) + 1;
                 ellipse(i * 0.75, 0, 0.3 * size);
             }
         } else {
-            fill(255, 127.5 * (Math.sin(frameCount / 10) + 1));
+            fill(255, 127.5 * (Math.sin(gameTime / 10) + 1));
             rect(-0.3, 0, 0.3, 0.75);
             rect(0.3, 0, 0.3, 0.75);
         }

@@ -76,6 +76,10 @@ class Game {
         } else if (dataA.type == 'weapon') {
           if (dataA.obj.thrown < 0) {
             dataA.obj.thrown = 30;
+          } else if (this.experimental && dataA.obj.thrown == 0 && dataB && dataB.type == 'player') {
+            if (dataB.obj.weapon == null && dataB.obj.cooldown >= 20) {
+              contact.setEnabled(false);
+            }
           }
         }
       }
@@ -86,6 +90,10 @@ class Game {
         } else if (dataB.type == 'weapon') {
           if (dataB.obj.thrown < 0) {
             dataB.obj.thrown = 30;
+          } else if (this.experimental && dataB.obj.thrown == 0 && dataA && dataA.type == 'player') {
+            if (dataA.obj.weapon == null && dataA.obj.cooldown >= 20) {
+              contact.setEnabled(false);
+            }
           }
         }
       }
@@ -226,7 +234,7 @@ class Game {
         player.staticFriction++;
       }
 
-      if (this.experimental && data.type == 'weapon') {
+      if (data.type == 'weapon') {
         if (data.obj.thrown != 0 && !data.obj.throwHit) {
           data.obj.throwHit = true;
           player.damage(1);
