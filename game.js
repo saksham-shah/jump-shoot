@@ -73,18 +73,22 @@ class Game {
       if (dataA) {
         if (dataA.type == 'player') {
           this.collidePlayer(dataA.obj, fixB, { x: -normal.x, y: -normal.y });
+
         } else if (dataA.type == 'weapon') {
-          if (!(this.experimental
-            && dataB && dataB.type == 'player'
-            && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
+          if (!(this.experimental && dataB && dataB.type == 'player'
+            // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
+            && weaponPassPlayer(dataB.obj, dataA.obj))) {
 
             if (dataA.obj.thrown < 0) {
               dataA.obj.thrown = 30;
+              dataB.obj.passThrough = 0;
             }
             
-            if (this.experimental && dataA.obj.thrown == 0 && dataB && dataB.type == 'player') {
+            if (this.experimental && dataB && dataB.type == 'player') {
               if (dataB.obj.weapon == null && dataB.obj.cooldown >= 20) {
-                contact.setEnabled(false);
+                if (dataA.obj.thrown == 0 || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
+                  contact.setEnabled(false);
+                }
               }
             }
           }
@@ -94,17 +98,21 @@ class Game {
       if (dataB) {
         if (dataB.type == 'player') {
           this.collidePlayer(dataB.obj, fixA, { x: normal.x, y: normal.y });
+
         } else if (dataB.type == 'weapon') {
-          if (!(this.experimental
-            && dataA && dataA.type == 'player'
-            && dataB.obj.thrownBy == dataA.obj.id && dataB.obj.thrown < 0 && dataB.obj.thrown > -5)) {
+          if (!(this.experimental && dataA && dataA.type == 'player'
+            // && dataB.obj.thrownBy == dataA.obj.id && dataB.obj.thrown < 0 && dataB.obj.thrown > -5)) {
+            && weaponPassPlayer(dataA.obj, dataB.obj))) {
             if (dataB.obj.thrown < 0) {
               dataB.obj.thrown = 30;
+              dataB.obj.passThrough = 0;
             }
             
-            if (this.experimental && dataB.obj.thrown == 0 && dataA && dataA.type == 'player') {
+            if (this.experimental && dataA && dataA.type == 'player') {
               if (dataA.obj.weapon == null && dataA.obj.cooldown >= 20) {
-                contact.setEnabled(false);
+                if (dataB.obj.thrown == 0 || (dataB.obj.thrown > 0 && dataB.obj.throwHit && dataB.obj.throwHit != dataA.obj.id)) {
+                  contact.setEnabled(false);
+                }
               }
             }
           }
@@ -154,13 +162,13 @@ class Game {
       let dataB = fixB.getUserData();
 
       if (dataA && dataA.type == 'weapon' && dataB && dataB.type == 'player') {
-        if (dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5) {
+        if (weaponPassPlayer(dataB.obj, dataA.obj)) {
           contact.setEnabled(false);
         }
       }
 
-      if (dataA && dataA.type == 'weapon' && dataB && dataB.type == 'player') {
-        if (dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5) {
+      if (dataB && dataB.type == 'weapon' && dataA && dataA.type == 'player') {
+        if (weaponPassPlayer(dataA.obj, dataB.obj)) {
           contact.setEnabled(false);
         }
       }
@@ -247,7 +255,7 @@ class Game {
   collidePlayer(player, other, normal) {
     let data = other.getUserData();
     if (data && data.type == 'weapon') {
-      if (data.obj.thrownBy == player.id && data.obj.thrown < 0 && data.obj.thrown > -5) return;
+      if (weaponPassPlayer(player, data.obj)) return;
     }
 
     let thisContact = {
@@ -271,7 +279,7 @@ class Game {
 
       if (data.type == 'weapon') {
         if (data.obj.thrown != 0 && !data.obj.throwHit) {
-          data.obj.throwHit = true;
+          data.obj.throwHit = player.id;
           player.damage(1);
           player.sounds.push('throwhit');
         }
@@ -385,6 +393,21 @@ class Game {
       this.removePlayer(playerid);
     }
 
+    // Decide where the next weapon will drop
+    if (this.weaponCounter < 180 && this.nextWeaponX == null) {
+      this.nextWeaponX = Math.random() * (this.width - 20) + 10;
+    }
+
+    // Add weapons into game periodically if there aren't many on screen
+    if (this.weaponCounter < 0) {
+      // if (this.weapons.length < this.players.size * 2) {
+      // Add the weapon
+      this.addWeapon();
+      // }
+    } else {
+      this.weaponCounter--;
+    }
+
     for (var [playerid, player] of this.players.entries()) {
       var bullets = player.update(this.weapons, this.world);
       if (bullets) {
@@ -448,21 +471,6 @@ class Game {
           i--;
         }
       }
-    }
-
-    // Decide where the next weapon will drop
-    if (this.weaponCounter < 180 && this.nextWeaponX == null) {
-      this.nextWeaponX = Math.random() * (this.width - 20) + 10;
-    }
-
-    // Add weapons into game periodically if there aren't many on screen
-    if (this.weaponCounter < 0) {
-      // if (this.weapons.length < this.players.size * 2) {
-      // Add the weapon
-      this.addWeapon();
-      // }
-    } else {
-      this.weaponCounter--;
     }
 
     if (this.platformUpdate) this.platformUpdate(this.storedObjects);
@@ -605,6 +613,12 @@ function collisionParticles(player, normal) {
     num: 10
   });
   player.sounds.push('collision');
+}
+
+function weaponPassPlayer(player, weapon) {
+  if (weapon.passThrough == 0) return false;
+  if (weapon.thrownBy == null) return true;
+  return weapon.thrownBy == player.id;
 }
 
 module.exports = Game;

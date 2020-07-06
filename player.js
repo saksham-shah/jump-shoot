@@ -144,8 +144,9 @@ class Player {
     // Throw equipped weapon
     if (this.controls.throw && this.weapon && !this.previousControls.throw) {
       this.weapon.thrown = -1;
-      this.weapon.throwHit = false;
+      this.weapon.throwHit = null;
       this.weapon.thrownBy = this.id;
+      this.weapon.passThrough = 5;
       this.throwWeapon(5000, world);
     }
     this.previousControls.throw = this.controls.throw;
@@ -172,7 +173,7 @@ class Player {
   // Finds and returns nearby weapons (player must be nearly touching the weapons to pick up)
   checkForWeapons(weapons) {
     for (var i = 0; i < weapons.length; i++) {
-      if (!weapons[i].equipped && weapons[i].thrown == 0) {
+      if (!weapons[i].equipped && (weapons[i].thrown == 0 || (weapons[i].thrown > 0 && weapons[i].throwHit && weapons[i].throwHit != this.id))) {
         var weapon = weapons[i];
         var wPos = weapon.body.getPosition();
         var pPos = this.body.getPosition();
