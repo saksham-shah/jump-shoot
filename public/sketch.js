@@ -235,6 +235,7 @@ function setup() {
     // New player in lobby
     socket.on('player joined', function(player) {
         chatMessage(SERVER, player.name + " joined the lobby");
+        sounds.message.play();
         scoreboard.push({ id: player.id, name: player.name, score: 0, streak: 0, ping: 0, typing: false, paused: false });
         updatePlayers();
     });
@@ -246,6 +247,7 @@ function setup() {
             if (player.id == id) {
                 scoreboard.splice(i, 1);
                 chatMessage(SERVER, player.name + " left the lobby");
+                sounds.message.play();
                 updatePlayers();
                 return;
             }

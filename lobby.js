@@ -152,7 +152,9 @@ class Lobby {
       } else {
         // Otherwise, the game is ongoing as usual
         this.gameCountdown--;
-        var { entities, players, nextWeaponX } = this.game.update();
+        // var { entities, players, nextWeaponX } = this.game.update();
+        var data = this.game.update();
+        data.type = 'updateGame';
 
         // Increment idle time of all alive players
         for (var playerid of this.game.players.keys()) {
@@ -160,12 +162,13 @@ class Lobby {
           player.timeLeft--;
         }
 
-        return {
-          type: 'updateGame',
-          entities: entities,
-          players: players,
-          nextWeaponX: nextWeaponX
-        };
+        return data;
+        // return {
+        //   type: 'updateGame',
+        //   entities: entities,
+        //   players: players,
+        //   nextWeaponX: nextWeaponX
+        // };
       }
     }
 

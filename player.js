@@ -173,7 +173,9 @@ class Player {
   // Finds and returns nearby weapons (player must be nearly touching the weapons to pick up)
   checkForWeapons(weapons) {
     for (var i = 0; i < weapons.length; i++) {
-      if (!weapons[i].equipped && (weapons[i].thrown == 0 || (weapons[i].thrown > 0 && weapons[i].throwHit && weapons[i].throwHit != this.id))) {
+      // if (!weapons[i].equipped && (weapons[i].thrown == 0 && (weapons[i].hitTimer > 0 && weapons[i].throwHit && weapons[i].throwHit != this.id))) {
+      // if (!weapons[i].equipped && (weapons[i].thrown == 0 && (weapons[i].hitTimer == 0 || !weapons[i].throwHit || weapons[i].throwHit != this.id))) {
+      if (this.weaponIsEquippable(weapons[i])) {
         var weapon = weapons[i];
         var wPos = weapon.body.getPosition();
         var pPos = this.body.getPosition();
@@ -188,6 +190,12 @@ class Player {
       }
     }
     return null;
+  }
+
+  weaponIsEquippable(weapon) {
+    if (weapon.equipped) return false;
+    if (weapon.thrown != 0) return false;
+    return weapon.hitTimer == 0 || !weapon.throwHit || weapon.throwHit != this.id;
   }
 
   // Equip a weapon

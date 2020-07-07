@@ -54,7 +54,8 @@ let gs = {
     entities: [],
     players: [],
     particles: [],
-    nextWeaponX: null,
+    // nextWeaponX: null,
+    nextWeapon: { x: null, time: 0 },
     bulletBounce: false,
 
     // Reset arrays and store static platforms
@@ -74,7 +75,8 @@ let gs = {
         this.dynamic = [];
         this.players = [];
         this.particles = [];
-        this.nextWeaponX = null;
+        // this.nextWeaponX = null;
+        this.nextWeapon = { x: null, time: 0 };
         this.bulletBounce = false;
     },
 
@@ -82,7 +84,8 @@ let gs = {
     updateDynamic: function(data) {
         this.entities = data.entities;
         this.players = data.players;
-        this.nextWeaponX = data.nextWeaponX;
+        // this.nextWeaponX = data.nextWeaponX;
+        this.nextWeapon = data.nextWeapon;
 
         // Update particles at the same rate as the server sends data
         for (var i = 0; i < this.particles.length; i++) {
@@ -156,8 +159,12 @@ let gs = {
         }
     
         // Draw arrow for next weapon drop
-        if (this.nextWeaponX !== null) {
-            fill(200, 100);
+        if (this.nextWeapon.x !== null) {
+            let a = 150;
+            if (this.nextWeapon.time < 75) {
+                a = a / 2 * (Math.sin((this.nextWeapon.time - 15) / 15 * Math.PI + Math.PI / 2) + 1);
+            }
+            fill(200, a);
             noStroke();
         
             // Draw the triangle
@@ -165,7 +172,7 @@ let gs = {
             translate(0, gameSize.h * 0.5);
             scale(1, -1);
             translate(0, -gameSize.h * 0.5);
-            translate(this.nextWeaponX, 2);
+            translate(this.nextWeapon.x, 2);
             beginShape();
             vertex(0, 0);
             vertex(1.33, -2);

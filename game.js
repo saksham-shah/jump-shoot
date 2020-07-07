@@ -70,54 +70,137 @@ class Game {
       let fixB = contact.getFixtureB();
       let dataA = fixA.getUserData();
       let dataB = fixB.getUserData();
-      if (dataA) {
-        if (dataA.type == 'player') {
-          this.collidePlayer(dataA.obj, fixB, { x: -normal.x, y: -normal.y });
 
-        } else if (dataA.type == 'weapon') {
-          if (!(this.experimental && dataB && dataB.type == 'player'
-            // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
-            && weaponPassPlayer(dataB.obj, dataA.obj))) {
+      if (dataA && dataA.type == 'player') {
+        this.collidePlayer(dataA.obj, fixB, { x: -normal.x, y: -normal.y });
+      }
 
-            if (dataA.obj.thrown < 0) {
-              dataA.obj.thrown = 30;
-              dataB.obj.passThrough = 0;
-            }
-            
-            if (this.experimental && dataB && dataB.type == 'player') {
-              if (dataB.obj.weapon == null && dataB.obj.cooldown >= 20) {
-                if (dataA.obj.thrown == 0 || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
-                  contact.setEnabled(false);
-                }
+      if (dataB && dataB.type == 'player') {
+        this.collidePlayer(dataB.obj, fixA, { x: normal.x, y: normal.y });
+      }
+
+      let self = this;
+      function processWeaponCollision(weapon, otherData) {
+        if (!(self.experimental && otherData && otherData.type == 'player'
+          // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
+          && weaponPassPlayer(otherData.obj, weapon))) {
+
+          if (weapon.thrown < 0) {
+            weapon.thrown = 15;
+            weapon.passThrough = 0;
+          }
+          
+          if (self.experimental && otherData && otherData.type == 'player') {
+            if (otherData.obj.weapon == null && otherData.obj.cooldown >= 20) {
+              // if (dataA.obj.thrown == 0){// || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
+              // if (dataA.obj.thrown == 0 && (dataA.obj.hitTimer == 0 || !dataA.obj.throwHit || dataA.obj.throwHit != dataB.obj.id)) {
+              if (otherData.obj.weaponIsEquippable(weapon)) {
+                contact.setEnabled(false);
               }
             }
           }
         }
       }
 
-      if (dataB) {
-        if (dataB.type == 'player') {
-          this.collidePlayer(dataB.obj, fixA, { x: normal.x, y: normal.y });
-
-        } else if (dataB.type == 'weapon') {
-          if (!(this.experimental && dataA && dataA.type == 'player'
-            // && dataB.obj.thrownBy == dataA.obj.id && dataB.obj.thrown < 0 && dataB.obj.thrown > -5)) {
-            && weaponPassPlayer(dataA.obj, dataB.obj))) {
-            if (dataB.obj.thrown < 0) {
-              dataB.obj.thrown = 30;
-              dataB.obj.passThrough = 0;
-            }
-            
-            if (this.experimental && dataA && dataA.type == 'player') {
-              if (dataA.obj.weapon == null && dataA.obj.cooldown >= 20) {
-                if (dataB.obj.thrown == 0 || (dataB.obj.thrown > 0 && dataB.obj.throwHit && dataB.obj.throwHit != dataA.obj.id)) {
-                  contact.setEnabled(false);
-                }
-              }
-            }
-          }
-        }
+      if (dataA && dataA.type == 'weapon') {
+        processWeaponCollision(dataA.obj, dataB);
       }
+
+      if (dataB && dataB.type == 'weapon') {
+        processWeaponCollision(dataB.obj, dataA);
+      }
+
+      // if (dataA && dataA.type == 'weapon') {
+      //   if (!(this.experimental && dataB && dataB.type == 'player'
+      //     // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
+      //     && weaponPassPlayer(dataB.obj, dataA.obj))) {
+
+      //     if (dataA.obj.thrown < 0) {
+      //       dataA.obj.thrown = 15;
+      //       dataA.obj.passThrough = 0;
+      //     }
+          
+      //     if (this.experimental && dataB && dataB.type == 'player') {
+      //       if (dataB.obj.weapon == null && dataB.obj.cooldown >= 20) {
+      //         // if (dataA.obj.thrown == 0){// || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
+      //         // if (dataA.obj.thrown == 0 && (dataA.obj.hitTimer == 0 || !dataA.obj.throwHit || dataA.obj.throwHit != dataB.obj.id)) {
+      //         if (dataB.obj.weaponIsEquippable(dataA.obj)) {
+      //           contact.setEnabled(false);
+      //         }
+      //       }
+      //     }
+      //   }
+      // }
+
+      // if (dataB && dataB.type == 'weapon') {
+      //   if (!(this.experimental && dataA && dataA.type == 'player'
+      //     // && dataB.obj.thrownBy == dataA.obj.id && dataB.obj.thrown < 0 && dataB.obj.thrown > -5)) {
+      //     && weaponPassPlayer(dataA.obj, dataB.obj))) {
+      //     if (dataB.obj.thrown < 0) {
+      //       dataB.obj.thrown = 15;
+      //       dataB.obj.passThrough = 0;
+      //     }
+          
+      //     if (this.experimental && dataA && dataA.type == 'player') {
+      //       if (dataA.obj.weapon == null && dataA.obj.cooldown >= 20) {
+      //         // if (dataB.obj.thrown == 0){// || (dataB.obj.thrown > 0 && dataB.obj.throwHit && dataB.obj.throwHit != dataA.obj.id)) {
+      //         // if (dataB.obj.thrown == 0 && (dataB.obj.hitTimer == 0 || !dataB.obj.throwHit || dataB.obj.throwHit != dataA.obj.id)) {
+      //         if (dataA.obj.weaponIsEquippable(dataB.obj)) {
+      //           contact.setEnabled(false);
+      //         }
+      //       }
+      //     }
+      //   }
+      // }
+
+      // if (dataA) {
+      //   if (dataA.type == 'player') {
+      //     this.collidePlayer(dataA.obj, fixB, { x: -normal.x, y: -normal.y });
+
+      //   } else if (dataA.type == 'weapon') {
+      //     if (!(this.experimental && dataB && dataB.type == 'player'
+      //       // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
+      //       && weaponPassPlayer(dataB.obj, dataA.obj))) {
+
+      //       if (dataA.obj.thrown < 0) {
+      //         dataA.obj.thrown = 30;
+      //         dataB.obj.passThrough = 0;
+      //       }
+            
+      //       if (this.experimental && dataB && dataB.type == 'player') {
+      //         if (dataB.obj.weapon == null && dataB.obj.cooldown >= 20) {
+      //           if (dataA.obj.thrown == 0 || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
+      //             contact.setEnabled(false);
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      // }
+
+      // if (dataB) {
+      //   if (dataB.type == 'player') {
+      //     this.collidePlayer(dataB.obj, fixA, { x: normal.x, y: normal.y });
+
+      //   } else if (dataB.type == 'weapon') {
+      //     if (!(this.experimental && dataA && dataA.type == 'player'
+      //       // && dataB.obj.thrownBy == dataA.obj.id && dataB.obj.thrown < 0 && dataB.obj.thrown > -5)) {
+      //       && weaponPassPlayer(dataA.obj, dataB.obj))) {
+      //       if (dataB.obj.thrown < 0) {
+      //         dataB.obj.thrown = 30;
+      //         dataB.obj.passThrough = 0;
+      //       }
+            
+      //       if (this.experimental && dataA && dataA.type == 'player') {
+      //         if (dataA.obj.weapon == null && dataA.obj.cooldown >= 20) {
+      //           if (dataB.obj.thrown == 0 || (dataB.obj.thrown > 0 && dataB.obj.throwHit && dataB.obj.throwHit != dataA.obj.id)) {
+      //             contact.setEnabled(false);
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      // }
     });
 
     this.world.on('end-contact', contact => {
@@ -145,10 +228,10 @@ class Game {
         let player = dataB.obj;
         for (let i = player.contacts.length - 1; i >= 0; i--) {
           if (fixA == player.contacts[i].fixture) {
+            collisionParticles(player, player.contacts[i].normal);
             if (dataA && dataA.friction) {
               player.staticFriction--;
             }
-            collisionParticles(player, player.contacts[i].normal);
             player.contacts.splice(i, 1);
           }
         }
@@ -278,8 +361,11 @@ class Game {
       }
 
       if (data.type == 'weapon') {
-        if (data.obj.thrown != 0 && !data.obj.throwHit) {
+        if ((data.obj.thrown < 0 || (data.obj.thrown > 0 && data.obj.thrownBy != player.id))) {
+        // if (data.obj.thrown != 0 && !data.obj.throwHit) {
           data.obj.throwHit = player.id;
+          data.obj.hitTimer = 60;
+          data.obj.thrown = 0;
           player.damage(1);
           player.sounds.push('throwhit');
         }
@@ -504,7 +590,10 @@ class Game {
       players.push(player.toObject());
     }
 
-    return { entities, players, nextWeaponX: this.nextWeaponX };
+    return { entities, players, nextWeapon: {
+      x: this.nextWeaponX,
+      time: this.weaponCounter
+    } };
   }
 
   // Send any pending particle effects to the clients

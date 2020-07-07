@@ -39,6 +39,7 @@ class Weapon {
     this.throwHit = null;
     this.thrownBy = null;
     this.passThrough = 5;
+    this.hitTimer = 0;
 
     // Controls weapon fire rate
     this.cooldown = 0;
@@ -54,6 +55,10 @@ class Weapon {
 
     if (this.passThrough > 0) {
       this.passThrough--;
+    }
+
+    if (this.hitTimer > 0) {
+      this.hitTimer--;
     }
   }
 
