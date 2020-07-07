@@ -6,6 +6,10 @@ let alerts = {
     'crosshair': {
         title: 'Crosshair',
         text: 'A crosshair has been added to the game! You can turn it off in Settings.'
+    },
+    'show mass': {
+        title: 'Show mass',
+        text: 'You can now see the mass of all players in your games! Go to Settings to enable this feature.'
     }
 };
 

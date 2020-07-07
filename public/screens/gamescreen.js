@@ -599,7 +599,17 @@ function drawNameTag(obj) {
         translate(0, 2/3);
     }
     // let name = playersMap.get(obj.id).name;
-    text(player.name, 0, 15 * obj.r + 15);
+    text(player.name, 0, 15 * obj.r + 14);
+
+    // Show mass
+    if (settings.showmass) {
+        push();
+        if (obj.id == lastWinner) translate(0, -15);
+        let mass = Math.round(obj.mass * 100);
+        text(mass < 5 ? '<5' : mass, 0, -15 * obj.r - 6);
+        pop();
+    }
+
     scale(15);
 
     // Draw circle around local player at the start of the game
@@ -629,11 +639,13 @@ function drawNameTag(obj) {
         endShape(CLOSE);
     }
 
+    // Icons
     if (player.ping > 999 || player.typing || player.paused) {
         translate(0, -0.75 - obj.r);
         noStroke();
 
-        if (obj.id == lastWinner) translate(0, -1)
+        if (settings.showmass) translate(0, -1.33);
+        if (obj.id == lastWinner) translate(0, -1);
 
         if (player.ping > 999) {
             noFill();

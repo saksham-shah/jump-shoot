@@ -32,6 +32,8 @@ class Player {
       }
     })
 
+    this.mass = 1;
+
     this.contacts = [];
     this.staticFriction = 0;
 
@@ -347,6 +349,7 @@ class Player {
 
   damage(dmg) {
     var newDensity = this.fixture.getDensity() * Math.pow(MASSDECAY, dmg);
+    this.mass = newDensity;
     this.fixture.setDensity(newDensity);
     this.body.resetMassData();
   }
@@ -377,6 +380,7 @@ class Player {
       angle: this.angle,
       shield: this.shield,
       shieldWidth: this.shieldWidth,
+      mass: this.mass,
       // name: name,
       colour: this.colour,
       weapon: weaponToObj
