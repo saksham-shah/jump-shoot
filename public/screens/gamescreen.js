@@ -605,8 +605,7 @@ function drawNameTag(obj) {
     if (settings.showmass) {
         push();
         if (obj.id == lastWinner) translate(0, -15);
-        let mass = Math.round(obj.mass * 100);
-        text(mass < 5 ? '<5' : mass, 0, -15 * obj.r - 6);
+        text(obj.stat, 0, -15 * obj.r - 6);
         pop();
     }
 
@@ -690,6 +689,7 @@ function drawNameTag(obj) {
 
 function drawOffScreenPlayer(obj) {
     if (obj.x - obj.r > gameSize.w || obj.x + obj.r < 0 || obj.y - obj.r > gameSize.h || obj.y + obj.r < 0) {
+        push();
         // Player is offscreen and an offscreen arrow needs to be drawn
         var x = obj.x;
         var y = obj.y;
@@ -705,12 +705,25 @@ function drawOffScreenPlayer(obj) {
         } else if (y > gameSize.h - buffer) {
             y = gameSize.h - buffer;
         }
+        translate(x, y);
         var colour = obj.colour;
         colour.push(50);
         fill(colour);
         stroke(0, 50);
         strokeWeight(1 / 15);
-        ellipse(x, y, obj.r * 2);
+        ellipse(0, 0, obj.r * 2);
+
+        if (settings.showmass) {
+            scale(1 / 15);
+            scale(1, -1);
+            fill(255, 150);
+            noStroke();
+            textSize(15);
+            textAlign(CENTER);
+            text(obj.stat, 0, 5);
+        }
+
+        pop();
     }
 }
 

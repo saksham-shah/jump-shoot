@@ -10,17 +10,17 @@ function addNameOverlay() {
             nameTextbox.selectionStart = playerName.length;
             nameTextbox.clipText();
             nameTextbox.focus();
-            invalid = false;
+            errorText = '';
         },
         draw: () => {
-            if (invalid) {
+            if (errorText.length > 0) {
 
                 textSize(15);
                 textAlign(CENTER);
                 noStroke();
                 fill(255, 0, 0);
     
-                text('Invalid name', 200, 70);
+                text(errorText, 200, 70);
             }
         }
     })
@@ -35,7 +35,7 @@ function addNameOverlay() {
 
             let name = nameTextbox.value;
             if (name.length == 0) {
-                invalid = true;
+                errorText = 'Name can\'t be empty';
                 return;
             }
 

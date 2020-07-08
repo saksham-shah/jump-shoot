@@ -370,6 +370,7 @@ class Player {
     if (this.weapon) {
       weaponToObj = this.weapon.toObject();
     }
+    let mass = Math.round(this.mass * 100);
     // var name = users.get(this.id).name;
     return {
       type: 'player',
@@ -380,7 +381,7 @@ class Player {
       angle: this.angle,
       shield: this.shield,
       shieldWidth: this.shieldWidth,
-      mass: this.mass,
+      stat: mass < 5 ? '<5' : mass,
       // name: name,
       colour: this.colour,
       weapon: weaponToObj

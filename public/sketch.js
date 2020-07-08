@@ -15,6 +15,8 @@ let pingTime = 0;
 
 let lastMessage = 0;
 
+let errorText = '';
+
 function chatMessage(sender, message) {
     lastMessage = 0;
     let chatTxt = message;
@@ -162,12 +164,12 @@ function setup() {
     socket.on('name updated', function(name) {
         playerName = name;
         localStorage.setItem('name', name);
-        invalid = false;
+        errorText = '';
         closeAllOverlays();
     });
 
     // Entered name is invalid
-    socket.on('name invalid', () => invalid = true);
+    socket.on('error message', message => errorText = message);
 
     // Next frame of the game
     socket.on('update', function(data) {
@@ -203,6 +205,7 @@ function setup() {
     // New sounds created
     socket.on('new sounds', function(soundsToPlay) {
         for (let soundName of soundsToPlay) {
+            if (soundName == 'collision') sounds[soundName].rate(0.8 + 0.4 * Math.random());
             sounds[soundName].play();
         }
     });

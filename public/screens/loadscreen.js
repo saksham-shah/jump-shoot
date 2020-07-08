@@ -80,7 +80,7 @@ const volumes = {
 
 let soundsLoaded = 0;
 
-let invalid = false;
+// let invalid = false;
 
 function addLoadScreen() {
     let loading = false;
@@ -126,7 +126,7 @@ function addLoadScreen() {
                     sounds.music.connect(filter);
                     sounds.music.loop();
                     clicked = false;
-                    invalid = false;
+                    errorText = '';
                 }
                 
             } else {
@@ -162,10 +162,10 @@ function addLoadScreen() {
                 noStroke();
                 text('Jump & Shoot', 450, 150);
 
-                if (invalid) {
+                if (errorText.length > 0) {
                     textSize(25);
                     fill(255, 0, 0);
-                    text('Invalid name', 450, 340);
+                    text(errorText, 450, 340);
                 }
             }
         }
@@ -181,7 +181,7 @@ function addLoadScreen() {
             let nameTextbox = getElement('loading name input');
             let name = nameTextbox.value;
             if (name.length == 0) {
-                invalid = true;
+                errorText = 'Name can\'t be empty';
                 return;
             }
 

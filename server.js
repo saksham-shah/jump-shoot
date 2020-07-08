@@ -518,7 +518,7 @@ function updateName(socket, name) {
     if (validName.length == 0) {
         // Name is invalid
         // sendServerMessage(socket.id, 'Invalid name');
-        socket.emit('name invalid');
+        socket.emit('error message', 'Invalid name');
         return false;
     }
     // Update user data to also save name
