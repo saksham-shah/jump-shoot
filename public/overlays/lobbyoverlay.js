@@ -5,9 +5,9 @@ function updateLobbies(lobbies) {
     for (let lobby of lobbies) {
         lobbyTable.addItem({
             name: lobby.name,
-            players: lobby.players.length,
-            mode: '',
-            password: 'No'
+            players: lobby.players.length + '/' + lobby.maxPlayers,
+            mode: lobby.experimental ? 'Experimental' : 'Classic',
+            password: lobby.password ? 'Yes' : 'No'
         });
     }
 }

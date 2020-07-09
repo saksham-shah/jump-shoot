@@ -32,6 +32,7 @@ let timer = {
 
 let scoreboard = [];
 let playersMap = new Map();
+let playersArray = [];
 
 let lastWinner = null;
 let gameover = false;
@@ -298,14 +299,14 @@ let gs = {
             // y = 375;
             tempY = y;
             for (let i = 0; i < len; i++) {
-                text(playersMap.get(scoreboard[i].id).name, x, tempY);
+                text(scoreboard[i].name, x, tempY);
                 tempY += 40;
             }
 
             textAlign(LEFT);
             tempY = y;
             for (let i = 0; i < len; i++) {
-                text(` - ${playersMap.get(scoreboard[i].id).score}`, x, tempY);
+                text(` - ${scoreboard[i].score}`, x, tempY);
                 tempY += 40;
             }
 

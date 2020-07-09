@@ -4,13 +4,15 @@ var Game = require('./game.js');
 
 // Game room where players can play the game
 class Lobby {
-  constructor(name, publicLobby, experimental = false, info = '') {
+  constructor(name, password, maxPlayers, unlisted, settings, permanent = false) {
     this.name = name;
-    this.publicLobby = publicLobby;
-    this.experimental = experimental;
-    this.info = info;
+    this.password = password;
+    this.permanent = permanent;
+    this.unlisted = unlisted;
+    this.settings = settings;
+    // this.experimental = experimental;
 
-    this.maxPlayers = 4;
+    this.maxPlayers = maxPlayers;
     this.players = new Map();
     this.gameCountdown = -1;
     this.game = null;
@@ -29,6 +31,7 @@ class Lobby {
       myid: socketid,
       // scoreboard: this.players,
       players: this.playersArray(),
+      scoreboard: this.scoreboard(),
       lastWinner: this.lastWinner,
       streak: this.currentStreak
     }
@@ -61,7 +64,7 @@ class Lobby {
 
   newGame() {
     if (!this.game) {
-      this.game = new Game(this.players, this.experimental);
+      this.game = new Game(this.players, this.settings.experimental);
       var data = this.game.startGame();
       data.type = 'startGame';
       return data;
@@ -143,6 +146,7 @@ class Lobby {
           winner: winner,
           // scoresMap: this.players,
           players: this.playersArray(),
+          scoreboard: this.scoreboard(),
           streak: this.currentStreak
         }
       } else if (this.gameCountdown == 0) {
@@ -196,6 +200,19 @@ class Lobby {
       });
     }
     return array;
+  }
+
+  scoreboard() {
+    let scoreboard = [];
+    for (let id of this.scoreOrder) {
+      let player = this.players.get(id);
+      scoreboard.push({
+        name: player.name,
+        score: player.score
+      });
+    }
+
+    return scoreboard;
   }
 
   getEffects() {

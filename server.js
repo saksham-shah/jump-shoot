@@ -38,15 +38,21 @@ var Command = require('./command.js');
 
 var users = new Map();
 var lobbies = [];
-lobbies.push(new Lobby('Public 1', true));
-lobbies.push(new Lobby('Public 2', true));
-lobbies.push(new Lobby('Public 3', true));
-lobbies.push(new Lobby('Experimental 1', true, true, `New experimental features:
+// lobbies.push(new Lobby('Public 1', true));
+// lobbies.push(new Lobby('Public 2', true));
+// lobbies.push(new Lobby('Public 3', true));
+// lobbies.push(new Lobby('Experimental 1', true, true, `New experimental features:
 
-Weapon throwing might be OP now`));
-lobbies.push(new Lobby('Experimental 2', true, true, `New experimental features:
+// Weapon throwing might be OP now`));
+// lobbies.push(new Lobby('Experimental 2', true, true, `New experimental features:
 
-Weapon throwing might be OP now`));
+// Weapon throwing might be OP now`));
+lobbies.push(new Lobby('Public 1', '', 4, false, { experimental: false }, true));
+lobbies.push(new Lobby('Public 2', '', 8, false, { experimental: false }, true));
+lobbies.push(new Lobby('Public 3', '', 16, false, { experimental: false }, true));
+lobbies.push(new Lobby('Public 4', '', 8, false, { experimental: true }, true));
+lobbies.push(new Lobby('Public 5', '', 16, false, { experimental: true }, true));
+lobbies.push(new Lobby('Secret', 'secret', 16, false, { experimental: true }, true));
 
 // Client connects
 io.sockets.on('connection', newConnection);
@@ -144,8 +150,8 @@ function newConnection(socket) {
   })
 
   // Client creates a private lobby
-  socket.on('create lobby', () => {
-    createLobby(socket);
+  socket.on('create lobby', lobbyOptions => {
+    createLobby(socket, lobbyOptions);
     // var lobby = getLobbyFromSocket(socket.id);
     // // If player is already in a lobby, send an error message
     // if (lobby) {
@@ -391,7 +397,7 @@ function getLobbies() {
   var lobbyObjects = [];
   for (var lobby of lobbies) {
     // Only sends details of public lobbies
-    if (lobby.publicLobby) {
+    if (lobby.permanent || !lobby.unlisted) {
       var players = [];
       for (var player of lobby.players.keys()) {
         players.push({
@@ -402,8 +408,9 @@ function getLobbies() {
       lobbyObjects.push({
         name: lobby.name,
         players: players,
-        info: lobby.info,
-        maxPlayers: lobby.maxPlayers
+        experimental: lobby.settings.experimental,
+        maxPlayers: lobby.maxPlayers,
+        password: lobby.password != ''
       });
     }
   }
@@ -450,28 +457,61 @@ function joinLobby(socket, lobbyname) {
   return false;
 }
 
-function createLobby(socket) {
+function createLobby(socket, lobbyOptions) {
   var lobby = getLobbyFromSocket(socket.id);
   // If player is already in a lobby, send an error message
   if (lobby) {
     sendServerMessage(socket.id, 'You are already in a lobby');
     return false;
   } else { // if they aren't in a lobby already
-    // Create a random 6 character code
-    const codeChars = '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
-    var code = '';
-    for (var i = 0; i < 6; i++) {
-      code += codeChars[Math.floor(Math.random() * codeChars.length)];
+  
+    let validName = validateName(lobbyOptions.name, 20);
+    if (validName.length == 0) {
+      // Name is invalid
+      // sendServerMessage(socket.id, 'Invalid name');
+      socket.emit('error message', 'Invalid name');
+      return false;
+  }
+
+    for (var lobby of lobbies) {
+      if (lobby.name == validName) {
+        socket.emit('error message', 'Lobby name is taken');
+        return false;
+      }
     }
 
-    lobbies.push(new Lobby(code, false));
+    lobbies.push(new Lobby(validName, lobbyOptions.password, lobbyOptions.maxPlayers, lobbyOptions.unlisted, { experimental: false }));
+
     // Once the lobby is created, add the client to it
-    if (joinLobby(socket, code)) {
-      sendServerMessage(socket.id, `Others can join using '/join ${code}'`);
+    if (joinLobby(socket, validName)) {
+      // sendServerMessage(socket.id, `Others can join using '/join ${code}'`);
       return true;
     }
   }
 }
+
+// function createLobby(socket) {
+//   var lobby = getLobbyFromSocket(socket.id);
+//   // If player is already in a lobby, send an error message
+//   if (lobby) {
+//     sendServerMessage(socket.id, 'You are already in a lobby');
+//     return false;
+//   } else { // if they aren't in a lobby already
+//     // Create a random 6 character code
+//     const codeChars = '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
+//     var code = '';
+//     for (var i = 0; i < 6; i++) {
+//       code += codeChars[Math.floor(Math.random() * codeChars.length)];
+//     }
+
+//     lobbies.push(new Lobby(code, false));
+//     // Once the lobby is created, add the client to it
+//     if (joinLobby(socket, code)) {
+//       sendServerMessage(socket.id, `Others can join using '/join ${code}'`);
+//       return true;
+//     }
+//   }
+// }
 
 // Removes a player from a lobby
 function leaveLobby(socket) {
@@ -490,7 +530,7 @@ function leaveLobby(socket) {
     // Delete lobby if it is empty
     if (lobby.players.size == 0) {
       for (var i = 0; i < lobbies.length; i++) {
-        if (lobbies[i] === lobby && !lobby.publicLobby) {
+        if (lobbies[i] === lobby && !lobby.permanent) {
           lobbies.splice(i, 1);
           return true;
         }

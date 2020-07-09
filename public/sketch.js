@@ -126,8 +126,10 @@ function setup() {
         getElement('pause chat output').clear();
 
         playersMap = new Map();
+        playersArray = data.players;
         gameover = false;
-        updatePlayers(data.players);
+        updatePlayers();
+        scoreboard = data.scoreboard;
         lastWinner = data.lastWinner;
         streak = data.streak;
 
@@ -215,7 +217,9 @@ function setup() {
         setTimer(60, "Next game");
         gameover = true;
         // scoreboard = data.scoreboard;
-        updatePlayers(data.players);
+        playersArray = data.players;
+        updatePlayers();
+        scoreboard = data.scoreboard;
         streak = data.streak;
 
         // Check if there is a winner
@@ -239,15 +243,18 @@ function setup() {
     socket.on('player joined', function(player) {
         chatMessage(SERVER, player.name + " joined the lobby");
         sounds.message.play();
-        scoreboard.push({ id: player.id, name: player.name, score: 0, streak: 0, ping: 0, typing: false, paused: false });
+        playersArray.push({ id: player.id, name: player.name, score: 0, streak: 0, ping: 0, typing: false, paused: false });
+        scoreboard.push({ name: player.name, score: 0 });
         updatePlayers();
+        // playersMap.set(player.id, { id: player.id, name: player.name, score: 0, streak: 0, ping: 0, typing: false, paused: false })
     });
 
     // Player left the lobby
     socket.on('player left', function(id) {
-        for (let i = 0; i < scoreboard.length; i++) {
-            let player = scoreboard[i];
+        for (let i = 0; i < playersArray.length; i++) {
+            let player = playersArray[i];
             if (player.id == id) {
+                playersArray.splice(i, 1);
                 scoreboard.splice(i, 1);
                 chatMessage(SERVER, player.name + " left the lobby");
                 sounds.message.play();

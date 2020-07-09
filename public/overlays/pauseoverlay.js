@@ -14,12 +14,12 @@ function getPlayerPing(player) {
 }
 
 function updatePlayers(players) {
-    if (players != undefined) {
-        scoreboard = players;
-    }
+    // if (players != undefined) {
+    //     scoreboard = players;
+    // }
 
     playerTable.clear();
-    for (let player of scoreboard) {
+    for (let player of playersArray) {
         let name = player.name;
         if (player.id == myid) {
             name = '[YOU] ' + name;
