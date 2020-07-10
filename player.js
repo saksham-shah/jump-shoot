@@ -156,14 +156,14 @@ class Player {
     // Activate shield
     if (this.controls.shield && this.weapon == null && this.cooldown >= 10) {
       this.shield = true;
-      this.shieldWidth -= 0.015
+      this.shieldWidth -= this.experimental ? 0.025 : 0.015
     } else {
       this.shield = false;
-      this.shieldWidth += 0.00375;
+      this.shieldWidth += this.experimental ? 0.004 : 0.00375;
     }
     // Limit the shield's size to a maximum and minimum
-    if (this.shieldWidth < 0.67) {
-      this.shieldWidth = 0.67;
+    if (this.shieldWidth < (this.experimental ? 0.5 : 0.67)) {
+      this.shieldWidth = this.experimental ? 0.5 : 0.67;
     } else if (this.shieldWidth > 3) {
       this.shieldWidth = 3;
     }

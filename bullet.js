@@ -62,7 +62,7 @@ class Bullet {
         if (collideWithRect(this.x, this.y, shieldX, shieldY, 0.5, player.shieldWidth, angle)) {
           this.angle += 2 * angle - 2 * this.angle - Math.PI;
           this.vel *= 1.25
-          player.shieldWidth += 0.17;
+          player.shieldWidth += player.experimental ? 0.5 : 0.17;
           this.reflected = true;
           this.colour = [255, 155, 0];
           this.originPlayer = player.id;
@@ -124,6 +124,8 @@ class Bullet {
             player.lastShot.player = this.originPlayer;
 
             player.damage(damage);
+
+            if (player.experimental) players.get(this.originPlayer).shieldWidth = 3;
             // var newDensity = fixture.getDensity() * Math.pow(MASSDECAY, damage);
             // fixture.setDensity(newDensity);
             // body.resetMassData();

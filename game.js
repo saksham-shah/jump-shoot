@@ -368,6 +368,7 @@ class Game {
           data.obj.thrown = 0;
           player.damage(1);
           player.sounds.push('throwhit');
+          // if (this.experimental) player.shieldWidth = 0.5;
         }
       }
     }
