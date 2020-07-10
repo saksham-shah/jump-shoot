@@ -103,6 +103,7 @@ function setup() {
 
         closeAllOverlays();
         setScreen('loading');
+        errorText = '';
     })
 
     // Used to calculate ping
@@ -152,6 +153,12 @@ function setup() {
         setScreen('game');
         timer.time = 0;
         // filter.toggle(false);
+    });
+
+    // An error occured while joining the lobby
+    socket.on('join error', (lobbyName, err) => {
+        closeAllOverlays();
+        openOverlay('join lobby', lobbyName, err);
     });
 
     // Lobby is left

@@ -52,7 +52,7 @@ lobbies.push(new Lobby('Public 2', '', 8, false, { experimental: false }, true))
 lobbies.push(new Lobby('Public 3', '', 16, false, { experimental: false }, true));
 lobbies.push(new Lobby('Public 4', '', 8, false, { experimental: true }, true));
 lobbies.push(new Lobby('Public 5', '', 16, false, { experimental: true }, true));
-lobbies.push(new Lobby('Secret', 'secret', 16, false, { experimental: true }, true));
+lobbies.push(new Lobby('secret', 'secret', 16, true, { experimental: true }, true));
 
 // Client connects
 io.sockets.on('connection', newConnection);
@@ -130,7 +130,7 @@ function newConnection(socket) {
   })
 
   // Client joins a lobby
-  socket.on('join lobby', lobbyname => {
+  socket.on('join lobby', joinReq => {
     // var lobby = getLobbyFromSocket(socket.id);
     // // If player is already in a lobby, send an error message
     // if (lobby) {
@@ -138,7 +138,7 @@ function newConnection(socket) {
     // } else if (!joinLobby(socket, lobbyname)) { // if they aren't in a lobby already
     //     sendServerMessage(socket.id, 'Lobby does not exist');
     // }
-    joinLobby(socket, lobbyname);
+    joinLobby(socket, joinReq.name, joinReq.password);
   })
 
   // Client leaves their lobby
@@ -397,7 +397,7 @@ function getLobbies() {
   var lobbyObjects = [];
   for (var lobby of lobbies) {
     // Only sends details of public lobbies
-    if (lobby.permanent || !lobby.unlisted) {
+    if (!lobby.unlisted) {
       var players = [];
       for (var player of lobby.players.keys()) {
         players.push({
@@ -418,7 +418,7 @@ function getLobbies() {
 }
 
 // Adds a player to a lobby
-function joinLobby(socket, lobbyname) {
+function joinLobby(socket, lobbyname, password) {
   var userData = users.get(socket.id);
   if (!userData) {
     console.log("Unlogged user: " + socket.id);
@@ -436,7 +436,14 @@ function joinLobby(socket, lobbyname) {
   }
   var lobby = getLobbyFromName(lobbyname);
   if (lobby) {
-    // If the lobby exists, add the player to it
+    // If the lobby exists, check if the player can be added
+    var joinResult = lobby.joinAttempt(password);
+    if (joinResult != 'success') {
+      socket.emit('join error', lobbyname, joinResult);
+      return false;
+    }
+
+    // If the lobby accepts the player, add the player to it
     var sendData = lobby.addPlayer(socket.id, userData.name);
     // sendData.scoreboard = getScoreboard(sendData.scoreboard);
     // Send player any data about the lobby
@@ -453,7 +460,8 @@ function joinLobby(socket, lobbyname) {
     io.emit('lobbies updated', getLobbies());
     return true;
   }
-  sendServerMessage(socket.id, 'Lobby does not exist');
+  // sendServerMessage(socket.id, 'Lobby does not exist');
+  socket.emit('error message', 'Lobby does not exist');
   return false;
 }
 
@@ -480,10 +488,10 @@ function createLobby(socket, lobbyOptions) {
       }
     }
 
-    lobbies.push(new Lobby(validName, lobbyOptions.password, lobbyOptions.maxPlayers, lobbyOptions.unlisted, { experimental: false }));
+    lobbies.push(new Lobby(validName, lobbyOptions.password, lobbyOptions.maxPlayers, lobbyOptions.unlisted, { experimental: true }));
 
     // Once the lobby is created, add the client to it
-    if (joinLobby(socket, validName)) {
+    if (joinLobby(socket, validName, lobbyOptions.password)) {
       // sendServerMessage(socket.id, `Others can join using '/join ${code}'`);
       return true;
     }
@@ -528,14 +536,14 @@ function leaveLobby(socket) {
     // Remove from lobby
     lobby.removePlayer(socket.id);
     // Delete lobby if it is empty
-    if (lobby.players.size == 0) {
-      for (var i = 0; i < lobbies.length; i++) {
-        if (lobbies[i] === lobby && !lobby.permanent) {
-          lobbies.splice(i, 1);
-          return true;
-        }
-      }
-    }
+    // if (lobby.players.size == 0) {
+    //   for (var i = 0; i < lobbies.length; i++) {
+    //     if (lobbies[i] === lobby && !lobby.permanent) {
+    //       lobbies.splice(i, 1);
+    //       // return true;
+    //     }
+    //   }
+    // }
     // Notify players in the lobby
     socket.broadcast.to(lobby.name).emit('player left', socket.id);
     // socket.broadcast.to(lobby.name).emit('player left', users.get(socket.id).name);
@@ -635,6 +643,19 @@ function getScoreboard(scoresMap) {
 setInterval(updateGame, 1000 / 60);
 
 function updateGame() {
+  // Remove empty lobbies
+  var deleted = false;
+  for (var i = lobbies.length - 1; i >= 0; i--) {
+    var lobby = lobbies[i];
+    // Delete lobby if it is empty and not permanent
+    if (lobby.players.size == 0 && !lobby.permanent) {
+      lobbies.splice(i, 1);
+      deleted = true;
+    }
+  }
+
+  if (deleted) io.emit('lobbies updated', getLobbies());
+
   for (var i = 0; i < lobbies.length; i++) {
     var room = lobbies[i].name;
     var data = lobbies[i].update();

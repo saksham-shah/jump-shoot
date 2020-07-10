@@ -100,7 +100,7 @@ function addSettingsOverlay() {
     })
     // Graphics
     .addCheckbox({
-        position: { x: 350, y: 100 },
+        position: { x: 340, y: 100 },
         size: 20,
         value: settings.particles,
         onClick: v => {
@@ -110,7 +110,7 @@ function addSettingsOverlay() {
         label: 'settings graphics particles',
     })
     .addCheckbox({
-        position: { x: 350, y: 150 },
+        position: { x: 340, y: 150 },
         size: 20,
         value: settings.crosshair,
         onClick: v => {
@@ -120,7 +120,7 @@ function addSettingsOverlay() {
         label: 'settings graphics crosshair',
     })
     .addCheckbox({
-        position: { x: 350, y: 200 },
+        position: { x: 340, y: 200 },
         size: 20,
         value: settings.showmass,
         onClick: v => {

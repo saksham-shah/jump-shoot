@@ -13,29 +13,13 @@ function updateLobbies(lobbies) {
 }
 
 function addLobbyScreen() {
-    addOverlay('lobbies', {
-        width: 810,
-        height: 330,
+    addScreen('lobbies', {
+        // width: 810,
+        // height: 380,
         text: 'Lobbies'
     })
-    // .addButton({
-    //     position: { x: 175, y: 440 },
-    //     width: 250,
-    //     height: 40,
-    //     text: 'Controls',
-    //     textSize: 30,
-    //     onClick: () => openOverlay('controls')
-    // })
-    // .addButton({
-    //     position: { x: 725, y: 440 },
-    //     width: 250,
-    //     height: 40,
-    //     text: 'Join private',
-    //     textSize: 30,
-    //     onClick: () => setScreen('game')
-    // })
     .addTable({
-        position: { x: 0, y: 30 },
+        position: { x: 45, y: 110 },
         width: 810,
         height: 300,
         rowHeight: 30,
@@ -43,8 +27,32 @@ function addLobbyScreen() {
         columnWidths: [350, 100, 250, 100],
         columnTitles: ['Name', 'Players', 'Mode', 'Password'],
         columnData: ['name', 'players', 'mode', 'password'],
-        onClick: obj => socket.emit('join lobby', obj.name),
+        onClick: obj => socket.emit('join lobby', { name: obj.name }),
         label: 'lobby table'
+    })
+    .addButton({
+        position: { x: 315, y: 450 },
+        width: 250,
+        height: 40,
+        text: 'CREATE LOBBY',
+        textSize: 25,
+        onClick: () => openOverlay('create lobby')
+    })
+    .addButton({
+        position: { x: 585, y: 450 },
+        width: 250,
+        height: 40,
+        text: 'JOIN PRIVATE',
+        textSize: 25,
+        onClick: () => openOverlay('join private lobby')
+    })
+    .addButton({
+        position: { x: 450, y: 545 },
+        width: 150,
+        height: 40,
+        text: 'BACK',
+        textSize: 20,
+        onClick: () => setScreen('menu')
     });
 
     lobbyTable = getElement('lobby table');

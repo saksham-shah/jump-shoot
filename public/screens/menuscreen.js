@@ -47,7 +47,7 @@ function addMenuScreen() {
         height: 100,
         textSize: 50,
         text: 'PLAY',
-        onClick: () => openOverlay('lobbies')
+        onClick: () => setScreen('lobbies')
     })
     .addButton({
         position: { x: 350, y: 437.5 },

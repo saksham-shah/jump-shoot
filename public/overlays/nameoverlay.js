@@ -35,7 +35,7 @@ function addNameOverlay() {
 
             let name = nameTextbox.value;
             if (name.length == 0) {
-                errorText = 'Name can\'t be empty';
+                errorText = 'Name cannot be empty';
                 return;
             }
 

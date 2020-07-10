@@ -22,6 +22,15 @@ class Lobby {
     this.scoreOrder = [];
   }
 
+  joinAttempt(password) {
+    if (this.players.size >= this.maxPlayers) return 'lobby full';
+    if (this.password != '') {
+      if (password == undefined) return 'password needed';
+      if (password != this.password) return 'password incorrect';
+    }
+    return 'success';
+  }
+
   addPlayer(socketid, name) {
     this.players.set(socketid, { name, score: 0, streak: 0, ping: 0, timeLeft: 10800, typing: false, paused: false });
     this.scoreOrder.push(socketid);
