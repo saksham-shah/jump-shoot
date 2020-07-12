@@ -62,7 +62,8 @@ class Bullet {
         if (collideWithRect(this.x, this.y, shieldX, shieldY, 0.5, player.shieldWidth, angle)) {
           this.angle += 2 * angle - 2 * this.angle - Math.PI;
           this.vel *= 1.25
-          player.shieldWidth += player.experimental ? 0.5 : 0.17;
+          // player.shieldWidth += player.experimental ? 1 : 0.17;
+          player.addToShield(player.experimental ? 0.96 : 0.17);
           this.reflected = true;
           this.colour = [255, 155, 0];
           this.originPlayer = player.id;

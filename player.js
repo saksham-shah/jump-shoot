@@ -156,17 +156,19 @@ class Player {
     // Activate shield
     if (this.controls.shield && this.weapon == null && this.cooldown >= 10) {
       this.shield = true;
-      this.shieldWidth -= this.experimental ? 0.025 : 0.015
+      // this.shieldWidth -= this.experimental ? 0.025 : 0.015
+      this.addToShield(this.experimental ? -0.024 : -0.015)
     } else {
       this.shield = false;
-      this.shieldWidth += this.experimental ? 0.004 : 0.00375;
+      // this.shieldWidth += this.experimental ? 0.004 : 0.00375;
+      this.addToShield(this.experimental ? 0.004 : 0.00375);
     }
     // Limit the shield's size to a maximum and minimum
-    if (this.shieldWidth < (this.experimental ? 0.5 : 0.67)) {
-      this.shieldWidth = this.experimental ? 0.5 : 0.67;
-    } else if (this.shieldWidth > 3) {
-      this.shieldWidth = 3;
-    }
+    // if (this.shieldWidth < (this.experimental ? 0.6 : 0.67)) {
+    //   this.shieldWidth = this.experimental ? 0.6 : 0.67;
+    // } else if (this.shieldWidth > 3) {
+    //   this.shieldWidth = 3;
+    // }
 
     // Return bullets if shot, otherwise null
     return bullets;
@@ -352,6 +354,16 @@ class Player {
     this.mass = newDensity;
     this.fixture.setDensity(newDensity);
     this.body.resetMassData();
+  }
+
+  addToShield(w) {
+    this.shieldWidth += w;
+
+    if (this.shieldWidth < (this.experimental ? 0.6 : 0.67)) {
+      this.shieldWidth = this.experimental ? 0.6 : 0.67;
+    } else if (this.shieldWidth > 3) {
+      this.shieldWidth = 3;
+    }
   }
 
   removeFromWorld(world) {
