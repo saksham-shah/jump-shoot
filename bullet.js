@@ -126,7 +126,11 @@ class Bullet {
 
             player.damage(damage);
 
-            if (player.experimental) players.get(this.originPlayer).shieldWidth = 3;
+            if (player.experimental) {
+              let origin = players.get(this.originPlayer);
+              if (player) player.shieldWidth = 3;
+              // players.get(this.originPlayer).shieldWidth = 3;
+            }
             // var newDensity = fixture.getDensity() * Math.pow(MASSDECAY, damage);
             // fixture.setDensity(newDensity);
             // body.resetMassData();
