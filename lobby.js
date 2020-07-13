@@ -32,7 +32,7 @@ class Lobby {
   }
 
   addPlayer(socketid, name) {
-    this.players.set(socketid, { name, score: 0, streak: 0, ping: 0, timeLeft: 10800, typing: false, paused: false });
+    this.players.set(socketid, { id: socketid, name, score: 0, streak: 0, ping: 0, spectate: false, timeLeft: 10800, typing: false, paused: false });
     this.scoreOrder.push(socketid);
     // Send data to the client
     var data = {
@@ -56,12 +56,18 @@ class Lobby {
     return data;
   }
 
-  removePlayer(socketid) {
+  removePlayer(socketid, newSpectatorCallback) {
     if (this.game) {
       // Remove the player from an ongoing game
       this.game.queueRemovePlayer(socketid);
     }
     this.players.delete(socketid);
+
+    if (this.players.size > 0 && this.getNonSpectators() == 0) {
+      let player = this.players.values().next().value;
+      player.spectate = false;
+      newSpectatorCallback(player);
+    }
 
     for (let i = 0; i < this.scoreOrder.length; i++) {
       if (this.scoreOrder[i] == socketid) {
@@ -107,6 +113,32 @@ class Lobby {
   statusChange(playerid, change) {
     var player = this.players.get(playerid);
     player[change.key] = change.value;
+  }
+
+  spectate(playerid, success, failure) {
+    let player = this.players.get(playerid);
+    let wasSpectating = player.spectate;
+
+    // if (wasSpectating) {
+    //   player.spectate = false;
+    //   success(false);
+    // }
+
+    if (!wasSpectating && this.getNonSpectators() == 1) {
+      failure('At least one player must be playing.');
+      return;
+    }
+
+    player.spectate = !wasSpectating;
+    success(!wasSpectating);
+  }
+
+  getNonSpectators() {
+    let total = 0;
+    for (let player of this.players.values()) {
+      if (!player.spectate) total++;
+    }
+    return total;
   }
 
   // Update the game state
@@ -204,6 +236,7 @@ class Lobby {
         score: player.score,
         streak: player.streak,
         ping: player.ping,
+        spectate: player.spectate,
         typing: player.typing,
         paused: player.paused
       });

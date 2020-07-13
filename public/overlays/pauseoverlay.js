@@ -13,6 +13,12 @@ function getPlayerPing(player) {
     return ping + 'ms';
 }
 
+function getPlayerStatus(player) {
+    let playerObj = playersMap.get(player.id);
+    if (playerObj.spectate) return 'Spectating';
+    return '';
+}
+
 function updatePlayers(players) {
     // if (players != undefined) {
     //     scoreboard = players;
@@ -28,6 +34,7 @@ function updatePlayers(players) {
         playerTable.addItem({
             id: player.id,
             name: name,
+            status: getPlayerStatus,
             score: player.score,
             streak: player.streak,
             ping: getPlayerPing
@@ -72,13 +79,13 @@ function addPauseOverlay() {
         height: 240,
         rowHeight: 30,
         scrollbarWidth: 20,
-        columnWidths: [390, 150, 150, 150],
-        columnTitles: ['Player', 'Wins', 'Best streak', 'Ping'],
-        columnData: ['name', 'score', 'streak', 'ping'],
+        columnWidths: [320, 120, 125, 150, 125],
+        columnTitles: ['Player', '', 'Wins', 'Best streak', 'Ping'],
+        columnData: ['name', 'status', 'score', 'streak', 'ping'],
         label: 'player table'
     })
     .addButton({
-        position: { x: 480, y: 395 },
+        position: { x: 480, y: 380 },
         width: 200,
         height: 40,
         text: 'RESUME',
@@ -86,7 +93,7 @@ function addPauseOverlay() {
         onClick: () => closeOverlay()
     })
     .addButton({
-        position: { x: 740, y: 395 },
+        position: { x: 740, y: 380 },
         width: 200,
         height: 40,
         text: 'SETTINGS',
@@ -94,7 +101,23 @@ function addPauseOverlay() {
         onClick: () => openOverlay('settings')
     })
     .addButton({
-        position: { x: 480, y: 495 },
+        position: { x: 480, y: 445 },
+        width: 200,
+        height: 40,
+        text: () => playersMap.get(myid).spectate ? 'JOIN' : 'SPECTATE',
+        textSize: 30,
+        onClick: () => socket.emit('spectate')
+    })
+    .addButton({
+        position: { x: 740, y: 445 },
+        width: 200,
+        height: 40,
+        text: 'COMING SOON',
+        textSize: 30,
+        // onClick: () => openOverlay('controls')
+    })
+    .addButton({
+        position: { x: 480, y: 510 },
         width: 200,
         height: 40,
         text: 'CONTROLS',
@@ -102,7 +125,7 @@ function addPauseOverlay() {
         onClick: () => openOverlay('controls')
     })
     .addButton({
-        position: { x: 740, y: 495 },
+        position: { x: 740, y: 510 },
         width: 200,
         height: 40,
         text: 'LEAVE',

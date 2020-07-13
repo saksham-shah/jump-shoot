@@ -250,7 +250,7 @@ function setup() {
     socket.on('player joined', function(player) {
         chatMessage(SERVER, player.name + " joined the lobby");
         sounds.message.play();
-        playersArray.push({ id: player.id, name: player.name, score: 0, streak: 0, ping: 0, typing: false, paused: false });
+        playersArray.push({ id: player.id, name: player.name, score: 0, streak: 0, ping: 0, spectate: false, typing: false, paused: false });
         scoreboard.push({ name: player.name, score: 0 });
         updatePlayers();
         // playersMap.set(player.id, { id: player.id, name: player.name, score: 0, streak: 0, ping: 0, typing: false, paused: false })

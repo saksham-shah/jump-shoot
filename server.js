@@ -247,6 +247,20 @@ function newConnection(socket) {
         value: change.value
       });
     }
+  });
+
+  socket.on('spectate', function() {
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    if (lobby) {
+      lobby.spectate(socket.id, spectate => {
+        // Notify the other players of the change
+        io.in(lobby.name).emit('status change', {
+          playerid: socket.id,
+          key: 'spectate',
+          value: spectate
+        });
+      }, err => sendServerMessage(socket.id, `Cannot spectate - ${err}`));
+    }
   })
 
   // Player types in a chat message
@@ -534,7 +548,19 @@ function leaveLobby(socket) {
     userData.lobbyname = null;
     users.set(socket.id, userData);
     // Remove from lobby
-    lobby.removePlayer(socket.id);
+    lobby.removePlayer(socket.id, player => {
+      // Callback if everyone is currently spectating so one player needs to be forced into not spectating
+
+      // Notify the other players of the change
+      io.in(lobby.name).emit('status change', {
+        playerid: player.id,
+        key: 'spectate',
+        value: false
+      });
+
+      // Notify the specfic player that they are no longer spectating
+      sendServerMessage(player.id, 'Last non-spectator left, you are no longer spectating.');
+    });
     // Delete lobby if it is empty
     // if (lobby.players.size == 0) {
     //   for (var i = 0; i < lobbies.length; i++) {
