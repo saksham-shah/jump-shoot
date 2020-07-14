@@ -174,11 +174,13 @@ class Lobby {
           }
 
           if (winnerObj.streak < this.currentStreak) winnerObj.streak = this.currentStreak;
-        } else {
-          this.currentStreak = 0;
+
+          this.lastWinner = winner;
+        // } else {
+        //   this.currentStreak = 0;
         }
 
-        this.lastWinner = winner;
+        // this.lastWinner = winner;
 
         // Next game starts in 90 frames
         this.gameCountdown = 90;
@@ -204,7 +206,7 @@ class Lobby {
         // Increment idle time of all alive players
         for (var playerid of this.game.players.keys()) {
           var player = this.players.get(playerid);
-          player.timeLeft--;
+          if (!player.spectate) player.timeLeft--;
         }
 
         return data;

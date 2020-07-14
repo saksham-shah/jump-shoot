@@ -118,6 +118,11 @@ class Bullet {
               if (player.weapon) {
                 player.throwWeapon(0, world);
                 player.sounds.push('disarm');
+
+                if (player.experimental) {
+                  let origin = players.get(this.originPlayer);
+                  if (origin) origin.shieldWidth = 3;
+                }
               }
             }
 
@@ -126,11 +131,8 @@ class Bullet {
 
             player.damage(damage);
 
-            if (player.experimental) {
-              let origin = players.get(this.originPlayer);
-              if (player) player.shieldWidth = 3;
-              // players.get(this.originPlayer).shieldWidth = 3;
-            }
+            // players.get(this.originPlayer).shieldWidth = 3;
+            
             // var newDensity = fixture.getDensity() * Math.pow(MASSDECAY, damage);
             // fixture.setDensity(newDensity);
             // body.resetMassData();

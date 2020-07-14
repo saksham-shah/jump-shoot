@@ -3,7 +3,8 @@ let settings = {
     sound: 50,
     particles: true,
     crosshair: true,
-    showmass: false
+    showmass: false,
+    shownames: true
 }
 
 function addSettingsOverlay() {
@@ -59,6 +60,7 @@ function addSettingsOverlay() {
                     text('Particles', tabWidth + 50, 100 + 20 / 3);
                     text('Crosshair', tabWidth + 50, 150 + 20 / 3);
                     text('Show mass', tabWidth + 50, 200 + 20 / 3);
+                    text('Show names', tabWidth + 50, 250 + 20 / 3);
                     break; 
             }
         }
@@ -128,6 +130,16 @@ function addSettingsOverlay() {
         },
         hidden: true,
         label: 'settings graphics showmass',
+    })
+    .addCheckbox({
+        position: { x: 340, y: 250 },
+        size: 20,
+        value: settings.shownames,
+        onClick: v => {
+            settings.shownames = v;
+        },
+        hidden: true,
+        label: 'settings graphics shownames',
     });
 
     let x = tabWidth * 0.5;
@@ -172,6 +184,7 @@ function addSettingsOverlay() {
     tabs['Graphics'].push(getElement('settings graphics particles'));
     tabs['Graphics'].push(getElement('settings graphics crosshair'));
     tabs['Graphics'].push(getElement('settings graphics showmass'));
+    tabs['Graphics'].push(getElement('settings graphics shownames'));
 }
 
 screens.push(addSettingsOverlay);
