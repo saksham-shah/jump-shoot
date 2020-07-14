@@ -275,7 +275,7 @@ function setup() {
     socket.on('chat message', function(data) {
         chatMessage(data.sender, data.message);
         if (data.sender != SERVER) {
-            if (!RECORDMODE) sounds.message.play();
+            sounds.message.play();
         }
     });
 
