@@ -628,10 +628,12 @@ function mouseToGamePos() {
 }
 
 function drawPlayer(obj) {
+    let colourIndex = obj.colour % colourOrder.length;
+    let colour = playerColours[colourOrder[colourIndex]];
     push();
     translate(obj.x, obj.y);
     rotate(obj.angle); // Rotate to draw the gun in the right place
-    fill(obj.colour);
+    fill(colour);
     stroke(0);
     strokeWeight(1 / 15);
     ellipse(0, 0, obj.r * 2); // Draw player circle
@@ -702,7 +704,9 @@ function drawNameTag(obj) {
     // Draw circle around local player at the start of the game
     if (gameTime < 180 && obj.id == myid && !settings.recordmode) {
         noFill();
-        var c = color(obj.colour);
+        let colourIndex = obj.colour % colourOrder.length;
+        let colour = playerColours[colourOrder[colourIndex]];
+        var c = color(colour);
         c.setAlpha(75 + 75 * Math.cos(gameTime * 2 * Math.PI / 40));
         stroke(c);
         strokeWeight(obj.r);
@@ -794,7 +798,9 @@ function drawOffScreenPlayer(obj) {
             y = gameSize.h - buffer;
         }
         translate(x, y);
-        var colour = obj.colour;
+        let colourIndex = obj.colour % colourOrder.length;
+        let colour = playerColours[colourOrder[colourIndex]].slice();
+        // var colour = obj.colour;
         colour.push(50);
         fill(colour);
         stroke(0, 50);
@@ -837,7 +843,7 @@ function drawObject(obj) {
     case 'weapon': // Rectangle for now - may add graphics
         translate(obj.x, obj.y);
         rotate(obj.angle);
-        fill(obj.colour);
+        fill(100);
         stroke(0);
         strokeWeight(1 / 15);
         rect(0, 0, obj.w, obj.h);
@@ -845,13 +851,25 @@ function drawObject(obj) {
     case 'bullet': // Long thin rectangle to show it is a fast bullet
         translate(obj.x, obj.y);
         rotate(obj.angle)
-        fill(obj.colour);
+        fill(obj.reflected ? [255, 155, 0] : [255, 255, 0]);
         noStroke();
         rect(-obj.r * 1.5, 0, obj.r * 15, obj.r);
         break;
     }
     pop();
 }
+
+let colourOrder = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'cyan', 'grey'];
+let playerColours = {
+    red: [255, 0, 0],
+    orange: [255, 153, 0],
+    yellow: [255, 255, 0],
+    green: [0, 255, 0],
+    cyan: [0, 255, 255],
+    blue: [0, 0, 255],
+    purple: [255, 0, 255],
+    grey: [200]
+};
 
 var platformColours = {
     default: {

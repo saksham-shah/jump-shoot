@@ -79,7 +79,7 @@ class Bullet {
             r: 0.2,
             life: 15,
             lifeErr: 3,
-            col: this.colour,
+            col: 'reflected',
             num: 10
           });
           this.sounds.push('shield');
@@ -324,7 +324,8 @@ class Bullet {
       y: this.y,
       r: this.r,
       angle: this.angle,
-      colour: this.colour
+      reflected: this.reflected,
+      // colour: this.colour
     }
   }
 }

@@ -293,18 +293,19 @@ class Game {
 
   addPlayers() {
     var currentSpawn = Math.floor(Math.random() * this.spawns.length);
-    var currentColour = 0;
+    // var currentColour = 0;
     // Add each player to the game
     for (var user of this.users.keys()) {
       if (this.users.get(user).spectate) continue;
-      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, this.colours[currentColour], this.world, this.experimental);
+      let colour = this.users.get(user).colour;
+      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, colour, this.world, this.experimental);
       this.players.set(player.id, player);
 
       // Colours cycle around
-      currentColour++;
-      if (currentColour >= this.colours.length) {
-        currentColour = 0;
-      }
+      // currentColour++;
+      // if (currentColour >= this.colours.length) {
+      //   currentColour = 0;
+      // }
 
       // Spawn locations cycle around
       currentSpawn++;
@@ -538,7 +539,7 @@ class Game {
           r: 0.2,
           life: 15,
           lifeErr: 3,
-          col: b.colour,
+          col: b.reflected ? 'reflected' : 'bullet',
           num: 10
         });
 

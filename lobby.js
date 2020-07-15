@@ -20,6 +20,8 @@ class Lobby {
     this.currentStreak = 0;
     this.lastWinner = null;
     this.scoreOrder = [];
+
+    this.freeColours = [];
   }
 
   joinAttempt(password) {
@@ -32,7 +34,14 @@ class Lobby {
   }
 
   addPlayer(socketid, name) {
-    this.players.set(socketid, { id: socketid, name, score: 0, streak: 0, ping: 0, spectate: false, timeLeft: 10800, typing: false, paused: false });
+    let colour;
+    if (this.freeColours.length > 0) {
+      colour = this.freeColours.shift();
+    } else {
+      colour = this.players.size;
+    }
+
+    this.players.set(socketid, { id: socketid, name, colour, score: 0, streak: 0, ping: 0, spectate: false, timeLeft: 10800, typing: false, paused: false });
     this.scoreOrder.push(socketid);
     // Send data to the client
     var data = {
@@ -61,6 +70,8 @@ class Lobby {
       // Remove the player from an ongoing game
       this.game.queueRemovePlayer(socketid);
     }
+    this.freeColours.push(this.players.get(socketid).colour);
+    this.freeColours.sort((a, b) => a - b);
     this.players.delete(socketid);
 
     if (this.players.size > 0 && this.getNonSpectators() == 0) {
@@ -235,6 +246,7 @@ class Lobby {
       array.push({
         id,
         name: player.name,
+        colour: player.colour,
         score: player.score,
         streak: player.streak,
         ping: player.ping,
