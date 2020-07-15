@@ -45,12 +45,80 @@ function setTimer(time, text) {
     timer.text = text;
 }
 
+let gameMessages = [];
+let gameMessageLines = ['', '', '', '', '', '', '', '', '', '', '', ''];
+let gameMessageTimes = [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180];
+let nextGameMessage = 0;
+// const MAXGAMEMESSAGES = 5;
+
+function addGameMessage(msg) {
+    let lines = wrapText(msg, 30, 700);
+    lines.push('');
+
+    let allDone = true;
+    for (let time of gameMessageTimes) {
+        if (time < 180) allDone = false; 
+    }
+    if (allDone) nextGameMessage = 0;
+
+    if (nextGameMessage + lines.length > gameMessageLines.length) {
+        let count = nextGameMessage + lines.length - gameMessageLines.length;
+        for (let i = 0; i < count; i++) {
+            gameMessageLines.splice(0, 1);
+            gameMessageTimes.splice(0, 1);
+            gameMessageLines.push('');
+            gameMessageTimes.push(180);
+            nextGameMessage--;
+        }
+    }
+
+    for (let line of lines) {
+        gameMessageLines[nextGameMessage] = line;
+        gameMessageTimes[nextGameMessage] = 0;
+        nextGameMessage++;
+    }
+}
+
+function updateGameMessages() {
+    for (let i = gameMessageLines.length - 1; i >= 0; i--) {
+        gameMessageTimes[i]++;
+        if (gameMessageTimes[i] >= 180) {
+            gameMessageLines[i] = '';
+        }
+    }
+}
+
+function drawGameMessages() {
+    push();
+    textSize(30);
+    textAlign(CENTER);
+    noStroke();
+
+    for (let i = 0; i < gameMessageTimes.length; i++) {
+        if (gameMessageLines[i] == '') continue;
+
+        let a = 1;
+        if (gameMessageTimes[i] >= 170) {
+            a = (180 - gameMessageTimes[i]) / 10;
+        }
+
+        let y = 100 + i * 40;
+        fill(0, 100 * a);
+        rect(450, y, textWidth(gameMessageLines[i]) + 10, 40);
+
+        fill(255, 255 * a);
+        text(gameMessageLines[i], 450, y + 10);
+    }
+
+    pop();
+}
+
 let chatHidden = false;
 let textboxHidden = true;
 let typing = false;
 let paused = false;
 
-let RECORDMODE = false;
+// let RECORDMODE = false;
 
 let gs = {
     // Properties about the game currently being shown
@@ -191,7 +259,7 @@ let gs = {
 
         // Draw the border of the game screen
         noFill();
-        if (gameover && !RECORDMODE) fill(0, 100);
+        if (gameover && !settings.recordmode) fill(0, 100);
         stroke(200);
         strokeWeight(4);
         // Thicker border is bullet bounce is active
@@ -238,7 +306,7 @@ let gs = {
         // text(lobbyName, 25, 25);
         // pop();
     
-        if (gameover && !RECORDMODE) {
+        if (gameover && !settings.recordmode) {
             fill(255);
             noStroke();
             textSize(150);
@@ -289,7 +357,7 @@ let gs = {
         }
 
         // Scoreboard
-        if ((gameover && !RECORDMODE) || keyIsDown(9)) {
+        if ((gameover && !settings.recordmode) || keyIsDown(9)) {
             textSize(30);
             fill(255);
             noStroke();
@@ -422,18 +490,21 @@ function addGameScreen() {
             //     socket.emit('pingCheck');
             // }
 
-            if (chatHidden == ((lastMessage < 240 && !RECORDMODE) || typing)) {
+            if (chatHidden == ((lastMessage < 240 && !settings.recordmode) || typing)) {
                 chatHidden = !chatHidden;
                 getElement('game chat output').hide(chatHidden);
             }
 
-            if (textboxHidden == (!RECORDMODE || typing)) {
+            if (textboxHidden == (!settings.recordmode || typing)) {
                 textboxHidden = !textboxHidden;
                 getElement('game chat input').hide(textboxHidden);
             }
         },
         draw: () => {
             gs.show();
+
+            updateGameMessages();
+            drawGameMessages();
 
             fill(255);
             noStroke();
@@ -445,7 +516,7 @@ function addGameScreen() {
             // let mousePos = getScreen('game').mousePos;
 
             // if (onScreen && mousePos.y < 50) {
-            if ((gameover && !RECORDMODE) || keyIsDown(9)) {
+            if ((gameover && !settings.recordmode) || keyIsDown(9)) {
                 if (y < showY) y += 7
             } else {
                 if (y > hideY) y -= 7
@@ -584,7 +655,7 @@ function drawPlayerWeapon(obj) {
             fill(200);
             noStroke();
             rect(obj.r + 0.5, 0, 0.5, obj.shieldWidth);
-        } else if (obj.id == myid && !RECORDMODE) {
+        } else if (obj.id == myid && !settings.recordmode) {
             fill(200, 50);
             noStroke();
             rect(obj.r + 0.5, 0, 0.5, obj.shieldWidth);
@@ -604,31 +675,32 @@ function drawNameTag(obj) {
     textAlign(CENTER);
     scale(1 / 15);
 
+    push();
+    textSize(12);
+    if (obj.id == myid) {
+        // textStyle(BOLD);
+        textSize(14);
+        translate(0, 2/3);
+    }
+
     if (settings.shownames) {
-        push();
-        textSize(12);
-        if (obj.id == myid) {
-            // textStyle(BOLD);
-            textSize(14);
-            translate(0, 2/3);
-        }
         // let name = playersMap.get(obj.id).name;
         text(player.name, 0, 15 * obj.r + 14);
-        pop();
+        // pop();
     }
 
     // Show mass
     if (settings.showmass) {
-        push();
-        if (obj.id == lastWinner && !RECORDMODE) translate(0, -15);
+        // push();
+        if (obj.id == lastWinner && !settings.recordmode) translate(0, -15);
         text(obj.stat, 0, -15 * obj.r - 6);
-        pop();
     }
+    pop();
 
     scale(15);
 
     // Draw circle around local player at the start of the game
-    if (gameTime < 180 && obj.id == myid && !RECORDMODE) {
+    if (gameTime < 180 && obj.id == myid && !settings.recordmode) {
         noFill();
         var c = color(obj.colour);
         c.setAlpha(75 + 75 * Math.cos(gameTime * 2 * Math.PI / 40));
@@ -638,7 +710,7 @@ function drawNameTag(obj) {
     }
 
     // Draw crown on previous winner
-    if (obj.id == lastWinner && !RECORDMODE) {
+    if (obj.id == lastWinner && !settings.recordmode) {
         fill(255, 150, 0);
         stroke(255, 255, 0);
         strokeWeight(1 / 15);
@@ -655,7 +727,7 @@ function drawNameTag(obj) {
     }
 
     // Icons
-    if ((player.ping > 999 || player.typing || player.paused) && !RECORDMODE) {
+    if ((player.ping > 999 || player.typing || player.paused) && !settings.recordmode) {
         translate(0, -0.75 - obj.r);
         noStroke();
 

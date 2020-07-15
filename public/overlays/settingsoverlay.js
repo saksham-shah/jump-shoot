@@ -4,11 +4,12 @@ let settings = {
     particles: true,
     crosshair: true,
     showmass: false,
-    shownames: true
+    shownames: true,
+    recordmode: false
 }
 
 function addSettingsOverlay() {
-    let tabNames = ['Audio', 'Graphics'];
+    let tabNames = ['Audio', 'Graphics', 'Advanced'];
     let currentTab = null;
     let tabs = {};
 
@@ -36,7 +37,7 @@ function addSettingsOverlay() {
         width: 400,
         height: 330,
         text: 'Settings',
-        onDisplay: () => setTab('Audio'),
+        // onDisplay: () => setTab('Audio'),
         draw: () => {
             fill(100);
             stroke(45);
@@ -61,6 +62,10 @@ function addSettingsOverlay() {
                     text('Crosshair', tabWidth + 50, 150 + 20 / 3);
                     text('Show mass', tabWidth + 50, 200 + 20 / 3);
                     text('Show names', tabWidth + 50, 250 + 20 / 3);
+                    break;
+                case 'Advanced':
+                    textAlign(LEFT);
+                    text('Record mode', tabWidth + 50, 100 + 20 / 3);
                     break; 
             }
         }
@@ -140,6 +145,16 @@ function addSettingsOverlay() {
         },
         hidden: true,
         label: 'settings graphics shownames',
+    })
+    .addCheckbox({
+        position: { x: 340, y: 100 },
+        size: 20,
+        value: settings.recordmode,
+        onClick: v => {
+            settings.recordmode = v;
+        },
+        hidden: true,
+        label: 'settings advanced recordmode',
     });
 
     let x = tabWidth * 0.5;
@@ -185,6 +200,9 @@ function addSettingsOverlay() {
     tabs['Graphics'].push(getElement('settings graphics crosshair'));
     tabs['Graphics'].push(getElement('settings graphics showmass'));
     tabs['Graphics'].push(getElement('settings graphics shownames'));
+    tabs['Advanced'].push(getElement('settings advanced recordmode'));
+
+    setTab('Audio');
 }
 
 screens.push(addSettingsOverlay);

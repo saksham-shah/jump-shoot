@@ -177,8 +177,14 @@ function setup() {
         closeAllOverlays();
     });
 
-    // Entered name is invalid
+    // Entered input is invalid
     socket.on('error message', message => errorText = message);
+
+    // In game notification
+    socket.on('game message', message => {
+        addGameMessage(message);
+        sounds.message.play();
+    });
 
     // Next frame of the game
     socket.on('update', function(data) {

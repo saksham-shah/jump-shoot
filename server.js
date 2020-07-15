@@ -259,7 +259,10 @@ function newConnection(socket) {
           key: 'spectate',
           value: spectate
         });
-      }, err => sendServerMessage(socket.id, `Cannot spectate - ${err}`));
+      }, err => {
+        // sendServerMessage(socket.id, `Cannot spectate - ${err}`);
+        socket.emit('game message', `Cannot spectate - ${err}`);
+      });
     }
   })
 
@@ -559,7 +562,8 @@ function leaveLobby(socket) {
       });
 
       // Notify the specfic player that they are no longer spectating
-      sendServerMessage(player.id, 'Last non-spectator left, you are no longer spectating.');
+      // sendServerMessage(player.id, 'Last non-spectator left, you are no longer spectating.');
+      io.to(player.id).emit('game message', 'Last non-spectator left, you are no longer spectating.');
     });
     // Delete lobby if it is empty
     // if (lobby.players.size == 0) {
@@ -688,7 +692,8 @@ function updateGame() {
 
     for (var [playerid, player] of lobbies[i].players.entries()) {
       if (player.timeLeft == 600) {
-        sendServerMessage(playerid, 'You are idle. Move or you will be kicked in 10 seconds!');
+        // sendServerMessage(playerid, 'You are idle. Move or you will be kicked in 10 seconds!');
+        io.to(playerid).emit('game message', 'You are idle. Move or you will be kicked in 10 seconds!');
       } else if (player.timeLeft <= 0) {
         leaveLobby(io.sockets.connected[playerid]);
         sendServerMessage(playerid, 'You were kicked for being idle for too long!');

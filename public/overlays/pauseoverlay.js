@@ -56,7 +56,8 @@ function addPauseOverlay() {
                 gameInput.selectionStart = pauseInput.selectionStart;
                 gameInput.clipText();
             }
-        }
+        },
+        postDraw: () => drawGameMessages()
     })
     .on('keyDown', e => {
         if (e.key == 'Enter') {
