@@ -55,10 +55,11 @@ function addPauseOverlay() {
                 let gameInput = getElement('game chat input');
                 let pauseInput = getElement('pause chat input');
 
-                gameInput.value = pauseInput.value;
-                gameInput.cursorPos = pauseInput.cursorPos;
-                gameInput.selectionStart = pauseInput.selectionStart;
-                gameInput.clipText();
+                gameInput.setValue(pauseInput.value);
+                // gameInput.value = pauseInput.value;
+                // gameInput.cursorPos = pauseInput.cursorPos;
+                // gameInput.selectionStart = pauseInput.selectionStart;
+                // gameInput.clipText();
             }
         },
         postDraw: () => drawGameMessages()
@@ -117,9 +118,9 @@ function addPauseOverlay() {
         position: { x: 740, y: 445 },
         width: 200,
         height: 40,
-        text: 'COMING SOON',
+        text: 'LOBBY INFO',
         textSize: 30,
-        // onClick: () => openOverlay('controls')
+        onClick: () => openOverlay('lobby settings')
     })
     .addButton({
         position: { x: 480, y: 510 },

@@ -34,6 +34,8 @@ let scoreboard = [];
 let playersMap = new Map();
 let playersArray = [];
 let host = null;
+let lobbySettings = {};
+let lobbySettingsText = [];
 
 let lastWinner = null;
 let gameover = false;
@@ -532,10 +534,11 @@ function addGameScreen() {
                 let gameInput = getElement('game chat input');
                 let pauseInput = getElement('pause chat input');
 
-                pauseInput.value = gameInput.value;
-                pauseInput.cursorPos = gameInput.cursorPos;
-                pauseInput.selectionStart = gameInput.selectionStart;
-                pauseInput.clipText();
+                pauseInput.setValue(gameInput.value);
+                // pauseInput.value = gameInput.value;
+                // pauseInput.cursorPos = gameInput.cursorPos;
+                // pauseInput.selectionStart = gameInput.selectionStart;
+                // pauseInput.clipText();
             } else {
                 onScreen = true;
                 paused = false;

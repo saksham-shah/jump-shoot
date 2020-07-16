@@ -78,7 +78,7 @@ function addSettingsOverlay() {
         value: settings.sound,
         scrollSpeed: 2,
         textSize: 20,
-        onRelease: v => sounds.buttonclick.play(),
+        // onRelease: v => sounds.buttonclick.play(),
         onMove: v => {
             settings.sound = v;
             v /= 50;

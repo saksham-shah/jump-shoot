@@ -299,7 +299,7 @@ class Game {
     for (var user of this.users.keys()) {
       if (this.users.get(user).spectate) continue;
       let colour = this.users.get(user).colour;
-      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, colour, this.world, this.settings.experimental);
+      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, colour, this.settings.mass, this.world, this.settings.experimental);
       this.players.set(player.id, player);
 
       // Colours cycle around

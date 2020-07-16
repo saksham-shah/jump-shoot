@@ -240,28 +240,17 @@ function newConnection(socket) {
 
   socket.on('status change', function(change) {
     if (!change) return;
-    switch (change.key) {
-      case 'ping':
-        if (typeof change.value != 'number') return;
-        break;
-      case 'paused':
-        if (typeof change.value != 'boolean') return;
-        break;
-      case 'typing':
-        if (typeof change.value != 'boolean') return;
-        break;
-      default:
-        return;
-    }
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
-      lobby.statusChange(socket.id, change);
-      
-      // Notify the other players of the change
-      io.in(lobby.name).emit('status change', {
-        playerid: socket.id,
-        key: change.key,
-        value: change.value
+      lobby.statusChange(socket.id, change, () => {
+        // Callback if the status change is accepted
+
+        // Notify the other players of the change
+        io.in(lobby.name).emit('status change', {
+          playerid: socket.id,
+          key: change.key,
+          value: change.value
+        });
       });
     }
   });
@@ -270,6 +259,8 @@ function newConnection(socket) {
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
       lobby.spectate(socket.id, spectate => {
+        // Callback if the spectate request is accepted
+
         // Notify the other players of the change
         io.in(lobby.name).emit('status change', {
           playerid: socket.id,
@@ -277,11 +268,27 @@ function newConnection(socket) {
           value: spectate
         });
       }, err => {
+        // Callback if the spectate request is rejected
+
         // sendServerMessage(socket.id, `Cannot spectate - ${err}`);
         socket.emit('game message', `Cannot spectate - ${err}`);
       });
     }
-  })
+  });
+
+  socket.on('new settings', function(settings) {
+    if (!settings) return;
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    if (lobby) {
+      lobby.newSettings(socket.id, settings, newSettings => {
+        // Callback if the new settings are accepted
+
+        io.in(lobby.name).emit('new settings', newSettings);
+        
+        io.emit('lobbies updated', getLobbies());
+      });
+    }
+  });
 
   // Player types in a chat message
   // Also processes any chat commands - probably the most important event

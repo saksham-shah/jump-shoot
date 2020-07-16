@@ -131,6 +131,9 @@ function setup() {
         playersArray = data.players;
         gameover = false;
         updatePlayers();
+        lobbySettings = data.settings;
+        updateLobbySettingsText();
+
         scoreboard = data.scoreboard;
         lastWinner = data.lastWinner;
         streak = data.streak;
@@ -298,6 +301,12 @@ function setup() {
     socket.on('new host', function(hostID) {
         host = hostID;
         updatePlayers();
+    });
+
+    // The lobby settings have been updated
+    socket.on('new settings', function(newSettings) {
+        lobbySettings = newSettings;
+        updateLobbySettingsText();
     });
 }
 

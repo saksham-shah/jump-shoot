@@ -12,6 +12,7 @@ class Lobby {
     this.settings = settings;
 
     if (this.settings.experimental == undefined) this.settings.experimental = false;
+    if (this.settings.mass == undefined) this.settings.mass = 1;
     if (this.settings.bounceChance == undefined) this.settings.bounceChance = 0.25;
     // this.experimental = experimental;
 
@@ -62,7 +63,8 @@ class Lobby {
       players: this.playersArray(),
       scoreboard: this.scoreboard(),
       lastWinner: this.lastWinner,
-      streak: this.currentStreak
+      streak: this.currentStreak,
+      settings: this.settings
     }
     // Send game data so newly connected players can watch the ongoing game
     if (this.game) {
@@ -144,9 +146,24 @@ class Lobby {
     }
   }
 
-  statusChange(playerid, change) {
+  statusChange(playerid, change, changeCallback) {
+    switch (change.key) {
+      case 'ping':
+        if (typeof change.value != 'number') return;
+        break;
+      case 'paused':
+        if (typeof change.value != 'boolean') return;
+        break;
+      case 'typing':
+        if (typeof change.value != 'boolean') return;
+        break;
+      default:
+        return;
+    }
+
     var player = this.players.get(playerid);
     player[change.key] = change.value;
+    changeCallback();
   }
 
   spectate(playerid, success, failure) {
@@ -173,6 +190,24 @@ class Lobby {
       if (!player.spectate) total++;
     }
     return total;
+  }
+
+  newSettings(playerid, settings = {}, newSettingsCallback) {
+    if (playerid != this.host) return;
+    if (typeof settings.experimental != 'boolean') return;
+    if (typeof settings.mass != 'number') return;
+    if (typeof settings.bounceChance != 'number') return;
+
+    if (settings.mass > 2) settings.mass = 2;
+    if (settings.mass < 0.25) settings.mass = 0.25;
+    if (settings.bounceChance > 1) settings.bounceChance = 1;
+    if (settings.bounceChance < 0) settings.bounceChance = 0;
+
+    settings.mass = Math.round(settings.mass / 0.25) * 0.25;
+    settings.bounceChance = Math.round(settings.bounceChance / 0.25) * 0.25;
+
+    this.settings = settings;
+    newSettingsCallback(this.settings);
   }
 
   // Update the game state

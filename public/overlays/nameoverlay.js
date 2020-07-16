@@ -5,10 +5,11 @@ function addNameOverlay() {
         text: 'Change name',
         onDisplay: () => {
             let nameTextbox = getElement('name change input');
-            nameTextbox.value = playerName;
-            nameTextbox.cursorPos = playerName.length;
-            nameTextbox.selectionStart = playerName.length;
-            nameTextbox.clipText();
+            nameTextbox.setValue(playerName);
+            // nameTextbox.value = playerName;
+            // nameTextbox.cursorPos = playerName.length;
+            // nameTextbox.selectionStart = playerName.length;
+            // nameTextbox.clipText();
             nameTextbox.focus();
             errorText = '';
         },

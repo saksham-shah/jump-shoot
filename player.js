@@ -5,7 +5,7 @@ const MASSDECAY = 0.933;
 // Wrapper class for a planck.js body
 // Handles player actions based on controls
 class Player {
-  constructor(x, y, id, colour, world, experimental) {
+  constructor(x, y, id, colour, mass, world, experimental) {
     this.id = id;
     this.colour = colour;
 
@@ -24,7 +24,7 @@ class Player {
       shape: pl.Circle(this.r),
       friction: 0.5,
       restitution: 0.4,
-      density: 1,
+      density: mass,
       userData: {
         label: this.id,
         type: 'player',
@@ -32,7 +32,7 @@ class Player {
       }
     })
 
-    this.mass = 1;
+    this.mass = mass;
 
     this.contacts = [];
     this.staticFriction = 0;
