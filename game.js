@@ -16,13 +16,14 @@ var mapFuncs = require('./maps/game-maps.js');
 
 // Played within a lobby, runs the actual game and physics engine
 class Game {
-  constructor(users, experimental) {
+  constructor(users, settings) {
     this.users = users;
     this.winner = null;
     this.ending = false;
     this.inGame = false;
 
-    this.experimental = experimental;
+    this.settings = settings;
+    // this.experimental = experimental;
 
     this.pendingParticles = [];
     this.pendingSounds = [];
@@ -81,7 +82,7 @@ class Game {
 
       let self = this;
       function processWeaponCollision(weapon, otherData) {
-        if (!(self.experimental && otherData && otherData.type == 'player'
+        if (!(self.settings.experimental && otherData && otherData.type == 'player'
           // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
           && weaponPassPlayer(otherData.obj, weapon))) {
 
@@ -90,7 +91,7 @@ class Game {
             weapon.passThrough = 0;
           }
           
-          if (self.experimental && otherData && otherData.type == 'player') {
+          if (self.settings.experimental && otherData && otherData.type == 'player') {
             if (otherData.obj.weapon == null && otherData.obj.cooldown >= 20) {
               // if (dataA.obj.thrown == 0){// || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
               // if (dataA.obj.thrown == 0 && (dataA.obj.hitTimer == 0 || !dataA.obj.throwHit || dataA.obj.throwHit != dataB.obj.id)) {
@@ -277,7 +278,7 @@ class Game {
     }
 
     if (this.bulletBounce === null) {
-      this.bulletBounce = Math.random() > 0.25 ? false : true;
+      this.bulletBounce = Math.random() > this.settings.bounceChance ? false : true;
     }
 
     if (!this.deathBounds) {
@@ -298,7 +299,7 @@ class Game {
     for (var user of this.users.keys()) {
       if (this.users.get(user).spectate) continue;
       let colour = this.users.get(user).colour;
-      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, colour, this.world, this.experimental);
+      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, colour, this.world, this.settings.experimental);
       this.players.set(player.id, player);
 
       // Colours cycle around
@@ -390,7 +391,7 @@ class Game {
 
 
     // var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
-    var weapon = new chosenWeaponClass(this.nextWeaponX, this.height + 3, this.world, this.experimental, this.weaponID);
+    var weapon = new chosenWeaponClass(this.nextWeaponX, this.height + 3, this.world, this.settings.experimental, this.weaponID);
     this.weapons.push(weapon);
 
     this.nextWeaponX = null;

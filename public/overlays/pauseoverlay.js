@@ -27,6 +27,10 @@ function updatePlayers(players) {
     playerTable.clear();
     for (let player of playersArray) {
         let name = player.name;
+        if (player.id == host) {
+            name = '[HOST] ' + name;
+        }
+        
         if (player.id == myid) {
             name = '[YOU] ' + name;
         }

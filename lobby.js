@@ -4,18 +4,22 @@ var Game = require('./game.js');
 
 // Game room where players can play the game
 class Lobby {
-  constructor(name, password, maxPlayers, unlisted, settings, permanent = false) {
+  constructor(name, password, maxPlayers, unlisted, settings = {}, permanent = false) {
     this.name = name;
     this.password = password;
     this.permanent = permanent;
     this.unlisted = unlisted;
     this.settings = settings;
+
+    if (this.settings.experimental == undefined) this.settings.experimental = false;
+    if (this.settings.bounceChance == undefined) this.settings.bounceChance = 0.25;
     // this.experimental = experimental;
 
     this.maxPlayers = maxPlayers;
     this.players = new Map();
     this.gameCountdown = -1;
     this.game = null;
+    this.host = null;
 
     this.currentStreak = 0;
     this.lastWinner = null;
@@ -43,11 +47,18 @@ class Lobby {
 
     this.players.set(socketid, { id: socketid, name, colour, score: 0, streak: 0, ping: 0, spectate: false, timeLeft: 10800, typing: false, paused: false });
     this.scoreOrder.push(socketid);
+
+    // Check if a host is needed
+    if (this.host == null) {
+      this.host = socketid;
+    }
+
     // Send data to the client
     var data = {
       name: this.name,
       myid: socketid,
       // scoreboard: this.players,
+      host: this.host,
       players: this.playersArray(),
       scoreboard: this.scoreboard(),
       lastWinner: this.lastWinner,
@@ -65,7 +76,7 @@ class Lobby {
     return data;
   }
 
-  removePlayer(socketid, newSpectatorCallback) {
+  removePlayer(socketid, newSpectatorCallback, newHostCallback) {
     if (this.game) {
       // Remove the player from an ongoing game
       this.game.queueRemovePlayer(socketid);
@@ -74,10 +85,22 @@ class Lobby {
     this.freeColours.sort((a, b) => a - b);
     this.players.delete(socketid);
 
-    if (this.players.size > 0 && this.getNonSpectators() == 0) {
+    // Check if it was the host;
+    if (this.host == socketid) {
+      this.host = null;
+    }
+
+    if (this.players.size > 0) {
       let player = this.players.values().next().value;
-      player.spectate = false;
-      newSpectatorCallback(player);
+      if (this.getNonSpectators() == 0) {
+        player.spectate = false;
+        newSpectatorCallback(player);
+      }
+
+      if (this.host == null) {
+        this.host = player.id;
+        newHostCallback(player);
+      }
     }
 
     for (let i = 0; i < this.scoreOrder.length; i++) {
@@ -90,7 +113,7 @@ class Lobby {
 
   newGame() {
     if (!this.game) {
-      this.game = new Game(this.players, this.settings.experimental);
+      this.game = new Game(this.players, this.settings);
       var data = this.game.startGame();
       data.type = 'startGame';
       return data;

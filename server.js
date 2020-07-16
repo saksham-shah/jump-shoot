@@ -104,7 +104,7 @@ function newConnection(socket) {
 
   // Client updates their name
   socket.on('pick name', name => {
-    if (!name) {
+    if (typeof name != 'string') {
       return;
     }
     updateName(socket, name);
@@ -138,6 +138,7 @@ function newConnection(socket) {
     // } else if (!joinLobby(socket, lobbyname)) { // if they aren't in a lobby already
     //     sendServerMessage(socket.id, 'Lobby does not exist');
     // }
+    if (!joinReq || typeof joinReq.name != 'string') return;
     joinLobby(socket, joinReq.name, joinReq.password);
   })
 
@@ -151,6 +152,11 @@ function newConnection(socket) {
 
   // Client creates a private lobby
   socket.on('create lobby', lobbyOptions => {
+    if (!lobbyOptions) return;
+    if (typeof lobbyOptions.name != 'string') return;
+    if (typeof lobbyOptions.password != 'string') return;
+    if (typeof lobbyOptions.maxPlayers != 'number') return;
+    if (typeof lobbyOptions.unlisted != 'boolean') return;
     createLobby(socket, lobbyOptions);
     // var lobby = getLobbyFromSocket(socket.id);
     // // If player is already in a lobby, send an error message
@@ -233,8 +239,19 @@ function newConnection(socket) {
   })
 
   socket.on('status change', function(change) {
-    if (!change) {
-      return;
+    if (!change) return;
+    switch (change.key) {
+      case 'ping':
+        if (typeof change.value != 'number') return;
+        break;
+      case 'paused':
+        if (typeof change.value != 'boolean') return;
+        break;
+      case 'typing':
+        if (typeof change.value != 'boolean') return;
+        break;
+      default:
+        return;
     }
     var lobby = getLobbyFromSocket(socket.id, users, lobbies);
     if (lobby) {
@@ -270,7 +287,7 @@ function newConnection(socket) {
   // Also processes any chat commands - probably the most important event
   // Note from the future: Not anymore
   socket.on('chat message', function(message) {
-    if (!message) {
+    if (!message || typeof message != 'string') {
       return;
     }
 
@@ -564,6 +581,14 @@ function leaveLobby(socket) {
       // Notify the specfic player that they are no longer spectating
       // sendServerMessage(player.id, 'Last non-spectator left, you are no longer spectating.');
       io.to(player.id).emit('game message', 'Last non-spectator left, you are no longer spectating.');
+    }, player => {
+      // Callback if the host left so a new host has been chosen
+
+      // Notify the other players of the change
+      io.in(lobby.name).emit('new host', player.id);
+
+      // Notify the specfic player that they are the new host
+      io.to(player.id).emit('game message', 'Host left, you are the new host.');
     });
     // Delete lobby if it is empty
     // if (lobby.players.size == 0) {

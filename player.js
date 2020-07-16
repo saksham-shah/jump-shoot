@@ -78,6 +78,7 @@ class Player {
 
   // Aim at the mouse position
   mouseUpdate(mPos) {
+    if (!mPos || typeof mPos.x != 'number' || typeof mPos.y != 'number') return;
     var pos = this.body.getPosition();
     var dx = mPos.x - pos.x;
     var dy = mPos.y - pos.y;

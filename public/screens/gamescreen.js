@@ -33,6 +33,7 @@ let timer = {
 let scoreboard = [];
 let playersMap = new Map();
 let playersArray = [];
+let host = null;
 
 let lastWinner = null;
 let gameover = false;

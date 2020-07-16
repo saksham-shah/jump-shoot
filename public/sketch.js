@@ -126,6 +126,7 @@ function setup() {
         getElement('game chat output').clear();
         getElement('pause chat output').clear();
 
+        host = data.host;
         playersMap = new Map();
         playersArray = data.players;
         gameover = false;
@@ -291,7 +292,13 @@ function setup() {
         if (player) {
             player[change.key] = change.value;
         }
-    })
+    });
+
+    // The host has changed
+    socket.on('new host', function(hostID) {
+        host = hostID;
+        updatePlayers();
+    });
 }
 
 function draw() {
