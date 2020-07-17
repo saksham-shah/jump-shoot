@@ -5,7 +5,7 @@ let settingsText = [
     },
     {
         name: 'Teams',
-        value: settings => 'Disabled'
+        value: settings => settings.teams ? settings.numTeams : 'Disabled'
     },
     {
         name: 'Mass multiplier',

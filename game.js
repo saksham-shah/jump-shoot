@@ -22,7 +22,12 @@ class Game {
     this.ending = false;
     this.inGame = false;
 
-    this.settings = settings;
+    this.settings = {
+      experimental: settings.experimental,
+      mass: settings.mass,
+      bounceChance: settings.bounceChance,
+      teams: settings.teams
+    };
     // this.experimental = experimental;
 
     this.pendingParticles = [];
@@ -298,8 +303,14 @@ class Game {
     // Add each player to the game
     for (var user of this.users.keys()) {
       if (this.users.get(user).spectate) continue;
-      let colour = this.users.get(user).colour;
-      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, colour, this.settings.mass, this.world, this.settings.experimental);
+      let colour;
+      let team = this.users.get(user).team;
+      if (this.settings.teams) {
+        colour = team;
+      } else {
+        colour = this.users.get(user).colour;
+      }
+      var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, colour, team, this.settings.mass, this.world, this.settings.experimental);
       this.players.set(player.id, player);
 
       // Colours cycle around
@@ -432,16 +443,49 @@ class Game {
       player.removeFromWorld(this.world);
       this.players.delete(playerid);
       if (!this.winner) {
-        // Declare a winner if only one is remaining
-        if (this.players.size == 1) {
-          this.inGame = false;
-          for (var playerid of this.players.keys()) {
-            this.winner = playerid;
-          }
-        } else if (this.players.size == 0) {
+        // Check for a winner
+        if (this.players.size == 0) {
           this.inGame = false;
           // No winner chosen if no players left - it's a draw
+
+        } else if (!this.settings.teams) {
+          // Declare a winner if only one is remaining
+          if (this.players.size == 1) {
+            this.inGame = false;
+            for (var playerid of this.players.keys()) {
+              this.winner = playerid;
+            }
+          }
+
+        } else {
+          // Check if all remaining players are from the same team
+          let teamRemaining = null;
+          let onlyOneTeamLeft = true;
+          for (let player of this.players.values()) {
+            if (teamRemaining == null) {
+              teamRemaining = player.team;
+            } else if (teamRemaining != player.team) {
+              onlyOneTeamLeft = false;
+            }
+          }
+
+          if (onlyOneTeamLeft) {
+            this.inGame = false;
+            this.winner = teamRemaining;
+          }
         }
+
+
+        // // Declare a winner if only one is remaining
+        // if (this.players.size == 1) {
+        //   this.inGame = false;
+        //   for (var playerid of this.players.keys()) {
+        //     this.winner = playerid;
+        //   }
+        // } else if (this.players.size == 0) {
+        //   this.inGame = false;
+        //   // No winner chosen if no players left - it's a draw
+        // }
       }
 
       // Death particles

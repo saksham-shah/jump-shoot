@@ -16,6 +16,10 @@ function getPlayerPing(player) {
 function getPlayerStatus(player) {
     let playerObj = playersMap.get(player.id);
     if (playerObj.spectate) return 'Spectating';
+    if (lobbySettings.teams) {
+        let teamName = colourOrder[playerObj.team];
+        return 'Team ' + teamName[0].toUpperCase() + teamName.slice(1);
+    }
     return '';
 }
 
@@ -85,7 +89,7 @@ function addPauseOverlay() {
         height: 240,
         rowHeight: 30,
         scrollbarWidth: 20,
-        columnWidths: [320, 120, 125, 150, 125],
+        columnWidths: [310, 130, 125, 150, 125],
         columnTitles: ['Player', '', 'Wins', 'Best streak', 'Ping'],
         columnData: ['name', 'status', 'score', 'streak', 'ping'],
         label: 'player table'
@@ -126,9 +130,9 @@ function addPauseOverlay() {
         position: { x: 480, y: 510 },
         width: 200,
         height: 40,
-        text: 'CONTROLS',
+        text: 'CHANGE TEAM',
         textSize: 30,
-        onClick: () => openOverlay('controls')
+        onClick: () => socket.emit('change team')
     })
     .addButton({
         position: { x: 740, y: 510 },

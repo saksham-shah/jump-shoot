@@ -5,9 +5,10 @@ const MASSDECAY = 0.933;
 // Wrapper class for a planck.js body
 // Handles player actions based on controls
 class Player {
-  constructor(x, y, id, colour, mass, world, experimental) {
+  constructor(x, y, id, colour, team, mass, world, experimental) {
     this.id = id;
     this.colour = colour;
+    this.team = team;
 
     this.experimental = experimental;
 

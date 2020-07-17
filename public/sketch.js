@@ -240,11 +240,16 @@ function setup() {
         streak = data.streak;
 
         // Check if there is a winner
-        if (data.winner) {
-            lastWinner = data.winner;
-            chatMessage(SERVER, "Winner: " + playersMap.get(data.winner).name);
+        lastWinner = data.winner;
+        if (lastWinner != null) {
+            let name;
+            if (playersMap.has(lastWinner)) {
+                name = playersMap.get(lastWinner).name;
+            } else {
+                name = 'Team ' + colourOrder[lastWinner][0].toUpperCase() + colourOrder[lastWinner].slice(1);
+            }
+            chatMessage(SERVER, "Winner: " + name);
         } else { // If no winner, it's a draw
-            lastWinner = null;
             chatMessage(SERVER, "Winner: NONE - it's a draw");
         }
         // chat.newMessage(SERVER, "Game over");
@@ -260,7 +265,7 @@ function setup() {
     socket.on('player joined', function(player) {
         chatMessage(SERVER, player.name + " joined the lobby");
         sounds.message.play();
-        playersArray.push({ id: player.id, name: player.name, score: 0, streak: 0, ping: 0, spectate: false, typing: false, paused: false });
+        playersArray.push({ id: player.id, name: player.name, team: 0, score: 0, streak: 0, ping: 0, spectate: false, typing: false, paused: false });
         scoreboard.push({ name: player.name, score: 0 });
         updatePlayers();
         // playersMap.set(player.id, { id: player.id, name: player.name, score: 0, streak: 0, ping: 0, typing: false, paused: false })

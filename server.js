@@ -271,7 +271,27 @@ function newConnection(socket) {
         // Callback if the spectate request is rejected
 
         // sendServerMessage(socket.id, `Cannot spectate - ${err}`);
-        socket.emit('game message', `Cannot spectate - ${err}`);
+        socket.emit('game message', err);
+      });
+    }
+  });
+
+  socket.on('change team', function() {
+    var lobby = getLobbyFromSocket(socket.id, users, lobbies);
+    if (lobby) {
+      lobby.changeTeam(socket.id, team => {
+        // Callback if the team change request is accepted
+
+        // Notify the other players of the change
+        io.in(lobby.name).emit('status change', {
+          playerid: socket.id,
+          key: 'team',
+          value: team
+        });
+      }, err => {
+        // Callback if the team change request is rejected
+
+        socket.emit('game message', err);
       });
     }
   });
@@ -286,6 +306,20 @@ function newConnection(socket) {
         io.in(lobby.name).emit('new settings', newSettings);
         
         io.emit('lobbies updated', getLobbies());
+      }, player => {
+        // Callback if the number of teams has reduced so some players need to change teams
+
+        // Notify the other players of the change
+        io.in(lobby.name).emit('status change', {
+          playerid: player.id,
+          key: 'team',
+          value: 0
+        });
+
+        // Notify the specfic player that they are the new host
+        io.to(player.id).emit('game message', 'Teams reduced - you have automatically been assigned to a new team.');
+      }, message => {
+        io.in(lobby.name).emit('game message', message);
       });
     }
   });

@@ -2,6 +2,8 @@ var socket = require('socket.io');
 
 var Game = require('./game.js');
 
+const teamNames = ['Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Cyan', 'Grey'];
+
 // Game room where players can play the game
 class Lobby {
   constructor(name, password, maxPlayers, unlisted, settings = {}, permanent = false) {
@@ -14,6 +16,8 @@ class Lobby {
     if (this.settings.experimental == undefined) this.settings.experimental = false;
     if (this.settings.mass == undefined) this.settings.mass = 1;
     if (this.settings.bounceChance == undefined) this.settings.bounceChance = 0.25;
+    if (this.settings.teams == undefined) this.settings.teams = false;
+    if (this.settings.numTeams == undefined) this.settings.numTeams = 2;
     // this.experimental = experimental;
 
     this.maxPlayers = maxPlayers;
@@ -25,6 +29,9 @@ class Lobby {
     this.currentStreak = 0;
     this.lastWinner = null;
     this.scoreOrder = [];
+
+    this.teams = [];
+    this.teamOrder = [];
 
     this.freeColours = [];
   }
@@ -46,7 +53,7 @@ class Lobby {
       colour = this.players.size;
     }
 
-    this.players.set(socketid, { id: socketid, name, colour, score: 0, streak: 0, ping: 0, spectate: false, timeLeft: 10800, typing: false, paused: false });
+    this.players.set(socketid, { id: socketid, name, colour, team: 0, score: 0, streak: 0, ping: 0, spectate: false, timeLeft: 10800, typing: false, paused: false });
     this.scoreOrder.push(socketid);
 
     // Check if a host is needed
@@ -61,7 +68,7 @@ class Lobby {
       // scoreboard: this.players,
       host: this.host,
       players: this.playersArray(),
-      scoreboard: this.scoreboard(),
+      scoreboard: this.scoreboard(this.settings.teams),
       lastWinner: this.lastWinner,
       streak: this.currentStreak,
       settings: this.settings
@@ -176,7 +183,7 @@ class Lobby {
     // }
 
     if (!wasSpectating && this.getNonSpectators() == 1) {
-      failure('At least one player must be playing.');
+      failure('Cannot spectate - At least one player must be playing.');
       return;
     }
 
@@ -192,22 +199,88 @@ class Lobby {
     return total;
   }
 
-  newSettings(playerid, settings = {}, newSettingsCallback) {
+  changeTeam(playerid, success, failure) {
+    if (!this.settings.teams) {
+      failure('Teams are disabled.');
+      return;
+    }
+
+    let player = this.players.get(playerid);
+    let previousTeam = player.team;
+    player.team = (previousTeam + 1) % this.settings.numTeams;
+
+    success(player.team);
+  }
+
+  newSettings(playerid, settings = {}, newSettingsCallback, teamChangeCallback, messageCallback) {
     if (playerid != this.host) return;
     if (typeof settings.experimental != 'boolean') return;
     if (typeof settings.mass != 'number') return;
     if (typeof settings.bounceChance != 'number') return;
+    if (typeof settings.teams != 'boolean') return;
+    if (settings.teams && typeof settings.numTeams != 'number') return;
 
-    if (settings.mass > 2) settings.mass = 2;
     if (settings.mass < 0.25) settings.mass = 0.25;
-    if (settings.bounceChance > 1) settings.bounceChance = 1;
+    if (settings.mass > 2) settings.mass = 2;
     if (settings.bounceChance < 0) settings.bounceChance = 0;
+    if (settings.bounceChance > 1) settings.bounceChance = 1;
 
     settings.mass = Math.round(settings.mass / 0.25) * 0.25;
     settings.bounceChance = Math.round(settings.bounceChance / 0.25) * 0.25;
 
-    this.settings = settings;
+    this.settings.experimental = settings.experimental;
+    this.settings.mass = settings.mass;
+    this.settings.bounceChance = settings.bounceChance;
+
+    if (settings.teams) {
+      if (settings.numTeams < 2) settings.numTeams = 2;
+      if (settings.numTeams > 4) settings.numTeams = 4;
+      settings.numTeams = Math.round(settings.numTeams);
+
+      if (!this.settings.teams) {
+        messageCallback('Teams have been enabled.');
+
+        this.teams = [];
+        this.teamOrder = [];
+        for (let i = 0; i < settings.numTeams; i++) {
+          this.teams.push(0);
+          this.teamOrder.push(i);
+        }
+      } else if (settings.numTeams > this.settings.numTeams) {
+        for (let i = this.settings.numTeams; i < settings.numTeams; i++) {
+          this.teams.push(0);
+          this.teamOrder.push(i);
+        }
+
+      } else if (settings.numTeams < this.settings.numTeams) {
+        for (let i = this.teamOrder.length - 1; i >= 0; i--) {
+          if (this.teamOrder[i] >= settings.numTeams) {
+            this.teamOrder.splice(i, 1);
+          }
+        }
+
+        this.teams.splice(settings.numTeams, this.settings.numTeams - settings.numTeams);
+      }
+
+      this.reassignTeams(settings.numTeams, teamChangeCallback);
+      
+      this.settings.numTeams = settings.numTeams;
+    } else if (this.settings.teams) {
+      messageCallback('Teams have been disabled.');
+    }
+
+    this.settings.teams = settings.teams;
+
     newSettingsCallback(this.settings);
+  }
+
+  reassignTeams(numTeams, teamChangeCallback) {
+    for (let player of this.players.values()) {
+      if (player.team >= numTeams) {
+        player.team = 0;
+        teamChangeCallback(player);
+      }
+    }
   }
 
   // Update the game state
@@ -217,6 +290,17 @@ class Lobby {
       if (!this.game.inGame && this.gameCountdown < 0) {
         // If a game has just ended this update cycle
         var winner = this.game.winner;
+
+        if (winner != null) {
+          if (winner == this.lastWinner) {
+            this.currentStreak++;
+          } else {
+            this.currentStreak = 1;
+          }
+
+          this.lastWinner = winner;
+        }
+
         var winnerObj = this.players.get(winner);
         if (winnerObj) {
           winnerObj.score++;
@@ -236,17 +320,36 @@ class Lobby {
             i--;
           }
 
-          if (winner == this.lastWinner) {
-            this.currentStreak++;
-          } else {
-            this.currentStreak = 1;
-          }
+          // if (winner == this.lastWinner) {
+          //   this.currentStreak++;
+          // } else {
+          //   this.currentStreak = 1;
+          // }
 
           if (winnerObj.streak < this.currentStreak) winnerObj.streak = this.currentStreak;
 
-          this.lastWinner = winner;
+          // this.lastWinner = winner;
         // } else {
         //   this.currentStreak = 0;
+        } else if (winner != null) {
+          if (typeof winner == 'number' && winner < this.settings.numTeams) {
+            this.teams[winner]++;
+
+            // Reorder scoreboard
+            let i = this.teamOrder.length - 1;
+            while (i >= 0) {
+              if (this.teamOrder[i] == winner) {
+                this.teamOrder.splice(i, 1);
+                do {
+                  i--;
+                } while (i >= 0 && this.teams[this.teamOrder[i]] < this.teams[winner]);
+
+                this.teamOrder.splice(i + 1, 0, winner);
+                i = 0;
+              }
+              i--;
+            }
+          }
         }
 
         // this.lastWinner = winner;
@@ -258,7 +361,7 @@ class Lobby {
           winner: winner,
           // scoresMap: this.players,
           players: this.playersArray(),
-          scoreboard: this.scoreboard(),
+          scoreboard: this.scoreboard(this.settings.teams),
           streak: this.currentStreak
         }
       } else if (this.gameCountdown == 0) {
@@ -304,7 +407,8 @@ class Lobby {
       array.push({
         id,
         name: player.name,
-        colour: player.colour,
+        // colour: player.colour,
+        team: player.team,
         score: player.score,
         streak: player.streak,
         ping: player.ping,
@@ -316,8 +420,20 @@ class Lobby {
     return array;
   }
 
-  scoreboard() {
+  scoreboard(teams) {
     let scoreboard = [];
+
+    if (teams) {
+      for (let teamID of this.teamOrder) {
+        scoreboard.push({
+          name: 'Team ' + teamNames[teamID],
+          score: this.teams[teamID]
+        });
+      }
+  
+      return scoreboard;
+    }
+
     for (let id of this.scoreOrder) {
       let player = this.players.get(id);
       scoreboard.push({

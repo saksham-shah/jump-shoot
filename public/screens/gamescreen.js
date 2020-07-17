@@ -314,10 +314,16 @@ let gs = {
             noStroke();
             textSize(150);
             textAlign(CENTER);
-            if (lastWinner) {
+            if (lastWinner != null) {
                 text('WINS', 450, 300);
 
-                let name = playersMap.get(lastWinner).name;
+                let name;
+                if (typeof lastWinner != 'number') {
+                    name = playersMap.get(lastWinner).name;
+                } else {
+                    name = 'Team ' + colourOrder[lastWinner][0].toUpperCase() + colourOrder[lastWinner].slice(1);
+                }
+
                 let tSize = Math.min(100, 500 / 0.54 / name.length);
                 textSize(tSize);
                 text(name, 450, 150);
@@ -632,8 +638,9 @@ function mouseToGamePos() {
 }
 
 function drawPlayer(obj) {
-    let colourIndex = obj.colour % colourOrder.length;
-    let colour = playerColours[colourOrder[colourIndex]];
+    // let colourIndex = obj.colour % colourOrder.length;
+    // let colour = playerColours[colourOrder[colourIndex]];
+    let colour = getPlayerColour(obj);
     push();
     translate(obj.x, obj.y);
     rotate(obj.angle); // Rotate to draw the gun in the right place
@@ -708,8 +715,9 @@ function drawNameTag(obj) {
     // Draw circle around local player at the start of the game
     if (gameTime < 180 && obj.id == myid && !settings.recordmode) {
         noFill();
-        let colourIndex = obj.colour % colourOrder.length;
-        let colour = playerColours[colourOrder[colourIndex]];
+        // let colourIndex = obj.colour % colourOrder.length;
+        // let colour = playerColours[colourOrder[colourIndex]];
+        let colour = getPlayerColour(obj);
         var c = color(colour);
         c.setAlpha(75 + 75 * Math.cos(gameTime * 2 * Math.PI / 40));
         stroke(c);
@@ -735,14 +743,14 @@ function drawNameTag(obj) {
     }
 
     // Icons
-    if ((player.ping > 999 || player.typing || player.paused) && !settings.recordmode) {
+    if ((player.ping > 500 || player.typing || player.paused) && !settings.recordmode) {
         translate(0, -0.75 - obj.r);
         noStroke();
 
         if (settings.showmass) translate(0, -1.33);
         if (obj.id == lastWinner) translate(0, -1);
 
-        if (player.ping > 999) {
+        if (player.ping > 500) {
             noFill();
             strokeWeight(0.2);
             let framePosition = gameTime % 60;
@@ -802,8 +810,9 @@ function drawOffScreenPlayer(obj) {
             y = gameSize.h - buffer;
         }
         translate(x, y);
-        let colourIndex = obj.colour % colourOrder.length;
-        let colour = playerColours[colourOrder[colourIndex]].slice();
+        // let colourIndex = obj.colour % colourOrder.length;
+        // let colour = playerColours[colourOrder[colourIndex]].slice();
+        let colour = getPlayerColour(obj).slice();
         // var colour = obj.colour;
         colour.push(50);
         fill(colour);
@@ -861,6 +870,11 @@ function drawObject(obj) {
         break;
     }
     pop();
+}
+
+function getPlayerColour(player) {
+    let colourIndex = player.colour % colourOrder.length;
+    return playerColours[colourOrder[colourIndex]];
 }
 
 let colourOrder = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'cyan', 'grey'];
