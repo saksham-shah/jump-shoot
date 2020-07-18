@@ -48,7 +48,6 @@ function setTimer(time, text) {
     timer.text = text;
 }
 
-let gameMessages = [];
 let gameMessageLines = ['', '', '', '', '', '', '', '', '', '', '', ''];
 let gameMessageTimes = [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180];
 let nextGameMessage = 0;

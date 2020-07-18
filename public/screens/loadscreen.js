@@ -156,13 +156,17 @@ function addLoadScreen() {
                     ellipse(450 - i * gap, 300, 2 * r * size);
                 }
             } else {
-                textAlign(CENTER);
-                textSize(100);
-                fill(255);
-                noStroke();
-                text('Jump & Shoot', 450, 150);
+                // textAlign(CENTER);
+                // textSize(100);
+                // fill(255);
+                // noStroke();
+                // text('Jump & Shoot', 450, 150);
+                logo(450, 125, 1.3);
 
                 if (errorText.length > 0) {
+                    textAlign(CENTER);
+                    fill(255);
+                    noStroke();
                     textSize(25);
                     fill(255, 0, 0);
                     text(errorText, 450, 340);

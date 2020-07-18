@@ -17,12 +17,15 @@ function addMenuScreen() {
             strokeWeight(1);
             rect(775, 555, 250, 30);
 
-            textAlign(CENTER);
-            textSize(100);
-            fill(255);
-            noStroke();
-            text('Jump & Shoot', 450, 150);
+            // textAlign(CENTER);
+            // textSize(100);
+            // fill(255);
+            // noStroke();
+            // text('Jump & Shoot', 450, 150);
+            logo(450, 125, 1.3);
 
+            textAlign(CENTER);
+            noStroke();
             fill(20);
             textSize(20);
             text(playerName, 775, 555 + 20 / 3);

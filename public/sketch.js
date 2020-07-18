@@ -69,6 +69,8 @@ function setup() {
 
     createUI(baseWidth, baseHeight, buffer);
 
+    logo();
+
     for (let screenFunc of screens) {
         screenFunc();
     }
@@ -123,9 +125,6 @@ function setup() {
         lobbyName = data.name;
         // scoreboard = data.scoreboard;
 
-        getElement('game chat output').clear();
-        getElement('pause chat output').clear();
-
         host = data.host;
         playersMap = new Map();
         playersArray = data.players;
@@ -171,6 +170,13 @@ function setup() {
         // scr = ms;
         closeAllOverlays();
         setScreen('menu');
+
+        gameMessageLines = ['', '', '', '', '', '', '', '', '', '', '', ''];
+        gameMessageTimes = [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180];
+        nextGameMessage = 0;
+
+        getElement('game chat output').clear();
+        getElement('pause chat output').clear();
     });
 
     // Name updated
