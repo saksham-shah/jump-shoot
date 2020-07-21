@@ -306,19 +306,23 @@ class Lobby {
           winnerObj.score++;
 
           // Reorder scoreboard
-          let i = this.scoreOrder.length - 1;
-          while (i >= 0) {
-            if (this.scoreOrder[i] == winner) {
-              this.scoreOrder.splice(i, 1);
-              do {
-                i--;
-              } while (i >= 0 && this.players.get(this.scoreOrder[i]).score < winnerObj.score);
+          this.scoreOrder.sort((a, b) => {
+            return this.players.get(b).score - this.players.get(a).score;
+          });
 
-              this.scoreOrder.splice(i + 1, 0, winner);
-              i = 0;
-            }
-            i--;
-          }
+          // let i = this.scoreOrder.length - 1;
+          // while (i >= 0) {
+          //   if (this.scoreOrder[i] == winner) {
+          //     this.scoreOrder.splice(i, 1);
+          //     do {
+          //       i--;
+          //     } while (i >= 0 && this.players.get(this.scoreOrder[i]).score < winnerObj.score);
+
+          //     this.scoreOrder.splice(i + 1, 0, winner);
+          //     i = 0;
+          //   }
+          //   i--;
+          // }
 
           // if (winner == this.lastWinner) {
           //   this.currentStreak++;
@@ -336,19 +340,23 @@ class Lobby {
             this.teams[winner]++;
 
             // Reorder scoreboard
-            let i = this.teamOrder.length - 1;
-            while (i >= 0) {
-              if (this.teamOrder[i] == winner) {
-                this.teamOrder.splice(i, 1);
-                do {
-                  i--;
-                } while (i >= 0 && this.teams[this.teamOrder[i]] < this.teams[winner]);
+            this.teamOrder.sort((a, b) => {
+              return this.teams[b] - this.teams[a];
+            });
 
-                this.teamOrder.splice(i + 1, 0, winner);
-                i = 0;
-              }
-              i--;
-            }
+            // let i = this.teamOrder.length - 1;
+            // while (i >= 0) {
+            //   if (this.teamOrder[i] == winner) {
+            //     this.teamOrder.splice(i, 1);
+            //     do {
+            //       i--;
+            //     } while (i >= 0 && this.teams[this.teamOrder[i]] < this.teams[winner]);
+
+            //     this.teamOrder.splice(i + 1, 0, winner);
+            //     i = 0;
+            //   }
+            //   i--;
+            // }
           }
         }
 

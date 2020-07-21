@@ -244,8 +244,8 @@ class Player {
     var pos = this.body.getPosition();
     var angle = this.angle;
     // Weapon starts slightly away from the player to avoid collision with the player
-    var x = pos.x + (this.r + (this.experimental ? 0 : this.weapon.w * 1.1)) * Math.cos(this.angle);
-    var y = pos.y + (this.r + (this.experimental ? 0 : this.weapon.w * 1.1)) * Math.sin(this.angle);
+    var x = pos.x + this.r * Math.cos(this.angle);
+    var y = pos.y + this.r * Math.sin(this.angle);
     this.weapon.getUnequipped(x, y, this.angle, world);
     this.weapon.throw(vec(0, 0), force, this.angle, world);
     this.weapon = null;

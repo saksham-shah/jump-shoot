@@ -87,7 +87,7 @@ class Game {
 
       let self = this;
       function processWeaponCollision(weapon, otherData) {
-        if (!(self.settings.experimental && otherData && otherData.type == 'player'
+        if (!(otherData && otherData.type == 'player'
           // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
           && weaponPassPlayer(otherData.obj, weapon))) {
 
@@ -96,7 +96,7 @@ class Game {
             weapon.passThrough = 0;
           }
           
-          if (self.settings.experimental && otherData && otherData.type == 'player') {
+          if (otherData && otherData.type == 'player') {
             if (otherData.obj.weapon == null && otherData.obj.cooldown >= 20) {
               // if (dataA.obj.thrown == 0){// || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
               // if (dataA.obj.thrown == 0 && (dataA.obj.hitTimer == 0 || !dataA.obj.throwHit || dataA.obj.throwHit != dataB.obj.id)) {

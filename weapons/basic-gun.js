@@ -5,7 +5,7 @@ var Bullet = require('../bullet.js');
 class BasicGun extends Weapon {
   constructor(x, y, engine, experimental, id) {
     super(x, y, 1.33, 0.67, engine, experimental, id);
-    this.fireRate = 15;
+    this.fireRate = experimental ? 17 : 15;
   }
 
   shoot(x, y, angle, playerID) {
