@@ -59,16 +59,17 @@ io.sockets.on('connection', newConnection);
 
 function newConnection(socket) {
 
-  if (pendingConnections <= 0) {
-    socket.emit('duplicate');
-    socket.disconnect();
-    console.log('bad connection: ' + socket.id);
-    return;
-  }
+  // if (pendingConnections <= 0) {
+  //   socket.emit('duplicate');
+  //   socket.disconnect();
+  //   console.log('bad connection: ' + socket.id);
+  //   return;
+  // }
 
   pendingConnections--;
 
   console.log('new connection: ' + socket.id);
+  console.log(`${socket.request.connection.remoteAddress} : ${socket.request.connection.remotePort}`);
   // console.log(socket.conn.remoteAddress);
 
   // Check for duplicate connections from the same IP address - DOES NOT WORK

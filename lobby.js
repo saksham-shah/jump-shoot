@@ -31,6 +31,12 @@ class Lobby {
     this.scoreOrder = [];
 
     this.teams = [];
+    for (let i = 0; i < 4; i++) {
+      this.teams.push({
+        score: 0,
+        players: []
+      });
+    }
     this.teamOrder = [];
 
     this.freeColours = [];
@@ -122,6 +128,17 @@ class Lobby {
 
   newGame() {
     if (!this.game) {
+      for (let team of this.teams) {
+        team.players = [];
+      }
+
+      // Record which players are on each team in this game
+      for (let player of this.players.values()) {
+        if (player.spectate) continue;
+
+        this.teams[player.team].players.push(player.id);
+      }
+
       this.game = new Game(this.players, this.settings);
       var data = this.game.startGame();
       data.type = 'startGame';
@@ -241,14 +258,20 @@ class Lobby {
         messageCallback('Teams have been enabled.');
 
         this.teams = [];
+        for (let i = 0; i < 4; i++) {
+          this.teams.push({
+            score: 0,
+            players: []
+          });
+        }
         this.teamOrder = [];
         for (let i = 0; i < settings.numTeams; i++) {
-          this.teams.push(0);
+          // this.teams.push(0);
           this.teamOrder.push(i);
         }
       } else if (settings.numTeams > this.settings.numTeams) {
         for (let i = this.settings.numTeams; i < settings.numTeams; i++) {
-          this.teams.push(0);
+          this.teams[i].score = 0;
           this.teamOrder.push(i);
         }
 
@@ -259,7 +282,7 @@ class Lobby {
           }
         }
 
-        this.teams.splice(settings.numTeams, this.settings.numTeams - settings.numTeams);
+        // this.teams.splice(settings.numTeams, this.settings.numTeams - settings.numTeams);
       }
 
       this.reassignTeams(settings.numTeams, teamChangeCallback);
@@ -337,11 +360,23 @@ class Lobby {
         //   this.currentStreak = 0;
         } else if (winner != null) {
           if (typeof winner == 'number' && winner < this.settings.numTeams) {
-            this.teams[winner]++;
+            this.teams[winner].score++;
 
             // Reorder scoreboard
             this.teamOrder.sort((a, b) => {
-              return this.teams[b] - this.teams[a];
+              return this.teams[b].score - this.teams[a].score;
+            });
+
+            for (let playerid of this.teams[winner].players) {
+              let playerObj = this.players.get(playerid);
+              if (playerObj) {
+                playerObj.score++;
+              }
+            }
+
+            // Reorder scoreboard
+            this.scoreOrder.sort((a, b) => {
+              return this.players.get(b).score - this.players.get(a).score;
             });
 
             // let i = this.teamOrder.length - 1;
@@ -435,7 +470,7 @@ class Lobby {
       for (let teamID of this.teamOrder) {
         scoreboard.push({
           name: 'Team ' + teamNames[teamID],
-          score: this.teams[teamID]
+          score: this.teams[teamID].score
         });
       }
   
