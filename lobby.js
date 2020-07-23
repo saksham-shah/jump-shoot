@@ -204,6 +204,11 @@ class Lobby {
       return;
     }
 
+    // Reset the idle timer
+    if (!wasSpectating) {
+      player.timeLeft = 10800;
+    }
+
     player.spectate = !wasSpectating;
     success(!wasSpectating);
   }

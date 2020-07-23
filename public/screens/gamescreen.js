@@ -458,14 +458,15 @@ let gs = {
         // }
 
         // Calculate ping every 2000ms (2 seconds)
-        if (Date.now() - pingSent > 2000) {
-            // Update the last time that a ping was sent
-            pingSent = Date.now();
-            socket.emit('pingCheck');
-        }
+        // if (Date.now() - pingSent > 2000) {
+        //     // Update the last time that a ping was sent
+        //     pingSent = Date.now();
+        //     socket.emit('pingCheck');
+        // }
     
         // Show the ping time if 'P' is pressed
         if (keyIsDown(9)) {
+            let pingTime = playersMap.get(myid).ping;
             textAlign(LEFT);
             textSize(24);
             fill(255);
@@ -490,13 +491,6 @@ function addGameScreen() {
             // Send the mouse position to the server to aim weapons
             var data = mouseToGamePos();
             socket.emit('update', data);
-
-            // // Calculate ping every 2000ms (2 seconds)
-            // if (Date.now() - pingSent > 2000) {
-            //     // Update the last time that a ping was sent
-            //     pingSent = Date.now();
-            //     socket.emit('pingCheck');
-            // }
 
             if (chatHidden == ((lastMessage < 240 && !settings.recordmode) || typing)) {
                 chatHidden = !chatHidden;

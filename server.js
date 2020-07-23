@@ -70,6 +70,7 @@ function newConnection(socket) {
 
   console.log('new connection: ' + socket.id);
   console.log(`${socket.request.connection.remoteAddress} : ${socket.request.connection.remotePort}`);
+  console.log(`${socket.handshake.address}`);
   // console.log(socket.conn.remoteAddress);
 
   // Check for duplicate connections from the same IP address - DOES NOT WORK
@@ -87,7 +88,8 @@ function newConnection(socket) {
   socket.emit('welcome', socket.id);
   var userData = {
     name: null,
-    lobbyname: null
+    lobbyname: null,
+    pingSent: null
   };
   users.set(socket.id, userData);
 
@@ -99,9 +101,29 @@ function newConnection(socket) {
   socket.emit('lobbies updated', getLobbies());
 
   // Used to calculate ping
-  socket.on('pingCheck', () => {
-    socket.emit('pongCheck');
-  })
+  // socket.on('pingCheck', () => {
+  //   socket.emit('pongCheck');
+  // })
+
+  // Used to calculate ping
+  socket.on('pongCheck', () => {
+    // Difference between the response time and the time the ping message was sent
+    let pingTime = Date.now() - users.get(socket.id).pingSent;
+
+    var lobby = getLobbyFromSocket(socket.id);
+    if (lobby) {
+      lobby.statusChange(socket.id, { key: 'ping', value: pingTime }, () => {
+        // Callback if the status change is accepted
+
+        // Notify the other players of the change
+        io.in(lobby.name).emit('status change', {
+          playerid: socket.id,
+          key: 'ping',
+          value: pingTime
+        });
+      });
+    }
+  });
 
   // Client updates their name
   socket.on('pick name', name => {
@@ -763,7 +785,8 @@ function updateGame() {
         io.to(playerid).emit('game message', 'You are idle. Move or you will be kicked in 10 seconds!');
       } else if (player.timeLeft <= 0) {
         leaveLobby(io.sockets.connected[playerid]);
-        sendServerMessage(playerid, 'You were kicked for being idle for too long!');
+        io.to(playerid).emit('alert', 'Kicked!', 'You were kicked because you were idle for too long!');
+        // sendServerMessage(playerid, 'You were kicked for being idle for too long!');
       }
     }
 
@@ -798,6 +821,20 @@ function updateGame() {
       if (sounds.length > 0) {
         io.in(room).emit('new sounds', sounds);
       }
+    }
+  }
+}
+
+// Update player pings every 2 seconds
+setInterval(updatePing, 2000);
+
+function updatePing() {
+  for (var i = 0; i < lobbies.length; i++) {
+    for (var playerid of lobbies[i].players.keys()) {
+      io.to(playerid).emit('pingCheck');
+
+      // Update the last time that a ping was sent
+      users.get(playerid).pingSent = Date.now();
     }
   }
 }

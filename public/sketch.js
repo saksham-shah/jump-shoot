@@ -10,8 +10,8 @@ let lobbyName = null;
 let screens = [];
 
 let socket;
-let pingSent = Date.now(); // Used to calculate ping
-let pingTime = 0;
+// let pingSent = Date.now(); // Used to calculate ping
+// let pingTime = 0;
 
 let lastMessage = 0;
 
@@ -109,11 +109,16 @@ function setup() {
     })
 
     // Used to calculate ping
-    socket.on('pongCheck', () => {
-        // Difference between the response time and the time the ping message was sent
-        pingTime = Date.now() - pingSent;
+    // socket.on('pongCheck', () => {
+    //     // Difference between the response time and the time the ping message was sent
+    //     pingTime = Date.now() - pingSent;
 
-        socket.emit('status change', { key: 'ping', value: pingTime });
+    //     socket.emit('status change', { key: 'ping', value: pingTime });
+    // });
+
+    // Used to calculate ping
+    socket.on('pingCheck', () => {
+        socket.emit('pongCheck');
     });
 
     socket.on('lobbies updated', function(lobbies) {
@@ -195,6 +200,11 @@ function setup() {
         addGameMessage(message);
         sounds.message.play();
     });
+
+    socket.on('alert', (title, message) => {
+        openOverlay('message', title, message);
+        sounds.message.play();
+    })
 
     // Next frame of the game
     socket.on('update', function(data) {

@@ -1,6 +1,7 @@
 let sounds = {};
 let filter;
 let filterToggle = false;
+let musicPlaying = false;
 
 function setFilter(bool) {
     if (filterToggle == bool) return;
@@ -95,6 +96,10 @@ function addLoadScreen() {
                 let vol = volumes[soundToLoad.name] / 50;
                 if (soundToLoad.name == 'music') {
                     vol *= settings.music;
+                    filter = new p5.LowPass();
+                    filter.freq(400);
+                    sound.disconnect();
+                    sound.connect(filter);
                 } else {
                     vol *= settings.sound;
                 }
@@ -120,11 +125,12 @@ function addLoadScreen() {
                     loadAssets();
                 } else if (clicked && playerName.length > 0) {
                     setScreen('menu');
-                    filter = new p5.LowPass();
-                    filter.freq(400);
-                    sounds.music.disconnect();
-                    sounds.music.connect(filter);
+                    // filter = new p5.LowPass();
+                    // filter.freq(400);
+                    // sounds.music.disconnect();
+                    // sounds.music.connect(filter);
                     sounds.music.loop();
+                    musicPlaying = true;
                     clicked = false;
                     errorText = '';
                 }
@@ -144,6 +150,12 @@ function addLoadScreen() {
         },
         getCursorState: state => {
             if (loading) return 'wait';
+        },
+        changeScreen: leaving => {
+          if (!leaving && musicPlaying) {
+            musicPlaying = false;
+            sounds.music.stop();
+          }
         },
         draw: () => {
             if (loading) {
