@@ -10,45 +10,39 @@ let lobbyName = null;
 let screens = [];
 
 let socket;
-// let pingSent = Date.now(); // Used to calculate ping
-// let pingTime = 0;
 
 let lastMessage = 0;
 
 let errorText = '';
 
+// Add a message to the chatboxes
 function chatMessage(sender, message) {
     lastMessage = 0;
     let chatTxt = message;
     let bold = true;
+    // If the message isn't from the server, don't make it bold and display the sender
     if (sender != SERVER) {
         chatTxt = sender + ': ' + chatTxt;
         bold = false;
     }
-    // getElement('lobby chat output').addText(chatTxt, bold);
     getElement('game chat output').addText(chatTxt, bold);
     getElement('pause chat output').addText(chatTxt, bold);
 }
 
-let outdated = false;
+// (tries to) Ensure that the cache stores data in the correct format
 let currentVersion = 'ui';
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
 
     let lastVersion = localStorage.getItem('version');
+    // If the player is on a previous version of cache formatting, restore the default controls
     if (lastVersion != currentVersion) {
-        // localStorage.setItem('version', currentVersion);
-        // outdated = true;
-
         localStorage.setItem('controls', JSON.stringify(controls));
         localStorage.setItem('version', currentVersion);
-        // localStorage.setItem('controlKeys', JSON.stringify(controlKeys));
-        // localStorage.setItem('settings', JSON.stringify(settings));
-        // localStorage.setItem('name', playerName);
-
     }
     
+    // If the cache doesn't have all the usual data, store defaults
     if (!(localStorage.getItem('controls') && localStorage.getItem('controlKeys') && localStorage.getItem('settings') && localStorage.getItem('name'))) {
         localStorage.setItem('controls', JSON.stringify(controls));
         localStorage.setItem('controlKeys', JSON.stringify(controlKeys));
@@ -56,10 +50,13 @@ function setup() {
         localStorage.setItem('name', playerName);
 
     } else {
+        // Get stored data (controls, settings, name) from cache and apply it to the code
         controls = JSON.parse(localStorage.getItem('controls'));
         controlKeys = JSON.parse(localStorage.getItem('controlKeys'));
         playerName = localStorage.getItem('name');
 
+        // If new settings have been added to the game since these settings were stored,
+        // add them to the settings object
         let tempSettings = JSON.parse(localStorage.getItem('settings'));
         for (let key in settings) {
             if (tempSettings[key] == undefined) tempSettings[key] = settings[key];
@@ -67,37 +64,46 @@ function setup() {
         settings = tempSettings;
     }
 
+    // Create the p5ui object
     createUI(baseWidth, baseHeight, buffer);
 
+    // Create the logo
     logo();
 
+    // Add all of the p5ui screens and overlays (/screens and /overlays)
     for (let screenFunc of screens) {
         screenFunc();
     }
 
+    // Apply the styles (/addstyles.js)
     addStyles();
 
+    // Set up the p5ui object
     setupUI();
 
+    // Add a custom game cursor
     setCursors({
         game: 'assets/cursors/game.cur'
     });
 
+    // The first screen players see is the loading screen to load assets
     setScreen('loading');
 
     // Connect to the server
     socket = io.connect();
 
-    // Redefining io() so it can't be used to create bot connections
+    // Redefine io() so it can't be used to create bot connections
     io = () => socket;
 
     // socket.on('debug', data => { debug = data; console.log(`DEBUG: ${debug}`); });
 
+    // Force reloads the page to remove bot connections
     socket.on('duplicate', () => {
         console.log("duplicate detected (may not be 100% accurate sorry). All features have been disabled for you (just to be safe). Reload the page and all should be good.");
         location.reload();
     });
 
+    // Server welcomes the client (upon initial page load OR server restart)
     socket.on('welcome', socketid => {
         myid = socketid;
 
@@ -109,18 +115,11 @@ function setup() {
     })
 
     // Used to calculate ping
-    // socket.on('pongCheck', () => {
-    //     // Difference between the response time and the time the ping message was sent
-    //     pingTime = Date.now() - pingSent;
-
-    //     socket.emit('status change', { key: 'ping', value: pingTime });
-    // });
-
-    // Used to calculate ping
     socket.on('pingCheck', () => {
         socket.emit('pongCheck');
     });
 
+    // Some lobby state has changed
     socket.on('lobbies updated', function(lobbies) {
         updateLobbies(lobbies);
     });
@@ -128,8 +127,8 @@ function setup() {
     // Lobby is joined
     socket.on('joined lobby', function(data) {
         lobbyName = data.name;
-        // scoreboard = data.scoreboard;
 
+        // Set all lobby specific properties
         host = data.host;
         playersMap = new Map();
         playersArray = data.players;
@@ -143,7 +142,6 @@ function setup() {
         streak = data.streak;
 
         // Send messages in the chat to tell the player they have joined a lobby
-        // chat.newMessage(SERVER, "Welcome to the lobby '" + data.name + "'");
         chatMessage(SERVER, "Welcome to the lobby '" + data.name + "'")
         if (data.gameinfo) { // Lobby is currently mid game
             chatMessage(SERVER, "Game ongoing: please wait for it to end");
@@ -156,11 +154,10 @@ function setup() {
             platforms = data.gameinfo.platforms;
             gs.newGame(data.gameinfo.platforms, data.gameinfo.bulletBounce);
         }
-        // scr = gs;
+
         closeAllOverlays();
         setScreen('game');
         timer.time = 0;
-        // filter.toggle(false);
     });
 
     // An error occured while joining the lobby
@@ -172,14 +169,15 @@ function setup() {
     // Lobby is left
     socket.on('left lobby', function() {
         gs.resetGame();
-        // scr = ms;
         closeAllOverlays();
         setScreen('menu');
 
+        // Reset the game messages
         gameMessageLines = ['', '', '', '', '', '', '', '', '', '', '', ''];
         gameMessageTimes = [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180];
         nextGameMessage = 0;
 
+        // Clear the chat
         getElement('game chat output').clear();
         getElement('pause chat output').clear();
     });
@@ -201,6 +199,7 @@ function setup() {
         sounds.message.play();
     });
 
+    // Popup alert
     socket.on('alert', (title, message) => {
         openOverlay('message', title, message);
         sounds.message.play();
@@ -210,7 +209,9 @@ function setup() {
     socket.on('update', function(data) {
         if (data.type == 'updateGame') {
             gs.updateDynamic(data);
+
         } else if (data.type == 'startGame') {
+            // A new game has begun
             gameSize.w = data.width;
             gameSize.h = data.height;
             calculateGameSize();
@@ -218,9 +219,9 @@ function setup() {
             // Start displaying the game
             platforms = data.platforms;
             gs.newGame(data.platforms, data.bulletBounce);
-            // chat.newMessage(SERVER, "New game starting");
         }
 
+        // Add any messages to the chat
         if (data.messages) {
             for (var msg of data.messages) {
                 chatMessage(SERVER, msg);
@@ -249,7 +250,6 @@ function setup() {
     socket.on('game over', function(data) {
         setTimer(60, "Next game");
         gameover = true;
-        // scoreboard = data.scoreboard;
         playersArray = data.players;
         updatePlayers();
         scoreboard = data.scoreboard;
@@ -262,35 +262,32 @@ function setup() {
             if (playersMap.has(lastWinner)) {
                 name = playersMap.get(lastWinner).name;
             } else {
+                // Get the team name (it's a colour)
                 name = 'Team ' + colourOrder[lastWinner][0].toUpperCase() + colourOrder[lastWinner].slice(1);
             }
             chatMessage(SERVER, "Winner: " + name);
+
         } else { // If no winner, it's a draw
             chatMessage(SERVER, "Winner: NONE - it's a draw");
         }
-        // chat.newMessage(SERVER, "Game over");
-        // Check if there is a single winner
-        // if (data.winner) {
-        //     chatMessage(SERVER, "Winner: " + data.winner);
-        // } else { // If no winner, it's a draw
-        //     chatMessage(SERVER, "Winner: NONE - it's a draw");
-        // }
     });
 
     // New player in lobby
     socket.on('player joined', function(player) {
         chatMessage(SERVER, player.name + " joined the lobby");
         sounds.message.play();
+        // Add the player to the array and scoreboard
         playersArray.push({ id: player.id, name: player.name, team: 0, score: 0, streak: 0, ping: 0, spectate: false, typing: false, paused: false });
         scoreboard.push({ name: player.name, score: 0 });
         updatePlayers();
-        // playersMap.set(player.id, { id: player.id, name: player.name, score: 0, streak: 0, ping: 0, typing: false, paused: false })
     });
 
     // Player left the lobby
     socket.on('player left', function(id) {
+        // Loop through all the players to find the one that just left
         for (let i = 0; i < playersArray.length; i++) {
             let player = playersArray[i];
+            // Remove the player from the array and scoreboard
             if (player.id == id) {
                 playersArray.splice(i, 1);
                 scoreboard.splice(i, 1);
@@ -344,10 +341,14 @@ function windowResized() {
     resizeUI();
 }
 
+// Wrap text around a maximum line width
+// Returns an array of strings, each representing one line of text
 function wrapText(txt, tSize, lineWidth) {
+    // Work out how much of the word can fit in one line
     function resizeWord(word, lineWidth) {
         if (textWidth(word) <= lineWidth) return [word, ''];
     
+        // Keep adding characters until the word no longer fits
         let i = 0, partialWord = '';
         while (i < word.length && textWidth(partialWord + word[i]) <= lineWidth) {
             partialWord += word[i];
@@ -364,16 +365,23 @@ function wrapText(txt, tSize, lineWidth) {
     while (words.length > 0) {
         let word = words.splice(0, 1)[0];
         testLine = line + word;
+        // If this isn't the last word, add a space
         if (words.length > 0) testLine += ' ';
         testWidth = textWidth(testLine);
+
+        // If this word can't fit on this line
         if (testWidth > lineWidth) {
+            // If this is the first word on the line (i.e. the word is longer than the whole line)
             if (line == '') {
+                // Work out how much of the word fits and add it
                 let [wordToAdd, remainingWord] = resizeWord(word, lineWidth);
                 lines.push(wordToAdd);
+                // Add the left over word back to the words array
                 if (remainingWord.length > 0) {
                     words.unshift(remainingWord);
                 }
             } else {
+                // Start a new line
                 lines.push(line);
                 line = '';
                 words.unshift(word);
@@ -387,6 +395,7 @@ function wrapText(txt, tSize, lineWidth) {
     return lines;
 }
 
+// Wrap text around a maximum line width, taking new lines into account as well
 function wrapTextWithNewline(txt, tSize, lineWidth) {
     let newlineSplit = txt.split('\n');
     let totalLines = [];

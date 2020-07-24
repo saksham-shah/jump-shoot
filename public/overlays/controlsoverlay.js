@@ -1,13 +1,3 @@
-// let controls = {
-//     up: "KeyW", // W
-//     down: "KeyS", // S
-//     left: "KeyA", // A
-//     right: "KeyD", // D
-//     shoot: "Mouse 0", // LMB
-//     throw: "Mouse 2", // RMB
-//     shield: "Mouse 0", // LMB
-// }
-
 let controls = {
     up: 87, // W
     down: 83, // S
@@ -29,47 +19,11 @@ let controls = {
     shield: "LMB"
 };
 
+// Store the above controls as the default one
 let defaultControls = Object.assign({}, controls);
 let defaultControlKeys = Object.assign({}, controlKeys);
 
-// let cs = {
-//     specialKeyNames: {
-//         " ": "SPACE",
-//         "ArrowUp" : "UP",
-//         "ArrowDown" : "DOWN",
-//         "ArrowLeft" : "LEFT",
-//         "ArrowRight" : "RIGHT",
-//         "Mouse 0": "LMB",
-//         "Mouse 1": "MMB",
-//         "Mouse 2": "RMB"
-//     },
-//     controlNames: {
-//         up: "Jump",
-//         down: "Go down fast",
-//         left: "Move left",
-//         right: "Move right",
-//         shoot: "Shoot",
-//         throw: "Throw weapon",
-//         shield: "Shield"
-//     },
-//     // Keys displayed on the controls screen
-//     controlKeys: {
-//         up: "W",
-//         down: "S",
-//         left: "A",
-//         right: "D",
-//         shoot: "LMB",
-//         throw: "RMB",
-//         shield: "RMB"
-//     },
-//     controlClicked: null,
-//     buttonClicked: false
-// }
-
-// Store the above controls as the default ones
-// cs.defaultControls = Object.assign({}, controls);
-// cs.defaultControlKeys = Object.assign({}, cs.controlKeys);
-
+// Allows players to change their game controls
 function addControlsOverlay() {
     let specialKeyNames = {
         " ": "SPACE",
@@ -91,8 +45,6 @@ function addControlsOverlay() {
         throw: "Throw weapon",
         shield: "Shield"
     };
-
-   
 
     let controlClicked = null;
     let buttonClicked = false;
@@ -136,15 +88,19 @@ function addControlsOverlay() {
         }
     })
     .on('keyDown', e => {
+        // If a control is selected
         if (controlClicked) {
+            // Set this key as that control
             controls[controlClicked] = e.which;
             controlKeys[controlClicked] = specialKeyNames[e.key] ? specialKeyNames[e.key] : e.key.toUpperCase();
             controlClicked = null;
+            // Store the control in cache
             localStorage.setItem('controls', JSON.stringify(controls));
             localStorage.setItem('controlKeys', JSON.stringify(controlKeys));
         }
     })
     .on('mouseUp', e => {
+        // Similar to 'keyDown' above
         if (buttonClicked || !controlClicked) return;
         let text = "Mouse " + e.button;
         controls[controlClicked] = text;
@@ -158,10 +114,12 @@ function addControlsOverlay() {
             buttonClicked = false;
             return;
         }
+        // Don't register a left mouse click if it was just clicking a button
         let mousePos = getScreen('controls').mousePos;
         buttonClicked = (mousePos.x > 220 && mousePos.x < 320 && mousePos.y > 30 && mousePos.y < 240) || mousePos.y < 0;
     });
 
+    // Add buttons for each of the controls
     let x = 270;
     let y = 45;
     for (let control in controls) {
@@ -172,7 +130,6 @@ function addControlsOverlay() {
             style: 'controls',
             text: () => controlClicked == control ? '...' : controlKeys[control],
             textSize: offset - 10,
-            // target: control,
             onClick: () => controlClicked = controlClicked == control ? null : control
         });
 

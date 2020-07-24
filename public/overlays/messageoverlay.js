@@ -1,3 +1,4 @@
+// A popup message alert from the server
 function addMessageOverlay() {
     let lines = [];
     let centre = false;

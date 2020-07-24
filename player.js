@@ -101,6 +101,8 @@ class Player {
       // Cool weapon gun so it can shoot
       this.weapon.coolGun();
     }
+
+    // Increment timer properties
     this.cooldown++;
 
     this.lastShot.timeAgo++;
@@ -109,6 +111,7 @@ class Player {
 
     // Point the gun towards its target
     // mouseVel is used to make the movement smooth and natural
+    // Similar algorithm to steering
 
     var desired = this.mouseAngle - this.angle;
     var diff = desired - this.angleVel;
@@ -118,13 +121,18 @@ class Player {
     if (diff < 0) {
       direction = -1;
     }
+
+    // Limit the acceleration of the angle to 0.15 rad
     diff = Math.min(Math.abs(diff), 0.15) * direction;
     direction = 1;
     this.angleVel += diff;
     if (this.angleVel < 0) {
       direction = -1;
     }
+
+    // Limit the velocity of the angle to 0.5 rad
     this.angleVel = Math.min(Math.abs(this.angleVel), 0.5) * direction;
+    // Apply the velocity to the angle
     this.angle = (this.angle + this.angleVel) % (2 * Math.PI);
 
     // Make the player move around
@@ -146,11 +154,19 @@ class Player {
     }
 
     // Throw equipped weapon
+    // (only throw if the throw control is just clicked - not held)
     if (this.controls.throw && this.weapon && !this.previousControls.throw) {
+      // Set the throwing properties of the weapon
+      // Weapon has just been thrown
       this.weapon.thrown = -1;
+      // Weapon hasn't hit anyone
       this.weapon.throwHit = null;
+      // Weapon has been thrown by this player
       this.weapon.thrownBy = this.id;
+      // For 5 frames, the weapon will not collide with this player
       this.weapon.passThrough = 5;
+
+      // Throw the actual weapon
       this.throwWeapon(5000, world);
     }
     this.previousControls.throw = this.controls.throw;
@@ -158,19 +174,11 @@ class Player {
     // Activate shield
     if (this.controls.shield && this.weapon == null && this.cooldown >= 10) {
       this.shield = true;
-      // this.shieldWidth -= this.experimental ? 0.025 : 0.015
       this.addToShield(this.experimental ? -0.024 : -0.015)
     } else {
       this.shield = false;
-      // this.shieldWidth += this.experimental ? 0.004 : 0.00375;
       this.addToShield(this.experimental ? 0.004 : 0.00375);
     }
-    // Limit the shield's size to a maximum and minimum
-    // if (this.shieldWidth < (this.experimental ? 0.6 : 0.67)) {
-    //   this.shieldWidth = this.experimental ? 0.6 : 0.67;
-    // } else if (this.shieldWidth > 3) {
-    //   this.shieldWidth = 3;
-    // }
 
     // Return bullets if shot, otherwise null
     return bullets;
@@ -178,9 +186,8 @@ class Player {
 
   // Finds and returns nearby weapons (player must be nearly touching the weapons to pick up)
   checkForWeapons(weapons) {
+    // Loop through all the weapons and check if any are equippable and close enough to equip
     for (var i = 0; i < weapons.length; i++) {
-      // if (!weapons[i].equipped && (weapons[i].thrown == 0 && (weapons[i].hitTimer > 0 && weapons[i].throwHit && weapons[i].throwHit != this.id))) {
-      // if (!weapons[i].equipped && (weapons[i].thrown == 0 && (weapons[i].hitTimer == 0 || !weapons[i].throwHit || weapons[i].throwHit != this.id))) {
       if (this.weaponIsEquippable(weapons[i])) {
         var weapon = weapons[i];
         var wPos = weapon.body.getPosition();
@@ -199,8 +206,14 @@ class Player {
   }
 
   weaponIsEquippable(weapon) {
+    // If the weapon is already equipped, it isn't equippable
     if (weapon.equipped) return false;
+    // If the weapon has recently been thrown, it isn't equippable
     if (weapon.thrown != 0) return false;
+    // If the weapon hit someone long enough ago,
+    // or it didn't hit anyone,
+    // or it hit someone else,
+    // it IS equippable
     return weapon.hitTimer == 0 || !weapon.throwHit || weapon.throwHit != this.id;
   }
 
@@ -208,9 +221,6 @@ class Player {
   equipWeapon(weapon, world) {
     this.weapon = weapon;
     this.weapon.getEquipped(world);
-    // Can't throw the weapon immediately after equipping it
-    // Prevents accidental throwing if the throw key is pressed when equipping
-    // this.cooldown = 0;
   }
 
   // Fire a weapon
@@ -243,9 +253,10 @@ class Player {
   throwWeapon(force, world) {
     var pos = this.body.getPosition();
     var angle = this.angle;
-    // Weapon starts slightly away from the player to avoid collision with the player
+    // Weapon starts at the circumference of the player
     var x = pos.x + this.r * Math.cos(this.angle);
     var y = pos.y + this.r * Math.sin(this.angle);
+    // Unequip the weapon and apply the throwing force to it
     this.weapon.getUnequipped(x, y, this.angle, world);
     this.weapon.throw(vec(0, 0), force, this.angle, world);
     this.weapon = null;
@@ -292,9 +303,11 @@ class Player {
     }
 
     if (this.controls.up) {
+      // Jump!
       let jumped = false;
       for (let contact of this.contacts) {
         let data = contact.fixture.getUserData();
+        // If the player hasn't already jumped this frame and this fixture can be jumped on
         if (!jumped && (!data || !data.nojump)) {
           var n = contact.normal;
           var nAng = Math.atan2(n.y, n.x);
@@ -330,7 +343,6 @@ class Player {
 
             this.body.setLinearVelocity(vec(vx, vy));
             jumped = true;
-            // this.lastCollisionParticle = 0;
             this.landed = false;
           }
         }
@@ -343,24 +355,22 @@ class Player {
     if (this.controls.down) {
       this.body.applyForceToCenter(vec(0, -30 * mass));
     }
-    // Experimental bouncy feature - really isn't needed but I can't get myself to remove it
-    // if (this.controls.bouncy) {
-    //   this.body.restitution = 1.3
-    // } else {
-    //   this.body.restitution = 1;
-    // }
   }
 
+  // Make the player lighter when they are hit by a bullet
   damage(dmg) {
+    // Damage is exponential
     var newDensity = this.fixture.getDensity() * Math.pow(MASSDECAY, dmg);
     this.mass = newDensity;
     this.fixture.setDensity(newDensity);
     this.body.resetMassData();
   }
 
+  // Make the shield shrink or grow
   addToShield(w) {
     this.shieldWidth += w;
 
+    // Limit the size of the shield between 0.6 and 3
     if (this.shieldWidth < (this.experimental ? 0.6 : 0.67)) {
       this.shieldWidth = this.experimental ? 0.6 : 0.67;
     } else if (this.shieldWidth > 3) {
@@ -368,6 +378,7 @@ class Player {
     }
   }
 
+  // Remove the player from the physics engine (when they die)
   removeFromWorld(world) {
     // Must throw weapon before being removed
     if (this.weapon) {
@@ -385,7 +396,6 @@ class Player {
       weaponToObj = this.weapon.toObject();
     }
     let mass = Math.round(this.mass * 100);
-    // var name = users.get(this.id).name;
     return {
       type: 'player',
       id: this.id,
@@ -396,7 +406,6 @@ class Player {
       shield: this.shield,
       shieldWidth: this.shieldWidth,
       stat: mass < 5 ? '<5' : mass,
-      // name: name,
       colour: this.colour,
       weapon: weaponToObj
     }

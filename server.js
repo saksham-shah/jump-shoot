@@ -57,6 +57,29 @@ lobbies.push(new Lobby('secret', 'secret', 16, true, { experimental: true }, tru
 // Client connects
 io.sockets.on('connection', newConnection);
 
+// Get the IP address of a client
+// https://stackoverflow.com/questions/14382725/how-to-get-the-correct-ip-address-of-a-client-into-a-node-socket-io-app-hosted-o
+function getClientIP(socket) {
+  let ipAddress;
+  // Amazon EC2 / Heroku workaround to get real client IP
+  let forwardedIpsStr = socket.request.headers['x-forwarded-for']; 
+  if (forwardedIpsStr && forwardedIpsStr != undefined) {
+    // 'x-forwarded-for' header may return multiple IP addresses in
+    // the format: "client IP, proxy 1 IP, proxy 2 IP" so take the
+    // the first one
+    let forwardedIps = forwardedIpsStr.split(',');
+    ipAddress = forwardedIps[0];
+    console.log('x-forwarded-for');
+  }
+  if (!ipAddress) {
+    // Ensure getting client IP address still works in
+    // development environment
+    ipAddress = socket.request.connection.remoteAddress;
+    console.log('remoteAddress');
+  }
+  return ipAddress;
+}
+
 function newConnection(socket) {
 
   // if (pendingConnections <= 0) {
@@ -69,8 +92,10 @@ function newConnection(socket) {
   pendingConnections--;
 
   console.log('new connection: ' + socket.id);
-  console.log(`${socket.request.connection.remoteAddress} : ${socket.request.connection.remotePort}`);
-  console.log(`${socket.handshake.address}`);
+
+  // console.log(`${socket.request.connection.remoteAddress} : ${socket.request.connection.remotePort}`);
+  console.log(`${getClientIP(socket)}`);
+  // console.log(`${socket.handshake.address}`);
   // console.log(socket.conn.remoteAddress);
 
   // Check for duplicate connections from the same IP address - DOES NOT WORK
@@ -140,7 +165,7 @@ function newConnection(socket) {
     // }
   })
 
-  // Client resets their name
+  // Client resets their name - UNUSED
   socket.on('reset name', () => {
     var lobby = getLobbyFromSocket(socket.id);
     if (lobby) {

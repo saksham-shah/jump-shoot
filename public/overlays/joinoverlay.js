@@ -1,5 +1,5 @@
+// Allows players to join a lobby by entering a password
 function addJoinOverlay() {
-    // let joining = false;
     let joiningLobby = '';
     let joinError = '';
 
@@ -10,13 +10,13 @@ function addJoinOverlay() {
         onDisplay: (lobby, err) => {
             joiningLobby = lobby;
             joinError = err;
-            // console.log(lobby, err);
             errorText = '';
             
             let passwordTextbox = getElement('password enter input');
             passwordTextbox.clear();
 
             if (err == 'password needed' || err == 'password incorrect') {
+                // If a password is needed, display the textbox
                 getElement('password enter button').hide(false);
                 passwordTextbox.hide(false);
                 passwordTextbox.focus();
@@ -28,21 +28,6 @@ function addJoinOverlay() {
             }
         },
         draw: () => {
-            // textSize(20);
-            // textAlign(CENTER);
-            // noStroke();
-            // fill(255);
-
-            // if (joining) {  
-            //     text('Joining lobby', 200, 50);
-    
-            //     let numCircles = 2, r = 10, gap = 30;
-            //     for (let i = -numCircles; i <= numCircles; i++) {
-            //         let size = 0.5 * (Math.sin(frameCount / 20 + i * Math.PI / (numCircles * 2 + 1)) + 1)
-            //         ellipse(200 - i * gap, 62.5, 2 * r * size);
-            //     }
-            // }
-
             textAlign(CENTER);
             noStroke();
 
@@ -55,7 +40,8 @@ function addJoinOverlay() {
                     fill(255, 0, 0);
                     textSize(15);
                     text(errorText, 200, 95);
-                } 
+                }
+
             } else if (joinError == 'lobby full') {
                 fill(255);
                 textSize(20);
@@ -78,14 +64,6 @@ function addJoinOverlay() {
                 errorText = 'Enter password';
                 return;
             }
-
-            // let lobbyName = joiningLobby;
-            // console.log(`Password entered: '${pass}' to join lobby '${lobbyName}'`);
-
-            // passwordTextbox.clear();
-            // passwordTextbox.hide(true);
-            // b.hide(true);
-            // joining = true;
 
             socket.emit('join lobby', { name: joiningLobby, password: pass });
         },

@@ -34,11 +34,19 @@ class Weapon {
     // Whether the weapon is currently equipped by a player
     this.equipped = false;
 
-    // Whether the weapon was just thrown
+    // If 0, the weapon cannot hit anyone and can be freely equipped
+    // If -1, the weapon is in the air after having been thrown and will hit any player it collides with
+    // If >0, the weapon has just hit a player or platform and may still be able to hit a player
+    // if it hasn't already. It cannot be equipped.
     this.thrown = 0;
+    // Who the weapon was thrown at and hit (if any)
     this.throwHit = null;
+    // Who the weapon was thrown by
     this.thrownBy = null;
+    // If greater than 0, the weapon will not collide with whoever threw it
+    // Allows the weapon to start inside the player and not instantly collide with the one that threw it
     this.passThrough = 5;
+    // If greater than 0, the weapon is not equippable by the player it hit
     this.hitTimer = 0;
 
     // Controls weapon fire rate
@@ -49,6 +57,7 @@ class Weapon {
   }
 
   update() {
+    // Decrement throwing properties
     if (this.thrown > 0) {
       this.thrown--;
     }
@@ -81,22 +90,28 @@ class Weapon {
   getUnequipped(x, y, angle, world) {
     this.equipped = false;
     var bodyDef = this.bodyDef;
+    // Spawns at the position and angle provided
+    // It is the position and angle of the player that threw it
     bodyDef.position = vec(x, y);
     bodyDef.angle = angle;
 
+    // Create the body again
     this.body = world.createBody(bodyDef);
     this.body.createFixture(this.fixtureDef);
   }
 
-  throw(vel, speed, angle, world) {
+  throw(vel, speed, angle) {
     // Initial velocity is the same as the player's current velocity
+    // UPDATE: vel is now always 0 but it is kept at an argument in case it is changed
     this.body.setLinearVelocity(vel);
-    // Apply a large force towards the specified angle
+
+    // Apply a large force towards the specified angle (the angle of the throw)
     let mass = this.body.getMass();
     let fx = speed * mass * Math.cos(angle);
     let fy = speed * mass * Math.sin(angle);
     this.body.applyForceToCenter(vec(fx, fy));
 
+    // Speed is 0 when the weapon is passively thrown (i.e. disarm or death)
     if (speed != 0) {
       this.sounds.push('throw');
     }

@@ -1,15 +1,18 @@
+// Allows players to change the settings of the lobby they are in
 function addChangeSettingsOverlay() {
     addOverlay('change lobby settings', {
         width: 400,
         height: 400,
         text: 'Change lobby settings',
         onDisplay: () => {
+            // Set the values of all UI elements as needed
             getElement('lobby settings mass').setValue(lobbySettings.mass);
             getElement('lobby settings bounceChance').setValue(lobbySettings.bounceChance * 100);
             getElement('lobby settings experimental').setValue(lobbySettings.experimental);
             getElement('lobby settings teams').setValue(lobbySettings.teams);
             getElement('lobby settings numTeams').setValue(lobbySettings.numTeams);
 
+            // The teams slider is only enabled if teams are enabled
             if (lobbySettings.teams) {
                 disableSlider(false);
             } else {
@@ -33,6 +36,7 @@ function addChangeSettingsOverlay() {
             text('Teams', 175, 270 + 20/3);
         },
         postDraw: () => {
+            // Grey out the slider if it is disabled
             if (numTeamsDisabled) {
                 fill(150, 150);
                 noStroke();
@@ -93,6 +97,7 @@ function addChangeSettingsOverlay() {
             addGameMessage('Settings applied. They will come into effect in the next round.')
             sounds.message.play();
 
+            // Extract values from all the UI elements and send them to the server
             let experimental = getElement('lobby settings experimental').value;
             let mass = getElement('lobby settings mass').value;
             let bounceChance = getElement('lobby settings bounceChance').value / 100;

@@ -1,3 +1,4 @@
+// Help screen
 function addHelpOverlay() {
     const pages = [{
         title: 'Introduction',
@@ -75,12 +76,14 @@ Music by Saksham Shah`
         }
     })
     .on('mouseWheel', e => {
+        // Players can scroll through the pages
         if (e.deltaY > 0) {
             if (currentPage < pages.length - 1) currentPage++;
         } else {
             if (currentPage > 0) currentPage--;
         }
     })
+    // Scroll to the next or previous page
     .addButton({
         position: { x: 70, y: 365 },
         width: 100,

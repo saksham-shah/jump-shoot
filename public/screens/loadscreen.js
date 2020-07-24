@@ -81,21 +81,23 @@ const volumes = {
 
 let soundsLoaded = 0;
 
-// let invalid = false;
-
 function addLoadScreen() {
     let loading = false;
     let clicked = false;
 
+    // Loads all sounds and the font
     function loadAssets() {
         loading = true;
         for (let soundToLoad of soundsToLoad) {
             loadSound('/assets/sounds/' + soundToLoad.file, soundLoaded);
 
             function soundLoaded(sound) {
+                // Set the volume of the sound
                 let vol = volumes[soundToLoad.name] / 50;
                 if (soundToLoad.name == 'music') {
                     vol *= settings.music;
+
+                    // Create the low pass filter to dampen/muffle music when not playing
                     filter = new p5.LowPass();
                     filter.freq(400);
                     sound.disconnect();
@@ -124,11 +126,10 @@ function addLoadScreen() {
                 if (!font) {
                     loadAssets();
                 } else if (clicked && playerName.length > 0) {
+                    // Once the start button has been clicked and the player has a name
+                    // Go to the main menu
                     setScreen('menu');
-                    // filter = new p5.LowPass();
-                    // filter.freq(400);
-                    // sounds.music.disconnect();
-                    // sounds.music.connect(filter);
+                    // Start the music
                     sounds.music.loop();
                     musicPlaying = true;
                     clicked = false;
@@ -136,11 +137,14 @@ function addLoadScreen() {
                 }
                 
             } else {
+                // Once all the assets have loaded
                 if ((soundsLoaded == soundsToLoad.length) && font) {
                     loading = false;
+                    // Display the start button and name textbox
                     getElement('loading button start').hide(false);
                     getElement('loading name input').hide(false);
 
+                    // Add sounds to p5ui (for UI clicks and hovers)
                     setSounds({
                         click: sounds.buttonclick,
                         hover: sounds.buttonhover
@@ -162,17 +166,13 @@ function addLoadScreen() {
                 noStroke();
                 fill(255);
         
+                // Three circles growing and shrinking
                 let numCircles = 2, r = 15, gap = 50;
                 for (let i = -numCircles; i <= numCircles; i++) {
                     let size = 0.5 * (Math.sin(frameCount / 20 + i * Math.PI / (numCircles * 2 + 1)) + 1)
                     ellipse(450 - i * gap, 300, 2 * r * size);
                 }
             } else {
-                // textAlign(CENTER);
-                // textSize(100);
-                // fill(255);
-                // noStroke();
-                // text('Jump & Shoot', 450, 150);
                 logo(450, 125, 1.3);
 
                 if (errorText.length > 0) {
@@ -196,15 +196,13 @@ function addLoadScreen() {
             clicked = true;
             let nameTextbox = getElement('loading name input');
             let name = nameTextbox.value;
+            // Don't allow an empty name
             if (name.length == 0) {
                 errorText = 'Name cannot be empty';
                 return;
             }
 
             socket.emit('pick name', name);
-            // myName = name;
-            // localStorage.setItem('name', myName);
-            // filter.toggle(false);
         },
         label: 'loading button start',
         tooltip: 'Click me to begin!',

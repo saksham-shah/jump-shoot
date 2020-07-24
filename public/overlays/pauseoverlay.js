@@ -1,5 +1,6 @@
 let playerTable;
 
+// Returns a string displaying player ping in the table
 function getPlayerPing(player) {
     let ping = playersMap.get(player.id).ping;
     if (ping == 0) {
@@ -13,6 +14,7 @@ function getPlayerPing(player) {
     return ping + 'ms';
 }
 
+// Returns a string displaying player status in the table
 function getPlayerStatus(player) {
     let playerObj = playersMap.get(player.id);
     if (playerObj.spectate) return 'Spectating';
@@ -23,11 +25,7 @@ function getPlayerStatus(player) {
     return '';
 }
 
-function updatePlayers(players) {
-    // if (players != undefined) {
-    //     scoreboard = players;
-    // }
-
+function updatePlayers() {
     playerTable.clear();
     for (let player of playersArray) {
         let name = player.name;
@@ -52,18 +50,17 @@ function updatePlayers(players) {
     }
 }
 
+// Displayed when the player presses the Escape key while in a lobby
 function addPauseOverlay() {
     addOverlay('pause', {
-        changeScreen: (leavingScreen, oldScr, newScr) => {
-            if (leavingScreen) {
+        changeScreen: leaving => {
+            if (leaving) {
                 let gameInput = getElement('game chat input');
                 let pauseInput = getElement('pause chat input');
 
+                // Copy the contents of the paused textbox to the game textbox
+                // They are meant to look like the same textbox
                 gameInput.setValue(pauseInput.value);
-                // gameInput.value = pauseInput.value;
-                // gameInput.cursorPos = pauseInput.cursorPos;
-                // gameInput.selectionStart = pauseInput.selectionStart;
-                // gameInput.clipText();
             }
         },
         postDraw: () => drawGameMessages()

@@ -28,7 +28,6 @@ class Sniper extends Weapon {
         r: 0.2,
         life: 15,
         lifeErr: 3,
-        // col: [255, 255, 0], //yellow
         col: 'fire',
         num: 20
       });
@@ -56,7 +55,6 @@ class Sniper extends Weapon {
       w: this.w,
       h: this.h,
       angle: this.body.getAngle(),
-      // colour: [100],
       hide: this.equipped
     }
   }

@@ -3,9 +3,6 @@ const vec = pl.Vec2;
 const STEP = 1 / 60;
 
 var Player = require('./player.js');
-// var BasicGun = require('./weapons/basic-gun.js');
-// var Platform = require('./platform.js');
-// var Bullet = require('./bullet.js');
 
 var BasicGun = require('./weapons/basic-gun.js');
 var MachineGun = require('./weapons/machine-gun.js');
@@ -28,7 +25,6 @@ class Game {
       bounceChance: settings.bounceChance,
       teams: settings.teams
     };
-    // this.experimental = experimental;
 
     this.pendingParticles = [];
     this.pendingSounds = [];
@@ -43,40 +39,34 @@ class Game {
     this.dynamic = [];
     this.paths = [];
 
+    // Properties of the map which can be changed in map functions
     this.width = 54;
     this.height = 36;
     this.bulletBounce = null;
 
+    // Controls weapon drops
     this.weaponCounter = 180;
     this.nextWeaponX = null;
     this.weaponID = 0;
 
     this.time = 0;
 
-    this.storedObjects = {};
-
     this.players = new Map();
 
-    this.colours = [
-      [255, 0, 0], // red
-      [0, 0, 255], // blue
-      [0, 255, 0], // green
-      [255, 255, 0] // yellow
-    ];
-
+    // Create the planck world
     this.world = pl.World({
       gravity: vec(0, -60)
     });
 
+    // Event fired when a coliision starts between two fixtures
     this.world.on('begin-contact', contact => {
       let normal = contact.getWorldManifold().normal;
-      // let bodyA = contact.getFixtureA().getBody();
-      // let bodyB = contact.getFixtureB().getBody();
       let fixA = contact.getFixtureA();
       let fixB = contact.getFixtureB();
       let dataA = fixA.getUserData();
       let dataB = fixB.getUserData();
 
+      // If one of the bodies is a player, process the player collision
       if (dataA && dataA.type == 'player') {
         this.collidePlayer(dataA.obj, fixB, { x: -normal.x, y: -normal.y });
       }
@@ -85,22 +75,26 @@ class Game {
         this.collidePlayer(dataB.obj, fixA, { x: normal.x, y: normal.y });
       }
 
-      let self = this;
+      // Processes weapon collisions
+      // Similar to Game.collidePlayer and honestly they should be next to each other in the code
       function processWeaponCollision(weapon, otherData) {
+        // Don't process the collision if the other body is a player and the weapon should pass through
         if (!(otherData && otherData.type == 'player'
-          // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
           && weaponPassPlayer(otherData.obj, weapon))) {
 
+          // If the weapon was in the air (having been thrown), now it isn't
           if (weapon.thrown < 0) {
             weapon.thrown = 15;
             weapon.passThrough = 0;
           }
           
+          // If the other body is a player
           if (otherData && otherData.type == 'player') {
+            // If the player can equip a weapon
             if (otherData.obj.weapon == null && otherData.obj.cooldown >= 20) {
-              // if (dataA.obj.thrown == 0){// || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
-              // if (dataA.obj.thrown == 0 && (dataA.obj.hitTimer == 0 || !dataA.obj.throwHit || dataA.obj.throwHit != dataB.obj.id)) {
+              // If the player can equip this particular weapon
               if (otherData.obj.weaponIsEquippable(weapon)) {
+                // Disable the collision
                 contact.setEnabled(false);
               }
             }
@@ -115,113 +109,26 @@ class Game {
       if (dataB && dataB.type == 'weapon') {
         processWeaponCollision(dataB.obj, dataA);
       }
-
-      // if (dataA && dataA.type == 'weapon') {
-      //   if (!(this.experimental && dataB && dataB.type == 'player'
-      //     // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
-      //     && weaponPassPlayer(dataB.obj, dataA.obj))) {
-
-      //     if (dataA.obj.thrown < 0) {
-      //       dataA.obj.thrown = 15;
-      //       dataA.obj.passThrough = 0;
-      //     }
-          
-      //     if (this.experimental && dataB && dataB.type == 'player') {
-      //       if (dataB.obj.weapon == null && dataB.obj.cooldown >= 20) {
-      //         // if (dataA.obj.thrown == 0){// || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
-      //         // if (dataA.obj.thrown == 0 && (dataA.obj.hitTimer == 0 || !dataA.obj.throwHit || dataA.obj.throwHit != dataB.obj.id)) {
-      //         if (dataB.obj.weaponIsEquippable(dataA.obj)) {
-      //           contact.setEnabled(false);
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
-
-      // if (dataB && dataB.type == 'weapon') {
-      //   if (!(this.experimental && dataA && dataA.type == 'player'
-      //     // && dataB.obj.thrownBy == dataA.obj.id && dataB.obj.thrown < 0 && dataB.obj.thrown > -5)) {
-      //     && weaponPassPlayer(dataA.obj, dataB.obj))) {
-      //     if (dataB.obj.thrown < 0) {
-      //       dataB.obj.thrown = 15;
-      //       dataB.obj.passThrough = 0;
-      //     }
-          
-      //     if (this.experimental && dataA && dataA.type == 'player') {
-      //       if (dataA.obj.weapon == null && dataA.obj.cooldown >= 20) {
-      //         // if (dataB.obj.thrown == 0){// || (dataB.obj.thrown > 0 && dataB.obj.throwHit && dataB.obj.throwHit != dataA.obj.id)) {
-      //         // if (dataB.obj.thrown == 0 && (dataB.obj.hitTimer == 0 || !dataB.obj.throwHit || dataB.obj.throwHit != dataA.obj.id)) {
-      //         if (dataA.obj.weaponIsEquippable(dataB.obj)) {
-      //           contact.setEnabled(false);
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
-
-      // if (dataA) {
-      //   if (dataA.type == 'player') {
-      //     this.collidePlayer(dataA.obj, fixB, { x: -normal.x, y: -normal.y });
-
-      //   } else if (dataA.type == 'weapon') {
-      //     if (!(this.experimental && dataB && dataB.type == 'player'
-      //       // && dataA.obj.thrownBy == dataB.obj.id && dataA.obj.thrown < 0 && dataA.obj.thrown > -5)) {
-      //       && weaponPassPlayer(dataB.obj, dataA.obj))) {
-
-      //       if (dataA.obj.thrown < 0) {
-      //         dataA.obj.thrown = 30;
-      //         dataB.obj.passThrough = 0;
-      //       }
-            
-      //       if (this.experimental && dataB && dataB.type == 'player') {
-      //         if (dataB.obj.weapon == null && dataB.obj.cooldown >= 20) {
-      //           if (dataA.obj.thrown == 0 || (dataA.obj.thrown > 0 && dataA.obj.throwHit && dataA.obj.throwHit != dataB.obj.id)) {
-      //             contact.setEnabled(false);
-      //           }
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
-
-      // if (dataB) {
-      //   if (dataB.type == 'player') {
-      //     this.collidePlayer(dataB.obj, fixA, { x: normal.x, y: normal.y });
-
-      //   } else if (dataB.type == 'weapon') {
-      //     if (!(this.experimental && dataA && dataA.type == 'player'
-      //       // && dataB.obj.thrownBy == dataA.obj.id && dataB.obj.thrown < 0 && dataB.obj.thrown > -5)) {
-      //       && weaponPassPlayer(dataA.obj, dataB.obj))) {
-      //       if (dataB.obj.thrown < 0) {
-      //         dataB.obj.thrown = 30;
-      //         dataB.obj.passThrough = 0;
-      //       }
-            
-      //       if (this.experimental && dataA && dataA.type == 'player') {
-      //         if (dataA.obj.weapon == null && dataA.obj.cooldown >= 20) {
-      //           if (dataB.obj.thrown == 0 || (dataB.obj.thrown > 0 && dataB.obj.throwHit && dataB.obj.throwHit != dataA.obj.id)) {
-      //             contact.setEnabled(false);
-      //           }
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
     });
 
+      // Event fired when a coliision ends between two fixtures
     this.world.on('end-contact', contact => {
-      // let bodyA = contact.getFixtureA().getBody();
-      // let bodyB = contact.getFixtureB().getBody();
       let fixA = contact.getFixtureA();
       let fixB = contact.getFixtureB();
       let dataA = fixA.getUserData();
       let dataB = fixB.getUserData();
 
+      // If one of the bodies is a player
       if (dataA && dataA.type == 'player') {
         let player = dataA.obj;
+        // Loop through all current player contacts
         for (let i = player.contacts.length - 1; i >= 0; i--) {
+          // Find the contact that this event is about
           if (fixB == player.contacts[i].fixture) {
+            // Create collision particles
             collisionParticles(player, player.contacts[i].normal);
+
+            // Decrement the counter of friction contacts and remove this contact from the array
             if (dataB && dataB.friction) {
               player.staticFriction--;
             }
@@ -230,6 +137,7 @@ class Game {
         }
       }
 
+      // Same as above but for the other body
       if (dataB && dataB.type == 'player') {
         let player = dataB.obj;
         for (let i = player.contacts.length - 1; i >= 0; i--) {
@@ -244,13 +152,16 @@ class Game {
       }
     });
 
+    // Event fired every frame a collision is in progress
     this.world.on('pre-solve', contact => {
       let fixA = contact.getFixtureA();
       let fixB = contact.getFixtureB();
       let dataA = fixA.getUserData();
       let dataB = fixB.getUserData();
 
+      // If the collision is between a weapon and a player
       if (dataA && dataA.type == 'weapon' && dataB && dataB.type == 'player') {
+        // If the weapon should pass through the player, disable the collision
         if (weaponPassPlayer(dataB.obj, dataA.obj)) {
           contact.setEnabled(false);
         }
@@ -266,6 +177,7 @@ class Game {
 
   // Create the game map
   createMap() {
+    // Randomly pick a map and call the map function
     var thisMapFunc = mapFuncs[Math.floor(Math.random() * mapFuncs.length)];
     thisMapFunc(this);
 
@@ -277,15 +189,18 @@ class Game {
       [Shotgun, 1]
     ]
 
+    // A counter used to pick weapons randomly if they were unevenly weighted
     this.weaponSpawnTotal = 0;
     for (var w of this.weaponSpawn) {
       this.weaponSpawnTotal += w[1];
     }
 
+    // Randomly decide if 'bullet bounce' is active in this game
     if (this.bulletBounce === null) {
       this.bulletBounce = Math.random() > this.settings.bounceChance ? false : true;
     }
 
+    // Define the death bounds
     if (!this.deathBounds) {
       // Game boundary
       this.deathBounds = {
@@ -298,26 +213,27 @@ class Game {
   }
 
   addPlayers() {
+    // Pick one of the spawn points to spawn the first player at
     var currentSpawn = Math.floor(Math.random() * this.spawns.length);
-    // var currentColour = 0;
     // Add each player to the game
     for (var user of this.users.keys()) {
+      // Don't add the player if they are spectating
       if (this.users.get(user).spectate) continue;
+
+      // Decide the player's colour
       let colour;
       let team = this.users.get(user).team;
+      // If teams are disabled, each player has their own colour
       if (this.settings.teams) {
         colour = team;
       } else {
         colour = this.users.get(user).colour;
       }
+
+      // Create the player object at the chosen spawn point and add them to the players Map
+      // Slight random variation in coordinates so players never spawn at EXACTLY the same position
       var player = new Player(this.spawns[currentSpawn].x + (Math.random() - 0.5) * 0.01, this.spawns[currentSpawn].y + (Math.random() - 0.5) * 0.01, user, colour, team, this.settings.mass, this.world, this.settings.experimental);
       this.players.set(player.id, player);
-
-      // Colours cycle around
-      // currentColour++;
-      // if (currentColour >= this.colours.length) {
-      //   currentColour = 0;
-      // }
 
       // Spawn locations cycle around
       currentSpawn++;
@@ -327,6 +243,7 @@ class Game {
     }
   }
 
+  // Start the game by calling the above methods
   startGame() {
     this.initGame();
     this.createMap();
@@ -349,19 +266,24 @@ class Game {
     return data;
   }
 
+  // A player has collided with another fixture
   collidePlayer(player, other, normal) {
     let data = other.getUserData();
+    // If the other body is a weapon and should pass through the player, ignore it
     if (data && data.type == 'weapon') {
       if (weaponPassPlayer(player, data.obj)) return;
     }
 
+    // Add this collision to an array in the Player object
     let thisContact = {
       fixture: other,
       normal: normal
     }
 
     player.contacts.push(thisContact);
+    // Create particles
     collisionParticles(player, normal);
+    // If the player was jumping, they have now landed
     player.landed = true;
 
     if (data) {
@@ -370,19 +292,24 @@ class Game {
         this.queueRemovePlayer(player.id)
       }
 
+      // Increment the player's friction counter to apply friction
       if (data.friction) {
         player.staticFriction++;
       }
 
       if (data.type == 'weapon') {
+        // If the weapon has been thrown and is in the air,
+        // Or if the weapon has hit a platform and wasn't thrown by this player
         if ((data.obj.thrown < 0 || (data.obj.thrown > 0 && data.obj.thrownBy != player.id))) {
-        // if (data.obj.thrown != 0 && !data.obj.throwHit) {
+          // The weapon hits the player
           data.obj.throwHit = player.id;
+          // This player cannot equip this weapon for 60 frames (1 second)
           data.obj.hitTimer = 60;
+          // The weapon is now freely equippable (by other players)
           data.obj.thrown = 0;
+          // The weapon deals damage to this player
           player.damage(1);
           player.sounds.push('throwhit');
-          // if (this.experimental) player.shieldWidth = 0.5;
         }
       }
     }
@@ -392,6 +319,8 @@ class Game {
     // Weapons drop more frequently if there are more players
     this.weaponCounter = 600 / this.players.size;
 
+    // Randomly pick a weapon using the weight sum calculated earlier
+    // This algorithm takes into account the weighted chances of each weapon dropping
     var num = Math.random() * this.weaponSpawnTotal;
     var counter = 0;
     while (num >= this.weaponSpawn[counter][1]) {
@@ -400,8 +329,7 @@ class Game {
     }
     var chosenWeaponClass = this.weaponSpawn[counter][0];
 
-
-    // var weapon = new BasicGun(Math.random() * (this.width - 300) + 150, Math.random() * -100, this.engine);
+    // Create the weapon at the designated X coordinate, slightly above the top of the screen
     var weapon = new chosenWeaponClass(this.nextWeaponX, this.height + 3, this.world, this.settings.experimental, this.weaponID);
     this.weapons.push(weapon);
 
@@ -432,16 +360,20 @@ class Game {
     }
   }
 
+  // Players cannot be removed in the middle of a physics step so sometimes they must be added to a queue
   queueRemovePlayer(playerid) {
     this.playersToRemove.push(playerid);
   }
 
+  // Remove a player from the game (they fell off the screen, hit a spike or left the lobby)
   removePlayer(playerid) {
     var player = this.players.get(playerid);
     if (player) {
-      // Remove player from the physics engine
+      // Remove player from the physics engine and players Map
       player.removeFromWorld(this.world);
       this.players.delete(playerid);
+
+      // If a winner hasn't yet been decided
       if (!this.winner) {
         // Check for a winner
         if (this.players.size == 0) {
@@ -474,23 +406,15 @@ class Game {
             this.winner = teamRemaining;
           }
         }
-
-
-        // // Declare a winner if only one is remaining
-        // if (this.players.size == 1) {
-        //   this.inGame = false;
-        //   for (var playerid of this.players.keys()) {
-        //     this.winner = playerid;
-        //   }
-        // } else if (this.players.size == 0) {
-        //   this.inGame = false;
-        //   // No winner chosen if no players left - it's a draw
-        // }
       }
 
-      // Death particles
+      // Death particles and sound
       var buffer = 1.33;
+      // By default, particles shoot downwards
       var direction = 1;
+
+      // Create death particles at the x and y coordinates of the player
+      // Ensure the particles are always on screen by constraining the coordinates accordingly
       var deathX = player.body.getPosition().x;
       if (deathX < buffer) {
         deathX = buffer;
@@ -502,6 +426,7 @@ class Game {
         deathY = 0;
       } else if (deathY > this.height) {
         deathY = this.height;
+        // If the player died at the bottom of the screen, make the particles shoot upwards
         direction = -1;
       }
       this.pendingParticles.push({
@@ -523,6 +448,7 @@ class Game {
   }
 
   update() {
+    // Go through the removal queue and remove the players
     for (let playerid of this.playersToRemove) {
       this.removePlayer(playerid);
     }
@@ -534,13 +460,13 @@ class Game {
 
     // Add weapons into game periodically if there aren't many on screen
     if (this.weaponCounter < 0) {
-      // if (this.weapons.length < this.players.size * 2) {
       // Add the weapon
       this.addWeapon();
-      // }
     } else {
       this.weaponCounter--;
     }
+
+    // Loop through all players, weapons, bullets etc in the game
 
     for (var [playerid, player] of this.players.entries()) {
       var bullets = player.update(this.weapons, this.world);
@@ -607,13 +533,11 @@ class Game {
       }
     }
 
-    if (this.platformUpdate) this.platformUpdate(this.storedObjects);
-
     for (var path of this.paths) {
       path.update(this.time);
     }
 
-    // Run the physics engine
+    // Run the physics engine and increment game time
     this.world.step(STEP);
     this.time += STEP;
 
@@ -701,7 +625,9 @@ class Game {
 
 // Check if a collision is strong enough for particles to be created
 function isPowerfulLanding(player, normal) {
+  // If this player has created collision particles recently, don't create more
   if (player.lastCollisionParticle > 0) return false;
+  // If this is the first collision since the player jumped, create particles no matter what
   if (!player.landed) return true;
 
   var nAng = Math.atan2(normal.y, normal.x);
@@ -718,17 +644,9 @@ function isPowerfulLanding(player, normal) {
 
 // Generate particles in the direction of the normal of a player collision
 function collisionParticles(player, normal) {
+  // Only create particles if this is a 'powerful landing' (see above)
   if (!isPowerfulLanding(player, normal)) return;
   var angle = Math.atan2(normal.y, normal.x);
-  // var v = player.body.getLinearVelocity();
-  // var vMagSq = Math.pow(v.x, 2) + Math.pow(v.y, 2);
-  // if ((vMagSq < 100 || player.lastCollisionParticle > 0) && player.landed) {
-  //   // Don't create particles if the player wasn't moving very fast
-  //   return;
-  // }
-  // if (player.lastCollisionParticle > 0) {
-  //   return;
-  // }
   player.lastCollisionParticle = 3;
 
   var pos = player.body.getPosition();
@@ -752,9 +670,15 @@ function collisionParticles(player, normal) {
   player.sounds.push('collision');
 }
 
+// Returns true if the player-weapon collision should be ignored
 function weaponPassPlayer(player, weapon) {
+  // If the weapon was last thrown a while ago, don't ignore the collision
   if (weapon.passThrough == 0) return false;
+  // This means the weapon has just been dropped
+  // Collisions with players should be ignored when the weapon is first added to the world
   if (weapon.thrownBy == null) return true;
+  // If this code is reached, the weapon has just been thrown by a player
+  // Only ignore the collision if this player threw the weapon
   return weapon.thrownBy == player.id;
 }
 

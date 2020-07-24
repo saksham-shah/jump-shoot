@@ -41,6 +41,7 @@ function getParticleColour(col) {
     return particleColours[col];
   }
 
+  // If col isn't a string, it is a number meaning it refers to a player colour
   let colourIndex = col % colourOrder.length;
   return playerColours[colourOrder[colourIndex]];
 }

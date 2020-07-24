@@ -1,5 +1,4 @@
-// let joiningPrivate = false;
-
+// Allows players to join a private lobby by entering the lobby name
 function addJoinPrivateOverlay() {
     addOverlay('join private lobby', {
         width: 400,
@@ -42,7 +41,6 @@ function addJoinPrivateOverlay() {
             }
 
             socket.emit('join lobby', { name });
-            // closeOverlay();
         },
         label: 'lobby private button'
     })

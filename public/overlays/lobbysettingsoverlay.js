@@ -1,3 +1,4 @@
+// Functions defining how lobby settings are displayed
 let settingsText = [
     {
         name: 'Experimental',
@@ -27,6 +28,7 @@ function updateLobbySettingsText() {
     }
 }
 
+// Allows players to view the settings of the lobby they are in
 function addLobbySettingsOverlay() {
     addOverlay('lobby settings', {
         width: 400,

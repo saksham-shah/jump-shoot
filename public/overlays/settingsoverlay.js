@@ -8,15 +8,18 @@ let settings = {
     recordmode: false
 }
 
+// Allows the player to view and change their settings
 function addSettingsOverlay() {
     let tabNames = ['Audio', 'Graphics', 'Advanced'];
     let currentTab = null;
     let tabs = {};
 
+    // Change the tab being viewed
     function setTab(tabName) {
         if (currentTab == tabName) return;
 
         if (currentTab) {
+            // Hide all the elements of the current tab
             for (let element of tabs[currentTab]) {
                 element.hide(true);
             }
@@ -24,6 +27,7 @@ function addSettingsOverlay() {
 
         currentTab = tabName;
 
+        // Show all the elements of the new tab
         for (let element of tabs[currentTab]) {
             element.hide(false);
         }
@@ -37,7 +41,6 @@ function addSettingsOverlay() {
         width: 400,
         height: 330,
         text: 'Settings',
-        // onDisplay: () => setTab('Audio'),
         draw: () => {
             fill(100);
             stroke(45);
@@ -78,7 +81,6 @@ function addSettingsOverlay() {
         value: settings.sound,
         scrollSpeed: 2,
         textSize: 20,
-        // onRelease: v => sounds.buttonclick.play(),
         onMove: v => {
             settings.sound = v;
             v /= 50;
@@ -194,6 +196,7 @@ function addSettingsOverlay() {
         }
     })
 
+    // Add the elements to their respective tabs
     tabs['Audio'].push(getElement('settings audio sound'));
     tabs['Audio'].push(getElement('settings audio music'));
     tabs['Graphics'].push(getElement('settings graphics particles'));
@@ -202,6 +205,7 @@ function addSettingsOverlay() {
     tabs['Graphics'].push(getElement('settings graphics shownames'));
     tabs['Advanced'].push(getElement('settings advanced recordmode'));
 
+    // Start on the Audio tab
     setTab('Audio');
 }
 

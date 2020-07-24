@@ -1,3 +1,4 @@
+// Lobby creation screen
 function addCreateOverlay() {
     addOverlay('create lobby', {
         width: 400,
@@ -43,7 +44,8 @@ function addCreateOverlay() {
                 errorText = 'Name cannot be empty';
                 return;
             }
-
+            
+            // Extract values from all the UI elements and send them to the server
             let password = getElement('lobby password input').value;
             let maxPlayers = getElement('lobby limit slider').value;
             let unlisted = getElement('lobby unlisted checkbox').value;

@@ -13,6 +13,7 @@ let alerts = {
     }
 };
 
+// Important game announcements that the player needs to see
 function addAlertOverlay() {
     let title = '';
     let thisId = null;
@@ -26,6 +27,7 @@ function addAlertOverlay() {
         height: 200,
         text: 'Important!',
         onDisplay: (id, centred = true) => {
+            // Get the alert text from the above 'alerts' object
             thisId = id
             title = alerts[id].title;
             lines = wrapText(alerts[id].text, tSize, 350);

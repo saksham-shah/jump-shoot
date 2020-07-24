@@ -4,6 +4,7 @@ function addMenuScreen() {
 
     let latestAlert = localStorage.getItem('alert');
 
+    // Work out if the player needs to see any alerts they haven't already seen
     for (let i = alertOrder.length - 1; i >= 0; i--) {
         if (latestAlert == alertOrder[i]) {
             alertCounter = i;
@@ -17,11 +18,6 @@ function addMenuScreen() {
             strokeWeight(1);
             rect(775, 555, 250, 30);
 
-            // textAlign(CENTER);
-            // textSize(100);
-            // fill(255);
-            // noStroke();
-            // text('Jump & Shoot', 450, 150);
             logo(450, 125, 1.3);
 
             textAlign(CENTER);
@@ -31,17 +27,11 @@ function addMenuScreen() {
             text(playerName, 775, 555 + 20 / 3);
         },
         update: () => {
-
+            // Open any required alerts
             if (alertCounter != alertOrder.length - 1) {
                 alertCounter++;
                 openOverlay('alert', alertOrder[alertCounter]);
             }
-
-            // if (outdated) {
-            //     localStorage.setItem('version', currentVersion);
-            //     outdated = false;
-            //     openOverlay('alert', 'Controls changed', 'The control for the shield has been changed from the right mouse button to the left mouse button. Feel free to change it back in Settings.', true);
-            // }
         }
     })
     .addButton({

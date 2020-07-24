@@ -1,5 +1,6 @@
 let lobbyTable;
 
+// Update the lobby table
 function updateLobbies(lobbies) {
     lobbyTable.clear();
     for (let lobby of lobbies) {
@@ -14,8 +15,6 @@ function updateLobbies(lobbies) {
 
 function addLobbyScreen() {
     addScreen('lobbies', {
-        // width: 810,
-        // height: 380,
         text: 'Lobbies'
     })
     .addTable({

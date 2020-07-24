@@ -1,21 +1,18 @@
+// Allows players to change their name
 function addNameOverlay() {
     addOverlay('name', {
         width: 400,
         height: 125,
         text: 'Change name',
         onDisplay: () => {
+            // Set the value of the textbox to the player's current name
             let nameTextbox = getElement('name change input');
             nameTextbox.setValue(playerName);
-            // nameTextbox.value = playerName;
-            // nameTextbox.cursorPos = playerName.length;
-            // nameTextbox.selectionStart = playerName.length;
-            // nameTextbox.clipText();
             nameTextbox.focus();
             errorText = '';
         },
         draw: () => {
             if (errorText.length > 0) {
-
                 textSize(15);
                 textAlign(CENTER);
                 noStroke();
@@ -41,7 +38,6 @@ function addNameOverlay() {
             }
 
             socket.emit('pick name', name);
-            // closeOverlay();
         },
         label: 'name change button'
     })
