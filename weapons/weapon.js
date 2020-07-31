@@ -12,7 +12,7 @@ class Weapon {
     this.bodyDef = {
       type: 'dynamic',
       position: vec(x, y),
-      allowSleep: false,
+      // allowSleep: false,
       bullet: true
     };
 
@@ -69,13 +69,18 @@ class Weapon {
     if (this.hitTimer > 0) {
       this.hitTimer--;
     }
-  }
 
-  coolGun() {
+    // Decrement cooldown
     if (this.cooldown > 0) {
       this.cooldown--;
     }
   }
+
+  // coolGun() {
+  //   if (this.cooldown > 0) {
+  //     this.cooldown--;
+  //   }
+  // }
 
   // Weapon becomes part of the player
   getEquipped(world) {
@@ -109,7 +114,7 @@ class Weapon {
     let mass = this.body.getMass();
     let fx = speed * mass * Math.cos(angle);
     let fy = speed * mass * Math.sin(angle);
-    this.body.applyForceToCenter(vec(fx, fy));
+    this.body.applyForceToCenter(vec(fx, fy), true);
 
     // Speed is 0 when the weapon is passively thrown (i.e. disarm or death)
     if (speed != 0) {

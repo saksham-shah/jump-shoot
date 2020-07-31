@@ -108,7 +108,7 @@ class Bullet {
           let fx = force * Math.cos(this.angle);
           let fy = force * Math.sin(this.angle);
 
-          body.applyForce(vec(fx, fy), vec(this.x, this.y));
+          body.applyForce(vec(fx, fy), vec(this.x, this.y), true);
 
           if (data && data.type == 'player') {
             var player = data.obj;

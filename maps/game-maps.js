@@ -148,7 +148,7 @@ function rotations(game) {
   body = game.world.createBody({
       type: 'kinematic',
       position: vec(40.5, 27),
-      angularVelocity: -0.12
+      angularVelocity: game.settings.experimental && Math.random() > 0.5 ? 0.12 : -0.12
   });
 
   let platform, path;
@@ -173,7 +173,7 @@ function rotations(game) {
   platform = new Platform(0, 0, 13.3, 1.33, game.world, { colour: 'purple' });
   game.dynamic.push(platform);
 
-  path = new Path(platform.body, 71, 7, 70, 47, 15);
+  path = new Path(platform.body, 71, 7, 71, 47, 15);
   game.paths.push(path);
 
   // Spawn points
@@ -224,11 +224,106 @@ function doubleSided(game) {
   game.spawns = [{ x: 17, y: 19 }, { x: 37, y: 19 }, { x: 7, y: 19 }, { x: 47, y: 19 }];//, { x: 12, y: 26 }, { x: 42, y: 26 }];
 }
 
+function threeFloors(game) {
+  game.width = 81;
+  game.height = 54;
+
+  // Create the floors
+
+  let platform = new Platform(30.5, 10, 10, 1.33, game.world, { colour: 'red' });
+  game.static.push(platform);
+
+  platform = new Platform(50.5, 10, 10, 1.33, game.world, { colour: 'red' });
+  game.static.push(platform);
+
+  platform = new Platform(40.5, 17.5, 4, 1.33, game.world, { colour: 'blue' });
+  game.static.push(platform);
+
+  platform = new Platform(28, 25, 15, 1.33, game.world, { colour: 'orange' });
+  game.static.push(platform);
+
+  platform = new Platform(53, 25, 15, 1.33, game.world, { colour: 'orange' });
+  game.static.push(platform);
+
+  platform = new Platform(40.5, 32.5, 4, 1.33, game.world, { colour: 'blue' });
+  game.static.push(platform);
+
+  platform = new Platform(25.5, 40, 20, 1.33, game.world, { colour: 'yellow' });
+  game.static.push(platform);
+
+  platform = new Platform(55.5, 40, 20, 1.33, game.world, { colour: 'yellow' });
+  game.static.push(platform);
+
+  // Create the lifts
+  platform = new Platform(0, 0, 10, 1.33, game.world, { colour: 'green' });
+  game.dynamic.push(platform);
+
+  path = new Path(platform.body, 8, 7, 8, 47, 15, 0.65);
+  game.paths.push(path);
+
+  platform = new Platform(0, 0, 10, 1.33, game.world, { colour: 'green' });
+  game.dynamic.push(platform);
+
+  path = new Path(platform.body, 73, 7, 73, 47, 15, 0.65);
+  game.paths.push(path);
+
+  // Create death
+
+  // Top platform
+  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
+  game.dynamic.push(platform);
+
+  path = new Path(platform.body, 18, 43, 63, 43, 7.5, 0.25);
+  game.paths.push(path);
+
+  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
+  game.dynamic.push(platform);
+
+  path = new Path(platform.body, 18, 43, 63, 43, 7.5, -0.25);
+  game.paths.push(path);
+
+  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
+  game.dynamic.push(platform);
+
+  path = new Path(platform.body, 18, 47, 63, 47, 10, 0);
+  game.paths.push(path);
+
+  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
+  game.dynamic.push(platform);
+
+  path = new Path(platform.body, 18, 47, 63, 47, 10, 0.5);
+  game.paths.push(path);
+
+  // Middle platform
+  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
+  game.dynamic.push(platform);
+
+  path = new Path(platform.body, 23, 28, 58, 28, 7.5, 0);
+  game.paths.push(path);
+
+  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
+  game.dynamic.push(platform);
+
+  path = new Path(platform.body, 23, 28, 58, 28, 7.5, 0.5);
+  game.paths.push(path);
+
+  // Middle
+  platform = new Platform(0, 0, 8, 1.33, game.world, { colour: 'spike', spike: true });
+  game.dynamic.push(platform);
+
+  path = new Path(platform.body, 40.5, 7, 40.5, 50, 20, 0.25);
+  game.paths.push(path);
+
+  // Spawn points
+  game.spawns = [{ x: 30.5, y: 14 }, { x: 50.5, y: 14 }, { x: 8, y: 20 }, { x: 73, y: 20 }, ];
+}
+
 createMapFuncs.push(turnAndShoot);
 createMapFuncs.push(pendulum);
 createMapFuncs.push(sixPlatforms);
 createMapFuncs.push(lifts);
 createMapFuncs.push(rotations);
 createMapFuncs.push(doubleSided);
+createMapFuncs.push(threeFloors);
 
 module.exports = createMapFuncs;

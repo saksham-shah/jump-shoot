@@ -97,10 +97,10 @@ class Player {
     let newVel = vec(vel.x * friction, vel.y * friction);
     this.body.setLinearVelocity(newVel);
 
-    if (this.weapon) {
-      // Cool weapon gun so it can shoot
-      this.weapon.coolGun();
-    }
+    // if (this.weapon) {
+    //   // Cool weapon gun so it can shoot
+    //   this.weapon.coolGun();
+    // }
 
     // Increment timer properties
     this.cooldown++;
@@ -241,7 +241,7 @@ class Player {
         var recoilAngle = this.angle + Math.PI;
         let fx = result.recoil * Math.cos(recoilAngle);
         let fy = result.recoil * Math.sin(recoilAngle);
-        this.body.applyForceToCenter(vec(fx, fy));
+        this.body.applyForceToCenter(vec(fx, fy), true);
         // Return the bullets so they are added to the game
         return result.bullets;
       }
@@ -295,11 +295,11 @@ class Player {
     let mass = this.body.getMass();
     // Move the player left and right
     if (this.controls.left) {
-      this.body.applyForceToCenter(vec(-75 * mass, 0));
+      this.body.applyForceToCenter(vec(-75 * mass, 0), true);
     }
 
     if (this.controls.right) {
-      this.body.applyForceToCenter(vec(75 * mass, 0));
+      this.body.applyForceToCenter(vec(75 * mass, 0)), true;
     }
 
     if (this.controls.up) {
@@ -349,11 +349,11 @@ class Player {
       }
 
       // Also makes the player fall slower
-      this.body.applyForceToCenter(vec(0, 30 * mass));
+      this.body.applyForceToCenter(vec(0, 30 * mass), true);
     }
     // Makes the player fall faster
     if (this.controls.down) {
-      this.body.applyForceToCenter(vec(0, -30 * mass));
+      this.body.applyForceToCenter(vec(0, -30 * mass), true);
     }
   }
 
