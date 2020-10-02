@@ -148,7 +148,7 @@ function rotations(game) {
   body = game.world.createBody({
       type: 'kinematic',
       position: vec(40.5, 27),
-      angularVelocity: game.settings.experimental && Math.random() > 0.5 ? 0.12 : -0.12
+      angularVelocity: -0.12
   });
 
   let platform, path;

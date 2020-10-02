@@ -168,6 +168,8 @@ function setup() {
 
     // Lobby is left
     socket.on('left lobby', function() {
+        lobbyName = null;
+
         gs.resetGame();
         closeAllOverlays();
         setScreen('menu');
@@ -200,8 +202,13 @@ function setup() {
     });
 
     // Popup alert
-    socket.on('alert', (title, message) => {
-        openOverlay('message', title, message);
+    socket.on('alert', (message, title) => {
+        if (lobbyName) {
+            addGameMessage(message);
+        } else {
+            openOverlay('message', title, message);
+        }
+
         sounds.message.play();
     })
 

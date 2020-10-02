@@ -237,7 +237,7 @@ function newConnection(socket) {
         // Callback if the spectate request is rejected
 
         // sendServerMessage(socket.id, `Cannot spectate - ${err}`);
-        socket.emit('game message', err);
+        socket.emit('alert', err);
       });
     }
   });
@@ -258,7 +258,7 @@ function newConnection(socket) {
       }, err => {
         // Callback if the team change request is rejected
 
-        socket.emit('game message', err);
+        socket.emit('alert', err);
       });
     }
   });
@@ -285,10 +285,10 @@ function newConnection(socket) {
         });
 
         // Notify the specfic player that they are the new host
-        io.to(player.id).emit('game message', 'Teams reduced - you have automatically been assigned to a new team.');
+        io.to(player.id).emit('alert', 'Teams reduced - you have automatically been assigned to a new team.');
       }, message => {
         // Callback if a message needs to be sent
-        io.in(lobby.name).emit('game message', message);
+        io.in(lobby.name).emit('alert', message);
       });
     }
   });
@@ -482,7 +482,7 @@ function leaveLobby(socket) {
       });
 
       // Notify the specfic player that they are no longer spectating
-      io.to(player.id).emit('game message', 'Last non-spectator left, you are no longer spectating.');
+      io.to(player.id).emit('alert', 'Last non-spectator left, you are no longer spectating.');
     }, player => {
       // Callback if the host left so a new host has been chosen
 
@@ -490,7 +490,7 @@ function leaveLobby(socket) {
       io.in(lobby.name).emit('new host', player.id);
 
       // Notify the specfic player that they are the new host
-      io.to(player.id).emit('game message', 'Host left, you are the new host.');
+      io.to(player.id).emit('alert', 'Host left, you are the new host.');
     });
 
     // Notify players in the lobby
@@ -583,10 +583,10 @@ function updateGame() {
 
     for (var [playerid, player] of lobbies[i].players.entries()) {
       if (player.timeLeft == 600) {
-        io.to(playerid).emit('game message', 'You are idle. Move or you will be kicked in 10 seconds!');
+        io.to(playerid).emit('alert', 'You are idle. Move or you will be kicked in 10 seconds!');
       } else if (player.timeLeft <= 0) {
         leaveLobby(io.sockets.connected[playerid]);
-        io.to(playerid).emit('alert', 'Kicked!', 'You were kicked because you were idle for too long!');
+        io.to(playerid).emit('alert', 'You were kicked because you were idle for too long!', 'Kicked!');
       }
     }
 
