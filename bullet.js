@@ -64,7 +64,7 @@ class Bullet {
           // Speed increases
           this.vel *= 1.25
           // The reflecting player regains some of their shield
-          player.addToShield(player.experimental ? this.damage : 0.17);
+          player.addToShield(this.damage);
 
           // Create the particles and reflecting sound
           this.particles.push({
@@ -121,11 +121,9 @@ class Bullet {
                 player.throwWeapon(0, world);
                 player.sounds.push('disarm');
 
-                if (player.experimental) {
-                  let origin = players.get(this.originPlayer);
-                  // The player that reflected the bullet regains their entire shield
-                  if (origin) origin.shieldWidth = 3;
-                }
+                let origin = players.get(this.originPlayer);
+                // The player that reflected the bullet regains their entire shield
+                if (origin) origin.shieldWidth = 3;
               }
             }
 

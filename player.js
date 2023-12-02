@@ -174,10 +174,10 @@ class Player {
     // Activate shield
     if (this.controls.shield && this.weapon == null && this.cooldown >= 10) {
       this.shield = true;
-      this.addToShield(this.experimental ? -0.024 : -0.015)
+      this.addToShield(-0.024)
     } else {
       this.shield = false;
-      this.addToShield(this.experimental ? 0.004 : 0.00375);
+      this.addToShield(0.004);
     }
 
     // Return bullets if shot, otherwise null
@@ -293,13 +293,21 @@ class Player {
   // Moves player by applying forces based on which controls are pressed
   updateControls() {
     let mass = this.body.getMass();
+    let xvel = this.body.getLinearVelocity().x;
+
+    const max_mult = 5, min_vel = 0, max_vel = 40;
+    let m = (max_mult - 1) / (max_vel - min_vel);
+    let c = 1 - min_vel * m;
+
     // Move the player left and right
     if (this.controls.left) {
-      this.body.applyForceToCenter(vec(-75 * mass, 0), true);
+      let mult = this.experimental ? Math.max(1, Math.min(max_mult, xvel * m + c)) : 1;
+      this.body.applyForceToCenter(vec(-75 * mass * mult, 0), true);
     }
 
     if (this.controls.right) {
-      this.body.applyForceToCenter(vec(75 * mass, 0)), true;
+      let mult = this.experimental ? Math.max(1, Math.min(max_mult, -xvel * m + c)) : 1;
+      this.body.applyForceToCenter(vec(75 * mass * mult, 0)), true;
     }
 
     if (this.controls.up) {
@@ -371,8 +379,8 @@ class Player {
     this.shieldWidth += w;
 
     // Limit the size of the shield between 0.6 and 3
-    if (this.shieldWidth < (this.experimental ? 0.6 : 0.67)) {
-      this.shieldWidth = this.experimental ? 0.6 : 0.67;
+    if (this.shieldWidth < 0.6) {
+      this.shieldWidth = 0.6;
     } else if (this.shieldWidth > 3) {
       this.shieldWidth = 3;
     }
