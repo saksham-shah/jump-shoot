@@ -747,7 +747,7 @@ function drawOffScreenPlayer(obj) {
 function drawObject(obj) {
     push();
     switch (obj.type) {
-    case 'platform': // Simple rectangle
+    case 'rect_platform': // Simple rectangle
         fill(platformColours[obj.colour].fill);
         stroke(platformColours[obj.colour].edge);
         strokeWeight(platformColours[obj.colour].weight || 1 / 15);

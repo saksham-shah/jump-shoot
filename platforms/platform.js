@@ -28,38 +28,8 @@ class Platform {
       y = 0;
     }
 
-    // Create a new fixture
-    this.fixture = this.body.createFixture({
-      shape: pl.Box(w * 0.5, h * 0.5, vec(x, y)),
-      density: options.density,
-      restitution: options.restitution,
-      friction: 0.2,
-      userData: {
-        type: 'platform',
-        nojump: options.nojump,
-        spike: options.spike,
-        friction: options.staticFriction
-      }
-    });
-
     // Colours
     this.colour = options.colour;
-  }
-
-  toObject() {
-    var pos = this.body.getPosition();
-    return {
-      type: 'platform',
-      x: pos.x,
-      y: pos.y,
-      angle: this.body.getAngle(),
-      vertices: this.getVertices(),
-      colour: this.colour
-    }
-  }
-
-  getVertices() {
-    return this.fixture.getShape().m_vertices;
   }
 }
 

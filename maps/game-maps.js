@@ -6,7 +6,7 @@ var BasicGun = require('../weapons/basic-gun.js');
 var MachineGun = require('../weapons/machine-gun.js');
 var Sniper = require('../weapons/sniper.js');
 
-var Platform = require('../platforms/platform.js');
+var RectPlatform = require('../platforms/rectplatform.js');
 var Path = require('../platforms/path.js');
 
 var createMapFuncs = [];
@@ -16,11 +16,11 @@ function turnAndShoot(game) {
   game.height = 36;
 
   // Small platform at the bottom
-  var ground = new Platform(27, 0.5, 7, 1.33, game.world, { colour: 'yellow' });
+  var ground = new RectPlatform(27, 0.5, 7, 1.33, game.world, { colour: 'yellow' });
   game.static.push(ground);
 
   // Pivoted platform
-  var pivotPlat = new Platform(27, 18.5, 30, 1.33, game.world, { type: 'dynamic', density: 2.5, colour: 'orange'});
+  var pivotPlat = new RectPlatform(27, 18.5, 30, 1.33, game.world, { type: 'dynamic', density: 2.5, colour: 'orange'});
   pivotPlat.body.setAngularDamping(0.1);
   game.dynamic.push(pivotPlat);
 
@@ -36,11 +36,11 @@ function pendulum(game) {
   game.height = 36;
 
   // Ground
-  var ground = new Platform(27, 3, 47, 1.33, game.world, { colour: 'blue' });
+  var ground = new RectPlatform(27, 3, 47, 1.33, game.world, { colour: 'blue' });
   game.static.push(ground);
 
   // Pendulum
-  var platform = new Platform(27, 32, 1.33, 20, game.world, { type: 'dynamic', density: 4000, restitution: 1, nojump: true, colour: 'purple' });
+  var platform = new RectPlatform(27, 32, 1.33, 20, game.world, { type: 'dynamic', density: 4000, restitution: 1, nojump: true, colour: 'purple' });
   game.dynamic.push(platform);
 
   // Create the pivot
@@ -56,26 +56,26 @@ function sixPlatforms(game) {
 
   // Create the platforms
 
-  platform = new Platform(27, 26, 10, 1.33, game.world, { colour: 'green' });
+  platform = new RectPlatform(27, 26, 10, 1.33, game.world, { colour: 'green' });
   game.static.push(platform);
 
   // Black death platform
-  platform = new Platform(27, 16, 5, 1.33, game.world, { colour: 'spike', spike: true });
+  platform = new RectPlatform(27, 16, 5, 1.33, game.world, { colour: 'spike', spike: true });
   game.static.push(platform);
 
-  platform = new Platform(27, 6, 10, 1.33, game.world, { colour: 'green' });
+  platform = new RectPlatform(27, 6, 10, 1.33, game.world, { colour: 'green' });
   game.static.push(platform);
 
-  platform = new Platform(7, 19.3, 7, 1.33, game.world, { colour: 'cyan' });
+  platform = new RectPlatform(7, 19.3, 7, 1.33, game.world, { colour: 'cyan' });
   game.static.push(platform);
 
-  platform = new Platform(14, 12.7, 7, 1.33, game.world, { colour: 'cyan' });
+  platform = new RectPlatform(14, 12.7, 7, 1.33, game.world, { colour: 'cyan' });
   game.static.push(platform);
 
-  platform = new Platform(47, 19.3, 7, 1.33, game.world, { colour: 'cyan' });
+  platform = new RectPlatform(47, 19.3, 7, 1.33, game.world, { colour: 'cyan' });
   game.static.push(platform);
 
-  platform = new Platform(40, 12.7, 7, 1.33, game.world, { colour: 'cyan' });
+  platform = new RectPlatform(40, 12.7, 7, 1.33, game.world, { colour: 'cyan' });
   game.static.push(platform);
 
   // Spawn points
@@ -86,7 +86,7 @@ function lifts(game) {
   var platform, path;
 
   function addLift(x, offset, colour) {
-    platform = new Platform(0, 0, 7, 1.33, game.world, { colour });
+    platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour });
     path = new Path(platform.body, x, 29, x, 3, 10, offset);
     game.dynamic.push(platform);
     game.paths.push(path);
@@ -100,37 +100,37 @@ function lifts(game) {
   addLift(4.5, 0.5, 'red');
   addLift(49.5, 0.5, 'red');
 
-  // platform = new Platform(0, 0, 7, 1.33, game.world, { colour: 'green' });
+  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'green' });
   // path = new Path(platform.body, 27, 29, 27, 3, 10, -0.25);
   // game.dynamic.push(platform);
   // game.paths.push(path);
 
-  // platform = new Platform(0, 0, 7, 1.33, game.world, { colour: 'yellow' });
+  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'yellow' });
   // path = new Path(platform.body, 19.5, 29, 19.5, 3, 10);
   // game.dynamic.push(platform);
   // game.paths.push(path);
 
-  // platform = new Platform(0, 0, 7, 1.33, game.world, { colour: 'yellow' });
+  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'yellow' });
   // path = new Path(platform.body, 34.5, 29, 34.5, 3, 10);
   // game.dynamic.push(platform);
   // game.paths.push(path);
 
-  // platform = new Platform(0, 0, 7, 1.33, game.world, { colour: 'orange' });
+  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'orange' });
   // path = new Path(platform.body, 12, 29, 12, 3, 10, 0.25);
   // game.dynamic.push(platform);
   // game.paths.push(path);
 
-  // platform = new Platform(0, 0, 7, 1.33, game.world, { colour: 'orange' });
+  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'orange' });
   // path = new Path(platform.body, 42, 29, 42, 3, 10, 0.25);
   // game.dynamic.push(platform);
   // game.paths.push(path);
 
-  // platform = new Platform(0, 0, 7, 1.33, game.world, { colour: 'red' });
+  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'red' });
   // path = new Path(platform.body, 4.5, 29, 4.5, 3, 10, 0.5);
   // game.dynamic.push(platform);
   // game.paths.push(path);
 
-  // platform = new Platform(0, 0, 7, 1.33, game.world, { colour: 'red' });
+  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'red' });
   // path = new Path(platform.body, 49.5, 29, 49.5, 3, 10, 0.5);
   // game.dynamic.push(platform);
   // game.paths.push(path);
@@ -154,23 +154,23 @@ function rotations(game) {
   let platform, path;
 
   // Four sides of the rotating square
-  platform = new Platform(0, 17, 20, 1.33, game.world, { body: body, colour: 'cyan' });
+  platform = new RectPlatform(0, 17, 20, 1.33, game.world, { body: body, colour: 'cyan' });
   game.dynamic.push(platform);
-  platform = new Platform(0, -17, 20, 1.33, game.world, { body: body, colour: 'cyan' });
+  platform = new RectPlatform(0, -17, 20, 1.33, game.world, { body: body, colour: 'cyan' });
   game.dynamic.push(platform);
-  platform = new Platform(17, 0, 1.33, 20, game.world, { body: body, colour: 'blue' });
+  platform = new RectPlatform(17, 0, 1.33, 20, game.world, { body: body, colour: 'blue' });
   game.dynamic.push(platform);
-  platform = new Platform(-17, 0, 1.33, 20, game.world, { body: body, colour: 'blue' });
+  platform = new RectPlatform(-17, 0, 1.33, 20, game.world, { body: body, colour: 'blue' });
   game.dynamic.push(platform);
 
   // Two lifts - one on each side
-  platform = new Platform(0, 0, 13.3, 1.33, game.world, { colour: 'purple' });
+  platform = new RectPlatform(0, 0, 13.3, 1.33, game.world, { colour: 'purple' });
   game.dynamic.push(platform);
 
   path = new Path(platform.body, 10, 7, 10, 47, 15, 0.5);
   game.paths.push(path);
 
-  platform = new Platform(0, 0, 13.3, 1.33, game.world, { colour: 'purple' });
+  platform = new RectPlatform(0, 0, 13.3, 1.33, game.world, { colour: 'purple' });
   game.dynamic.push(platform);
 
   path = new Path(platform.body, 71, 7, 71, 47, 15);
@@ -185,7 +185,7 @@ function doubleSided(game) {
   game.height = 36;
 
   // A stable platform in the middle
-  var ground = new Platform(27, 8, 8, 1.33, game.world, { colour: 'red' });
+  var ground = new RectPlatform(27, 8, 8, 1.33, game.world, { colour: 'red' });
   game.static.push(ground);
 
   // Booooooooooooooooooooooooo
@@ -202,9 +202,9 @@ function doubleSided(game) {
     game.world.createJoint(pl.RevoluteJoint({}, body, ground.body, vec(x, y + 0.0)));
 
     // Add the two sides of the platform - one side is a spike
-    var platform = new Platform(0, 0.5, 8, 1, game.world, { body: body, density: 10, colour: 'orange' });
+    var platform = new RectPlatform(0, 0.5, 8, 1, game.world, { body: body, density: 10, colour: 'orange' });
     game.dynamic.push(platform);
-    platform = new Platform(0, -0.5, 8, 1, game.world, { body: body, density: 10, spike: true, colour: 'spike' });
+    platform = new RectPlatform(0, -0.5, 8, 1, game.world, { body: body, density: 10, spike: true, colour: 'spike' });
     game.dynamic.push(platform);
   }
 
@@ -215,9 +215,9 @@ function doubleSided(game) {
   createSwivel(27, 28);
 
   // Two small platforms, one on each side
-  ground = new Platform(2, 22, 4, 1.33, game.world, { colour: 'yellow' });
+  ground = new RectPlatform(2, 22, 4, 1.33, game.world, { colour: 'yellow' });
   game.static.push(ground);
-  ground = new Platform(52, 22, 4, 1.33, game.world, { colour: 'yellow' });
+  ground = new RectPlatform(52, 22, 4, 1.33, game.world, { colour: 'yellow' });
   game.static.push(ground);
 
   // Spawn points
@@ -230,92 +230,46 @@ function threeFloors(game) {
 
   // Create the floors
 
-  let platform = new Platform(30.5, 10, 10, 1.33, game.world, { colour: 'red' });
+  let platform = new RectPlatform(16, 10, 20, 1.33, game.world, { colour: 'red' });
   game.static.push(platform);
 
-  platform = new Platform(50.5, 10, 10, 1.33, game.world, { colour: 'red' });
+  platform = new RectPlatform(65, 10, 20, 1.33, game.world, { colour: 'red' });
   game.static.push(platform);
 
-  platform = new Platform(40.5, 17.5, 4, 1.33, game.world, { colour: 'blue' });
+  platform = new RectPlatform(18.5, 25, 15, 1.33, game.world, { colour: 'orange' });
   game.static.push(platform);
 
-  platform = new Platform(28, 25, 15, 1.33, game.world, { colour: 'orange' });
+  platform = new RectPlatform(62.5, 25, 15, 1.33, game.world, { colour: 'orange' });
   game.static.push(platform);
 
-  platform = new Platform(53, 25, 15, 1.33, game.world, { colour: 'orange' });
+  platform = new RectPlatform(21, 40, 10, 1.33, game.world, { colour: 'yellow' });
   game.static.push(platform);
 
-  platform = new Platform(40.5, 32.5, 4, 1.33, game.world, { colour: 'blue' });
-  game.static.push(platform);
-
-  platform = new Platform(25.5, 40, 20, 1.33, game.world, { colour: 'yellow' });
-  game.static.push(platform);
-
-  platform = new Platform(55.5, 40, 20, 1.33, game.world, { colour: 'yellow' });
+  platform = new RectPlatform(60, 40, 10, 1.33, game.world, { colour: 'yellow' });
   game.static.push(platform);
 
   // Create the lifts
-  platform = new Platform(0, 0, 10, 1.33, game.world, { colour: 'green' });
+  platform = new RectPlatform(0, 0, 10, 1.33, game.world, { colour: 'cyan' });
   game.dynamic.push(platform);
 
-  path = new Path(platform.body, 8, 7, 8, 47, 15, 0.65);
+  path = new Path(platform.body, 34, 7, 34, 47, 15, 0);
   game.paths.push(path);
 
-  platform = new Platform(0, 0, 10, 1.33, game.world, { colour: 'green' });
+  platform = new RectPlatform(0, 0, 10, 1.33, game.world, { colour: 'blue' });
   game.dynamic.push(platform);
 
-  path = new Path(platform.body, 73, 7, 73, 47, 15, 0.65);
+  path = new Path(platform.body, 47, 7, 47, 47, 15, 0.5);
   game.paths.push(path);
 
   // Create death
-
-  // Top platform
-  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
+  platform = new RectPlatform(0, 0, 1.33, 15, game.world, { colour: 'spike', spike: true });
   game.dynamic.push(platform);
 
-  path = new Path(platform.body, 18, 43, 63, 43, 7.5, 0.25);
-  game.paths.push(path);
-
-  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
-  game.dynamic.push(platform);
-
-  path = new Path(platform.body, 18, 43, 63, 43, 7.5, -0.25);
-  game.paths.push(path);
-
-  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
-  game.dynamic.push(platform);
-
-  path = new Path(platform.body, 18, 47, 63, 47, 10, 0);
-  game.paths.push(path);
-
-  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
-  game.dynamic.push(platform);
-
-  path = new Path(platform.body, 18, 47, 63, 47, 10, 0.5);
-  game.paths.push(path);
-
-  // Middle platform
-  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
-  game.dynamic.push(platform);
-
-  path = new Path(platform.body, 23, 28, 58, 28, 7.5, 0);
-  game.paths.push(path);
-
-  platform = new Platform(0, 0, 5, 1.33, game.world, { colour: 'spike', spike: true });
-  game.dynamic.push(platform);
-
-  path = new Path(platform.body, 23, 28, 58, 28, 7.5, 0.5);
-  game.paths.push(path);
-
-  // Middle
-  platform = new Platform(0, 0, 8, 1.33, game.world, { colour: 'spike', spike: true });
-  game.dynamic.push(platform);
-
-  path = new Path(platform.body, 40.5, 7, 40.5, 50, 20, 0.25);
+  path = new Path(platform.body, 40.5, 10.5, 40.5, 43.5, 7.5, 0.75);
   game.paths.push(path);
 
   // Spawn points
-  game.spawns = [{ x: 30.5, y: 14 }, { x: 50.5, y: 14 }, { x: 8, y: 20 }, { x: 73, y: 20 }, ];
+  game.spawns = [{ x: 11, y: 14 }, { x: 21, y: 14 }, { x: 60, y: 20 }, { x: 70, y: 20 }, ];
 }
 
 createMapFuncs.push(turnAndShoot);
