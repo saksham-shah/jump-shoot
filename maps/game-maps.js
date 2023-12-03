@@ -294,8 +294,69 @@ function circles(game) {
   game.static.push(circle)
 
   // Spawn points
-  game.spawns = [{ x: 27, y: 24 }, ];
+  game.spawns = [{ x: 27, y: 26 }, { x: 15, y: 21 }, { x: 39, y: 21 }, ];
   // game.spawns = [{ x: 24, y: 23 }, { x: 30, y: 23 }, { x: 18, y: 23 }, { x: 36, y: 23 }];
+}
+
+function seesaw(game) {
+  game.width = 54;
+  game.height = 36;
+
+  // Ground
+  var ground = new RectPlatform(27, -6, 6, 2, game.world, { type: 'static', colour: 'blue' });
+  game.static.push(ground);
+
+  var block = new RectPlatform(27, 12, 6, 6, game.world, { density: '0.25', type: 'dynamic', colour: 'green' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(27, 6, 6, 6, game.world, { density: '0.25', type: 'dynamic', colour: 'green' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(27, 0, 6, 6, game.world, { density: '0.25', type: 'dynamic', colour: 'green' });
+  game.dynamic.push(block);
+
+  // Seesaw
+  var platform = new RectPlatform(27, 16, 40, 1.33, game.world, { density: '0.25', type: 'dynamic', colour: 'blue' });
+  game.dynamic.push(platform);
+
+  var den = 2;
+
+  // Blocks
+  var block = new RectPlatform(43, 17, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(11, 17, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(43, 19, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(11, 19, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(43, 21, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(11, 21, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(43, 23, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(11, 23, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+
+  
+  var block = new RectPlatform(45, 17, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(9, 17, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(45, 19, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(9, 19, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(45, 21, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(9, 21, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(45, 23, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+  var block = new RectPlatform(9, 23, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
+  game.dynamic.push(block);
+
+  // Spawn points
+  game.spawns = [{ x: 24, y: 23 }, { x: 30, y: 23 }, { x: 18, y: 23 }, { x: 36, y: 23 }];
 }
 
 createMapFuncs.push(turnAndShoot);
@@ -306,5 +367,6 @@ createMapFuncs.push(rotations);
 // createMapFuncs.push(doubleSided);
 createMapFuncs.push(threeFloors);
 createMapFuncs.push(circles);
+createMapFuncs.push(seesaw);
 
 module.exports = createMapFuncs;
