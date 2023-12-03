@@ -4,7 +4,7 @@ const vec = pl.Vec2;
 // Wrapper class for a planck.js body
 // Can be used for static and dynamic platforms
 class Platform {
-  constructor(x, y, w, h, world, options = {}) {
+  constructor(x, y, world, options = {}) {
 
     if (!options.colour) options.colour = 'default';
     if (!options.type) options.type = 'static';

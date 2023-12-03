@@ -759,6 +759,13 @@ function drawObject(obj) {
         }
         endShape(CLOSE);
         break;
+    case 'circ_platform': // Simple circle
+        fill(platformColours[obj.colour].fill);
+        stroke(platformColours[obj.colour].edge);
+        strokeWeight(platformColours[obj.colour].weight || 1 / 15);
+        translate(obj.x, obj.y);
+        ellipse(0, 0, obj.r * 2)
+        break;
     case 'weapon': // Rectangle for now - may add graphics
         translate(obj.x, obj.y);
         rotate(obj.angle);

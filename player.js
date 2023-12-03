@@ -331,7 +331,7 @@ class Player {
             // Parallel to the normal of the collision is the direction of the jump
             // Parallel velocity will be set to 8 (arbitrary)
             // Perperdicular velocity will be unchanged
-            var jumpForce = 30;
+            var jumpForce = data.bouncy ? 75 : 30;
             var angle = vAng - nAng;
             var parallelV = jumpForce;
             var perpV = vMag * Math.sin(angle);

@@ -7,6 +7,7 @@ var MachineGun = require('../weapons/machine-gun.js');
 var Sniper = require('../weapons/sniper.js');
 
 var RectPlatform = require('../platforms/rectplatform.js');
+var CircPlatform = require('../platforms/circplatform.js');
 var Path = require('../platforms/path.js');
 
 var createMapFuncs = [];
@@ -272,12 +273,38 @@ function threeFloors(game) {
   game.spawns = [{ x: 11, y: 14 }, { x: 21, y: 14 }, { x: 60, y: 20 }, { x: 70, y: 20 }, ];
 }
 
+function circles(game) {
+  game.width = 54;
+  game.height = 36;
+
+  // Circles
+  var circle = new CircPlatform(15, 15, 4, game.world, { colour: 'cyan' })
+  game.static.push(circle)
+  
+  var circle = new CircPlatform(39, 15, 4, game.world, { colour: 'cyan' })
+  game.static.push(circle)
+
+  var circle = new CircPlatform(27, 18, 6, game.world, { colour: 'blue' })
+  game.static.push(circle)
+
+  var circle = new CircPlatform(6, 6, 2, game.world, { restitution: 2.5, bouncy: true, colour: 'purple' });
+  game.static.push(circle)
+
+  var circle = new CircPlatform(48, 6, 2, game.world, { restitution: 2.5, bouncy: true, colour: 'purple' });
+  game.static.push(circle)
+
+  // Spawn points
+  game.spawns = [{ x: 27, y: 24 }, ];
+  // game.spawns = [{ x: 24, y: 23 }, { x: 30, y: 23 }, { x: 18, y: 23 }, { x: 36, y: 23 }];
+}
+
 createMapFuncs.push(turnAndShoot);
 createMapFuncs.push(pendulum);
 createMapFuncs.push(sixPlatforms);
 createMapFuncs.push(lifts);
 createMapFuncs.push(rotations);
-createMapFuncs.push(doubleSided);
+// createMapFuncs.push(doubleSided);
 createMapFuncs.push(threeFloors);
+createMapFuncs.push(circles);
 
 module.exports = createMapFuncs;

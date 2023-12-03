@@ -2,9 +2,9 @@ const pl = require('planck-js');
 const vec = pl.Vec2;
 var Platform = require('./platform.js');
 
-// Wrapper class for a rectangular planck.js body
-class RectPlatform extends Platform {
-  constructor(x, y, w, h, world, options = {}) {
+// Wrapper class for a circular planck.js body
+class CircPlatform extends Platform {
+  constructor(x, y, r, world, options = {}) {
     super(x, y, world, options);
 
     if (!options.body) {
@@ -12,9 +12,11 @@ class RectPlatform extends Platform {
       y = 0;
     }
 
+    this.r = r
+
     // Create a new fixture
     this.fixture = this.body.createFixture({
-      shape: pl.Box(w * 0.5, h * 0.5, vec(x, y)),
+      shape: pl.Circle(vec(x, y), r),
       density: options.density,
       restitution: options.restitution,
       friction: 0.2,
@@ -31,18 +33,13 @@ class RectPlatform extends Platform {
   toObject() {
     var pos = this.body.getPosition();
     return {
-      type: 'rect_platform',
+      type: 'circ_platform',
       x: pos.x,
       y: pos.y,
-      angle: this.body.getAngle(),
-      vertices: this.getVertices(),
+      r: this.r,
       colour: this.colour
     }
   }
-
-  getVertices() {
-    return this.fixture.getShape().m_vertices;
-  }
 }
 
-module.exports = RectPlatform;
+module.exports = CircPlatform;
