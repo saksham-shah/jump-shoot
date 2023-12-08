@@ -5,6 +5,7 @@ var MapUtils = require('./map-utils.js');
 var BasicGun = require('../weapons/basic-gun.js');
 var MachineGun = require('../weapons/machine-gun.js');
 var Sniper = require('../weapons/sniper.js');
+var Shotgun = require('../weapons/shotgun.js');
 
 var RectPlatform = require('../platforms/rectplatform.js');
 var CircPlatform = require('../platforms/circplatform.js');
@@ -100,41 +101,6 @@ function lifts(game) {
   addLift(42, 0.25, 'orange');
   addLift(4.5, 0.5, 'red');
   addLift(49.5, 0.5, 'red');
-
-  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'green' });
-  // path = new Path(platform.body, 27, 29, 27, 3, 10, -0.25);
-  // game.dynamic.push(platform);
-  // game.paths.push(path);
-
-  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'yellow' });
-  // path = new Path(platform.body, 19.5, 29, 19.5, 3, 10);
-  // game.dynamic.push(platform);
-  // game.paths.push(path);
-
-  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'yellow' });
-  // path = new Path(platform.body, 34.5, 29, 34.5, 3, 10);
-  // game.dynamic.push(platform);
-  // game.paths.push(path);
-
-  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'orange' });
-  // path = new Path(platform.body, 12, 29, 12, 3, 10, 0.25);
-  // game.dynamic.push(platform);
-  // game.paths.push(path);
-
-  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'orange' });
-  // path = new Path(platform.body, 42, 29, 42, 3, 10, 0.25);
-  // game.dynamic.push(platform);
-  // game.paths.push(path);
-
-  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'red' });
-  // path = new Path(platform.body, 4.5, 29, 4.5, 3, 10, 0.5);
-  // game.dynamic.push(platform);
-  // game.paths.push(path);
-
-  // platform = new RectPlatform(0, 0, 7, 1.33, game.world, { colour: 'red' });
-  // path = new Path(platform.body, 49.5, 29, 49.5, 3, 10, 0.5);
-  // game.dynamic.push(platform);
-  // game.paths.push(path);
 
   // Spawn points
   game.spawns = [{ x: 27, y: 33 }, { x: 4.5, y: 20 }, { x: 49.5, y: 20 }, { x: 12, y: 7 }, { x: 42, y: 7 }, { x: 19.5, y: 20 }, { x: 34.5, y: 20 }];
@@ -336,7 +302,6 @@ function seesaw(game) {
   game.dynamic.push(block);
   var block = new RectPlatform(11, 23, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
   game.dynamic.push(block);
-
   
   var block = new RectPlatform(45, 17, 2, 2, game.world, { density: den, type: 'dynamic', colour: 'yellow' });
   game.dynamic.push(block);
@@ -359,6 +324,95 @@ function seesaw(game) {
   game.spawns = [{ x: 24, y: 23 }, { x: 30, y: 23 }, { x: 18, y: 23 }, { x: 36, y: 23 }];
 }
 
+function sniper(game) {
+  game.width = 81;
+  game.height = 54;
+
+  // Create the platforms
+  platform = new RectPlatform(7, 30, 7, 1.33, game.world, { colour: 'cyan' });
+  game.static.push(platform);
+
+  platform = new RectPlatform(74, 30, 7, 1.33, game.world, { colour: 'cyan' });
+  game.static.push(platform);
+  
+  platform = new RectPlatform(16, 20, 7, 1.33, game.world, { colour: 'blue' });
+  game.static.push(platform);
+
+  platform = new RectPlatform(65, 20, 7, 1.33, game.world, { colour: 'blue' });
+  game.static.push(platform);
+
+  game.weapons.push(new Sniper(7, 35, game.world, game.settings.experimental, 0));
+  game.weapons.push(new Sniper(16, 25, game.world, game.settings.experimental, 1));
+  game.weapons.push(new Sniper(74, 35, game.world, game.settings.experimental, 2));
+  game.weapons.push(new Sniper(65, 25, game.world, game.settings.experimental, 3));
+  game.weaponID = 4
+
+  // Spawn points
+  game.spawns = [{ x: 7, y: 33 }, { x: 74, y: 33 }, { x: 16, y: 23 }, { x: 65, y: 23 }, ];
+}
+
+function space(game) {
+  game.width = 54;
+  game.height = 36;
+
+  game.world.setGravity(vec(0, -5));
+
+  var circle = new CircPlatform(27, 18, 1, game.world, { restitution: 100, bouncy: true, colour: 'purple' });
+  game.dynamic.push(circle);
+
+  path = new Path(circle.body, 27, 3, 27, 33, 15, 0);
+  game.paths.push(path);
+
+  var circle = new CircPlatform(27, 18, 1, game.world, { restitution: 100, bouncy: true, colour: 'purple' });
+  game.dynamic.push(circle);
+
+  path = new Path(circle.body, 3, 18, 51, 18, 15, 0);
+  game.paths.push(path);
+
+  var circle = new CircPlatform(27, 18, 1, game.world, { restitution: 100, bouncy: true, colour: 'purple' });
+  game.dynamic.push(circle);
+
+  path = new Path(circle.body, 27, 3, 27, 33, 15, 0.5);
+  game.paths.push(path);
+
+  var circle = new CircPlatform(27, 18, 1, game.world, { restitution: 100, bouncy: true, colour: 'purple' });
+  game.dynamic.push(circle);
+
+  path = new Path(circle.body, 3, 18, 51, 18, 15, 0.5);
+  game.paths.push(path);
+
+  // Spawn points
+  game.spawns = [{ x: 18, y: 9 }, { x: 36, y: 27 }, { x: 18, y: 9 }, { x: 36, y: 27 }, ];
+}
+
+function battle(game) {
+  game.width = 54;
+  game.height = 36;
+
+  game.world.setGravity(vec(0, 0));
+
+  // Borders
+  game.static.push(new RectPlatform(27, 0, 54, 1, game.world, { colour: 'orange', restitution: 1 }));
+  game.static.push(new RectPlatform(27, 36, 54, 1, game.world, { colour: 'orange', restitution: 1 }));
+  game.static.push(new RectPlatform(0, 18, 1, 36, game.world, { colour: 'orange', restitution: 1 }));
+  game.static.push(new RectPlatform(54, 18, 1, 36, game.world, { colour: 'orange', restitution: 1 }));
+
+  var circle = new CircPlatform(27, 18, 4, game.world, { type: 'dynamic', colour: 'spike', spike: true, density: 0.1 });
+  game.dynamic.push(circle)
+
+  var weapons = [BasicGun, MachineGun, Sniper, Shotgun]
+  var chosenWeaponClass = weapons[Math.floor(Math.random() * weapons.length)];
+
+  game.weapons.push(new chosenWeaponClass(5, 5, game.world, game.settings.experimental, 0));
+  game.weapons.push(new chosenWeaponClass(5, 31, game.world, game.settings.experimental, 1));
+  game.weapons.push(new chosenWeaponClass(49, 5, game.world, game.settings.experimental, 2));
+  game.weapons.push(new chosenWeaponClass(49, 31, game.world, game.settings.experimental, 3));
+  game.weaponID = 4
+
+  // Spawn points
+  game.spawns = [{ x: 18, y: 18 }, { x: 36, y: 18 }, { x: 27, y: 9 }, { x: 27, y: 27 }, ];
+}
+
 createMapFuncs.push(turnAndShoot);
 createMapFuncs.push(pendulum);
 createMapFuncs.push(sixPlatforms);
@@ -368,5 +422,8 @@ createMapFuncs.push(rotations);
 createMapFuncs.push(threeFloors);
 createMapFuncs.push(circles);
 createMapFuncs.push(seesaw);
+createMapFuncs.push(sniper);
+// createMapFuncs.push(space);
+createMapFuncs.push(battle);
 
 module.exports = createMapFuncs;
